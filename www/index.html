@@ -1,0 +1,3493 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Ular Tangga 2D - Chaos Edition | Rexterco</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Jembatan Native Capacitor (otomatis disuntikkan saat build Android) -->
+  <script src="capacitor.js"></script>
+
+  <style>
+    :root {
+      --font-display: 'Fredoka', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --board-size: 10;
+
+      /* Dark Mode Tokens (Default) */
+      --bg-app: radial-gradient(circle at top, #1e1b4b 0%, #090d16 100%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(15, 23, 42, 0.94);
+      --card-sub-bg: rgba(2, 6, 23, 0.78);
+      --card-border: rgba(51, 65, 85, 0.85);
+      --board-frame-bg: #0f172a;
+      --board-frame-border: #334155;
+      --cell-even: rgba(30, 41, 59, 0.92);
+      --cell-odd: rgba(15, 23, 42, 0.78);
+      --cell-border: rgba(51, 65, 85, 0.45);
+      --cell-num: #94a3b8;
+      --btn-neutral-bg: #1e293b;
+      --btn-neutral-border: #475569;
+      --btn-neutral-text: #f1f5f9;
+      --input-bg: #020617;
+      --modal-bg: #0f172a;
+      --slot-empty-bg: rgba(15, 23, 42, 0.55);
+    }
+
+    html[data-theme="light"] {
+      --bg-app: radial-gradient(circle at top, #e0f2fe 0%, #f1f5f9 55%, #e2e8f0 100%);
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --card-bg: rgba(255, 255, 255, 0.96);
+      --card-sub-bg: rgba(241, 245, 249, 0.92);
+      --card-border: rgba(203, 213, 225, 0.95);
+      --board-frame-bg: #ffffff;
+      --board-frame-border: #94a3b8;
+      --cell-even: #f8fafc;
+      --cell-odd: #e2e8f0;
+      --cell-border: rgba(148, 163, 184, 0.55);
+      --cell-num: #475569;
+      --btn-neutral-bg: #f1f5f9;
+      --btn-neutral-border: #cbd5e1;
+      --btn-neutral-text: #0f172a;
+      --input-bg: #ffffff;
+      --modal-bg: #ffffff;
+      --slot-empty-bg: rgba(241, 245, 249, 0.85);
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100dvh;
+      font-family: var(--font-body);
+      background: var(--bg-app);
+      color: var(--text-main);
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      overflow-x: hidden;
+      transition: background 0.3s ease, color 0.25s ease;
+    }
+
+    h1, h2, h3, .font-game {
+      font-family: var(--font-display);
+    }
+
+    /* Surface theming helpers */
+    .theme-card {
+      background: var(--card-bg);
+      border-color: var(--card-border);
+      color: var(--text-main);
+    }
+    .theme-subcard {
+      background: var(--card-sub-bg);
+      border-color: var(--card-border);
+    }
+    .theme-modal {
+      background: var(--modal-bg);
+      color: var(--text-main);
+    }
+    .theme-btn-neutral {
+      background: var(--btn-neutral-bg);
+      border-color: var(--btn-neutral-border);
+      color: var(--btn-neutral-text);
+    }
+    .theme-input {
+      background: var(--input-bg);
+      border-color: var(--btn-neutral-border);
+      color: var(--text-main);
+    }
+    .theme-muted {
+      color: var(--text-muted);
+    }
+
+    /* Custom subtle scrollbars for horizontal strips */
+    .clean-scroll::-webkit-scrollbar {
+      height: 4px;
+      width: 4px;
+    }
+    .clean-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .clean-scroll::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.35);
+      border-radius: 999px;
+    }
+
+    /* Shell responsif portrait HP dengan safe-area-inset */
+    .app-shell {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100dvh;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 7px;
+      padding-top: max(8px, env(safe-area-inset-top));
+      padding-bottom: max(10px, env(safe-area-inset-bottom));
+      padding-left: max(8px, env(safe-area-inset-left));
+      padding-right: max(8px, env(safe-area-inset-right));
+      box-sizing: border-box;
+    }
+
+    /* Strip pemain horizontal agar 2-16 pemain tidak memanjangkan layar */
+    .players-strip {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .player-chip {
+      flex: 0 0 auto;
+      min-width: 92px;
+      max-width: 138px;
+      touch-action: manipulation;
+    }
+
+    /* Papan kotak proporsional di layar portrait */
+    .board-wrapper {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .board-stage {
+      position: relative;
+      width: min(94vw, 48dvh, 460px);
+      aspect-ratio: 1 / 1;
+      background: var(--board-frame-bg);
+      border-radius: 16px;
+      padding: 6px;
+      border: 2px solid var(--board-frame-border);
+      box-shadow: 0 18px 34px -12px rgba(0, 0, 0, 0.45);
+      overflow: hidden;
+      box-sizing: border-box;
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    .board-grid {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(var(--board-size, 10), minmax(0, 1fr));
+      grid-template-rows: repeat(var(--board-size, 10), minmax(0, 1fr));
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--cell-border);
+    }
+
+    .board-cell {
+      min-width: 0;
+      min-height: 0;
+      position: relative;
+      overflow: hidden;
+      border: 0.5px solid var(--cell-border);
+    }
+
+    /* =========================================================================
+       REFINED SKILL DOCK & CARD STYLING (RAPI, PROPORSIONAL, SENTUH NYAMAN)
+       ========================================================================= */
+    .skill-hand-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 7px;
+      width: 100%;
+    }
+
+    @media (max-width: 350px) {
+      .skill-hand-strip {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+      }
+      .skill-card-slot {
+        flex: 0 0 116px;
+        scroll-snap-align: start;
+      }
+    }
+
+    .skill-card-slot {
+      min-width: 0;
+      min-height: 92px;
+      touch-action: manipulation;
+    }
+
+    .skill-card-btn {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 92px;
+      border-radius: 14px;
+      padding: 7px 6px 6px 6px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      text-align: center;
+      transition: transform 0.16s ease, box-shadow 0.2s ease, filter 0.2s ease;
+      overflow: hidden;
+    }
+
+    .skill-card-btn:not(:disabled):hover {
+      transform: translateY(-2px);
+      filter: brightness(1.07);
+    }
+
+    .skill-card-btn:not(:disabled):active {
+      transform: scale(0.96);
+    }
+
+    .skill-card-empty {
+      width: 100%;
+      height: 100%;
+      min-height: 92px;
+      border-radius: 14px;
+      background: var(--slot-empty-bg);
+      border: 1.5px dashed var(--card-border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      text-align: center;
+    }
+
+    /* Animasi getar layar saat ledakan / chaos / magnet / black hole */
+    @keyframes screenShake {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      20% { transform: translate(-6px, 4px) rotate(-1deg); }
+      40% { transform: translate(6px, -4px) rotate(1deg); }
+      60% { transform: translate(-4px, -3px) rotate(-0.5deg); }
+      80% { transform: translate(4px, 3px) rotate(0.5deg); }
+    }
+    .shake-effect {
+      animation: screenShake 0.48s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    /* Animasi kocok dadu santai & jelas */
+    @keyframes diceRoll {
+      0% { transform: rotate(0deg) scale(1); }
+      20% { transform: rotate(-22deg) scale(1.16); }
+      40% { transform: rotate(20deg) scale(0.94); }
+      60% { transform: rotate(-16deg) scale(1.14); }
+      80% { transform: rotate(14deg) scale(0.98); }
+      100% { transform: rotate(0deg) scale(1); }
+    }
+    .dice-rolling {
+      animation: diceRoll 0.45s ease-in-out infinite;
+    }
+
+    /* Kecepatan gerak pion nyaman diikuti (430ms per langkah, transisi 0.4s) */
+    .player-token {
+      transition: left 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.4s cubic-bezier(0.22, 1, 0.36, 1), transform 0.35s ease;
+      will-change: left, top;
+    }
+
+    /* Aura pelindung Tameng */
+    @keyframes shieldPulse {
+      0%, 100% { box-shadow: 0 0 0 2.5px rgba(56, 189, 248, 0.95), 0 0 10px rgba(56, 189, 248, 0.8); }
+      50% { box-shadow: 0 0 0 4.5px rgba(125, 211, 252, 0.55), 0 0 16px rgba(56, 189, 248, 1); }
+    }
+    .shield-aura {
+      animation: shieldPulse 1.5s infinite;
+    }
+
+    /* Aura racun / lumpuh */
+    @keyframes poisonPulse {
+      0%, 100% { filter: brightness(1.12) saturate(1.3); box-shadow: 0 0 0 2.5px rgba(74, 222, 128, 0.95), 0 0 12px rgba(22, 163, 74, 0.9); }
+      50% { filter: brightness(1.32) saturate(1.5); box-shadow: 0 0 0 4px rgba(163, 230, 53, 0.65), 0 0 18px rgba(21, 128, 61, 1); }
+    }
+    .poison-aura {
+      animation: poisonPulse 1.2s infinite;
+    }
+
+    /* Animasi pusaran Black Hole */
+    @keyframes blackHoleSpin {
+      0% { transform: translate(-50%, -50%) rotate(0deg) scale(0.92); }
+      50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.12); }
+      100% { transform: translate(-50%, -50%) rotate(360deg) scale(0.92); }
+    }
+    .blackhole-vortex {
+      animation: blackHoleSpin 2.2s linear infinite;
+      pointer-events: none;
+    }
+
+    /* Efek ledakan / kemunculan emoji di papan */
+    @keyframes boomPop {
+      0% { transform: translate(-50%, -50%) scale(0.2); opacity: 1; }
+      60% { transform: translate(-50%, -50%) scale(1.4); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1.85); opacity: 0; }
+    }
+    .boom-effect {
+      animation: boomPop 0.75s ease-out forwards;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- CONTAINER UTAMA GAME -->
+  <div id="app-container" class="app-shell">
+
+    <!-- HEADER IN-GAME -->
+    <header class="theme-card flex items-center justify-between backdrop-blur-md border rounded-2xl px-2.5 py-1.5 shadow-lg gap-1">
+      <div class="flex items-center gap-1.5 min-w-0">
+        <span class="text-xl shrink-0">🐍</span>
+        <div class="min-w-0">
+          <h1 class="text-[11px] sm:text-xs font-bold tracking-wide bg-gradient-to-r from-amber-500 via-fuchsia-500 to-cyan-500 bg-clip-text text-transparent leading-tight truncate">
+            ULAR TANGGA CHAOS
+          </h1>
+          <p id="header-subtitle" class="theme-muted text-[9.5px] font-medium truncate">10x10 • 4 Pemain</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1 shrink-0">
+        <!-- Toggle Mode Terang / Gelap -->
+        <button type="button" id="btn-theme-toggle" onclick="toggleThemeMode()" title="Ganti Mode Terang / Gelap" class="theme-btn-neutral min-h-[40px] px-2 py-1 rounded-xl border active:scale-95 transition text-[11px] font-bold cursor-pointer">
+          ☀️
+        </button>
+        <!-- Tombol Info Skill -->
+        <button type="button" onclick="window.openSkillGuide()" title="Buku Panduan Skill" class="min-h-[40px] px-2 py-1 rounded-xl bg-amber-500/20 hover:bg-amber-500/35 active:scale-95 border border-amber-500/70 text-[10.5px] font-bold text-amber-500 transition flex items-center gap-0.5 cursor-pointer">
+          <span>📖</span>
+          <span>Skill</span>
+        </button>
+        <!-- Tombol Mute / Unmute SFX -->
+        <button type="button" id="btn-sfx-toggle" onclick="toggleSfxMute()" title="Mute / Unmute Efek Suara" class="theme-btn-neutral min-h-[40px] px-1.5 py-1 rounded-xl border active:scale-95 text-amber-500 transition text-[10.5px] font-bold cursor-pointer">
+          🔊
+        </button>
+        <!-- Tombol Mute / Unmute BGM -->
+        <button type="button" id="btn-bgm-toggle" onclick="toggleBgmMute()" title="Mute / Unmute Musik Latar" class="theme-btn-neutral min-h-[40px] px-1.5 py-1 rounded-xl border active:scale-95 text-cyan-500 transition text-[10.5px] font-bold cursor-pointer">
+          🎵
+        </button>
+        <!-- Tombol Menu (Mulai Ulang & Back) -->
+        <button type="button" onclick="openGameMenuModal()" class="min-h-[40px] px-2.5 py-1 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-[10.5px] font-bold text-white shadow transition flex items-center gap-1 cursor-pointer">
+          <span>☰</span>
+          <span>Menu</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- STATUS PEMAIN & LOG AKSI (KARTU LAWAN DISEMBUNYIKAN KECUALI PUNYA COPET) -->
+    <section class="theme-card backdrop-blur-md border rounded-2xl p-2 shadow-lg flex flex-col gap-1.5">
+      <!-- Strip horizontal daftar pemain (2-16) -->
+      <div id="players-status-strip" class="players-strip clean-scroll"></div>
+
+      <!-- Log Aksi -->
+      <div class="theme-subcard border rounded-xl px-2.5 py-1.5 flex items-center gap-2">
+        <span class="text-xs shrink-0">📢</span>
+        <p id="action-log" class="text-[11px] font-semibold text-amber-500 truncate">
+          Selamat datang di Ular Tangga Chaos Edition!
+        </p>
+      </div>
+    </section>
+
+    <!-- PAPAN ULAR TANGGA KOTAK -->
+    <main class="board-wrapper">
+      <div class="board-stage">
+        <div id="board-grid" class="board-grid"></div>
+        <svg id="board-svg" viewBox="0 0 1000 1000" class="absolute inset-[6px] w-[calc(100%-12px)] h-[calc(100%-12px)] pointer-events-none z-10"></svg>
+        <svg id="fx-svg" viewBox="0 0 1000 1000" class="absolute inset-[6px] w-[calc(100%-12px)] h-[calc(100%-12px)] pointer-events-none z-30"></svg>
+        <div id="tokens-layer" class="absolute inset-[6px] w-[calc(100%-12px)] h-[calc(100%-12px)] pointer-events-none z-20"></div>
+      </div>
+    </main>
+
+    <!-- PANEL KONTROL BAWAH: DOCK KARTU SKILL RAPI & DADU -->
+    <section class="theme-card backdrop-blur-md border rounded-2xl p-2.5 shadow-xl flex flex-col gap-2">
+      <!-- Header Dock Kartu Skill -->
+      <div>
+        <div class="flex items-center justify-between gap-1.5 mb-1.5">
+          <div class="flex items-center gap-1.5 min-w-0">
+            <span class="text-[11px] font-extrabold uppercase tracking-wider flex items-center gap-1 shrink-0">
+              ⚡ Tangan Skill
+            </span>
+            <span id="skill-owner-label" class="text-[11px] font-extrabold text-rose-500 truncate">(Pemain 1)</span>
+            <span id="skill-hand-counter" class="theme-subcard border px-1.5 py-0.5 rounded-md text-[9.5px] font-extrabold text-amber-500 shrink-0">
+              0/3
+            </span>
+          </div>
+
+          <div class="flex items-center gap-1.5 shrink-0">
+            <span id="turbo-indicator" class="hidden text-[9.5px] font-extrabold text-amber-400 bg-amber-500/20 border border-amber-400/60 px-2 py-0.5 rounded-full animate-pulse">
+              ⚡ TURBO x5
+            </span>
+            <button type="button" onclick="window.openSkillGuide()" id="mystery-hint" class="min-h-[30px] px-2 py-0.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-[10px] font-bold text-amber-500 transition cursor-pointer">
+              📖 Info Skill
+            </button>
+          </div>
+        </div>
+
+        <!-- 3 Slot Kartu Skill Rapi -->
+        <div id="skills-container" class="skill-hand-strip clean-scroll"></div>
+      </div>
+
+      <div class="h-px bg-slate-500/25 w-full"></div>
+
+      <!-- Baris Kocok Dadu -->
+      <div class="flex items-center justify-between gap-2.5">
+        <div class="theme-subcard flex items-center gap-2 border rounded-xl px-2.5 py-1.5">
+          <div id="dice-box" class="w-10 h-10 rounded-xl bg-gradient-to-br from-white to-slate-200 text-slate-900 shadow-inner flex items-center justify-center font-game text-xl font-extrabold border-2 border-slate-300">
+            🎲
+          </div>
+          <div class="flex flex-col">
+            <span class="theme-muted text-[9px] uppercase tracking-wider font-bold">Dadu</span>
+            <span id="dice-status" class="text-[11px] font-bold text-emerald-500">Siap</span>
+          </div>
+        </div>
+
+        <button type="button" id="btn-roll" data-no-click-sfx="true" onclick="handleRollDice()" class="flex-1 min-h-[50px] rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none text-slate-950 font-game text-base sm:text-lg font-bold shadow-lg shadow-emerald-950/30 transition flex items-center justify-center gap-2 cursor-pointer">
+          <span>🎲</span>
+          <span>KOCOK DADU</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- FOOTER COPYRIGHT PERMANEN IN-GAME -->
+    <footer class="text-center py-0.5">
+      <p class="theme-muted text-[11px] font-semibold tracking-wide">
+        © 2026 <span class="text-amber-500 font-bold">Rexterco</span>. All rights reserved.
+      </p>
+    </footer>
+  </div>
+
+  <!-- MODAL MENU IN-GAME (MULAI ULANG & BACK) -->
+  <div id="modal-game-menu" onclick="if(event.target === this) closeGameMenuModal()" style="display: none; z-index: 55;" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4">
+    <div class="theme-modal border-2 border-indigo-500/80 rounded-3xl p-5 max-w-xs w-full text-center shadow-2xl flex flex-col gap-2.5">
+      <div class="text-3xl">☰</div>
+      <h3 class="font-game text-xl font-bold">Menu Permainan</h3>
+      <p class="theme-muted text-xs mb-1">Pilih tindakan untuk pertandingan ini:</p>
+
+      <button type="button" onclick="closeGameMenuModal()" class="w-full min-h-[44px] py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-game text-sm font-bold transition cursor-pointer">
+        ▶️ Lanjutkan Main
+      </button>
+
+      <button type="button" onclick="restartFromGameMenu()" class="w-full min-h-[44px] py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-game text-sm font-bold transition cursor-pointer">
+        🔄 Mulai Ulang (Map Acak Baru)
+      </button>
+
+      <button type="button" onclick="backToSetupFromMenu()" class="theme-btn-neutral w-full min-h-[44px] py-2.5 rounded-xl font-game text-sm font-bold border transition cursor-pointer">
+        ⬅️ Back ke Lobby
+      </button>
+
+      <p class="theme-muted text-[10px] mt-1">© 2026 Rexterco. All rights reserved.</p>
+    </div>
+  </div>
+
+  <!-- MODAL SETUP ARENA / LOBBY (2-16 PEMAIN & NAMA KUSTOM + MODE TERANG + TOMBOL KELUAR APLIKASI) -->
+  <div id="modal-setup" style="display: flex; z-index: 40;" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="theme-modal border-2 border-indigo-500/80 rounded-3xl p-4 sm:p-5 max-w-sm w-full shadow-2xl flex flex-col gap-3 my-auto">
+      <div class="flex items-center justify-between gap-1.5">
+        <div class="min-w-0">
+          <h2 class="font-game text-base sm:text-lg font-bold flex items-center gap-1.5 truncate">
+            <span>🐍</span> Setup Arena Chaos
+          </h2>
+          <p class="theme-muted text-[11px]">Map dinamis • 2–16 pemain</p>
+        </div>
+        <div class="flex items-center gap-1 shrink-0">
+          <button type="button" id="setup-btn-theme" onclick="toggleThemeMode()" title="Mode Terang / Gelap" class="theme-btn-neutral min-h-[42px] min-w-[36px] px-2 py-1 rounded-xl border text-[11px] font-bold cursor-pointer">
+            ☀️
+          </button>
+          <button type="button" id="setup-btn-sfx" onclick="toggleSfxMute()" title="Mute / Unmute SFX" class="theme-btn-neutral min-h-[42px] min-w-[36px] px-2 py-1 rounded-xl border text-[11px] font-bold text-amber-500 cursor-pointer">
+            🔊
+          </button>
+          <button type="button" id="setup-btn-bgm" onclick="toggleBgmMute()" title="Mute / Unmute BGM" class="theme-btn-neutral min-h-[42px] min-w-[36px] px-2 py-1 rounded-xl border text-[11px] font-bold text-cyan-500 cursor-pointer">
+            🎵
+          </button>
+          <button type="button" onclick="window.openSkillGuide()" class="min-h-[42px] px-2 py-1 rounded-xl bg-amber-500/20 hover:bg-amber-500/35 active:scale-95 border border-amber-500/80 text-xs font-bold text-amber-500 shadow transition flex items-center gap-1 cursor-pointer">
+            <span>📖</span>
+            <span>Skill</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Pilihan Ukuran Papan -->
+      <div>
+        <label class="text-xs font-bold block mb-1.5">Ukuran Papan (Posisi Ular & Tangga Selalu Acak):</label>
+        <div id="setup-board-buttons" class="grid grid-cols-3 gap-1.5"></div>
+      </div>
+
+      <!-- Pilih Jumlah Pemain Kustom (2 s/d 16) -->
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <label class="text-xs font-bold">Jumlah Pemain (2–16):</label>
+          <span id="setup-count-badge" class="text-[11px] font-extrabold text-indigo-400 bg-indigo-500/15 border border-indigo-500/50 px-2 py-0.5 rounded-full">4 Pemain</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button type="button" onclick="adjustPlayerCount(-1)" class="theme-btn-neutral w-11 h-11 min-h-[44px] rounded-xl border font-game text-base font-bold cursor-pointer">−</button>
+          <input id="setup-count-input" type="number" min="2" max="16" value="4" onchange="setCustomPlayerCount(this.value)" class="theme-input w-14 h-11 rounded-xl border text-center font-game text-sm font-bold text-amber-500 focus:outline-none focus:border-indigo-400" />
+          <button type="button" onclick="adjustPlayerCount(1)" class="theme-btn-neutral w-11 h-11 min-h-[44px] rounded-xl border font-game text-base font-bold cursor-pointer">+</button>
+          <div class="flex-1 grid grid-cols-4 gap-1 ml-1">
+            <button type="button" onclick="setCustomPlayerCount(2)" class="theme-btn-neutral min-h-[44px] py-1.5 rounded-lg hover:bg-indigo-600 hover:text-white text-[10px] font-bold border cursor-pointer">2P</button>
+            <button type="button" onclick="setCustomPlayerCount(4)" class="theme-btn-neutral min-h-[44px] py-1.5 rounded-lg hover:bg-indigo-600 hover:text-white text-[10px] font-bold border cursor-pointer">4P</button>
+            <button type="button" onclick="setCustomPlayerCount(8)" class="theme-btn-neutral min-h-[44px] py-1.5 rounded-lg hover:bg-indigo-600 hover:text-white text-[10px] font-bold border cursor-pointer">8P</button>
+            <button type="button" onclick="setCustomPlayerCount(16)" class="theme-btn-neutral min-h-[44px] py-1.5 rounded-lg hover:bg-indigo-600 hover:text-white text-[10px] font-bold border cursor-pointer">16P</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Daftar Slot Pemain (Nama Kustom + Human/Bot) -->
+      <div class="clean-scroll flex flex-col gap-1.5 max-h-[165px] overflow-y-auto pr-1" id="setup-slots-list"></div>
+
+      <div class="flex flex-col gap-2">
+        <button type="button" onclick="confirmSetupAndStart()" class="w-full min-h-[48px] py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-game text-base font-bold shadow-lg transition active:scale-95 cursor-pointer">
+          🚀 MULAI PERTANDINGAN
+        </button>
+
+        <button type="button" onclick="openExitAppModal()" class="w-full min-h-[42px] py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 active:scale-95 border border-rose-500/60 text-rose-400 font-game text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer">
+          <span>🚪</span>
+          <span>Keluar Aplikasi</span>
+        </button>
+      </div>
+
+      <!-- Footer Copyright di Layar Setup -->
+      <div class="text-center border-t border-slate-500/25 pt-2">
+        <p class="theme-muted text-[11px] font-semibold">
+          © 2026 <span class="text-amber-500 font-bold">Rexterco</span>. All rights reserved.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PEMBERITAHUAN KONFIRMASI KELUAR APLIKASI DI LOBBY -->
+  <div id="modal-exit-app" onclick="if(event.target === this) closeExitAppModal()" style="display: none; z-index: 65;" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm items-center justify-center p-4">
+    <div class="theme-modal border-2 border-rose-500/80 rounded-3xl p-5 max-w-xs w-full text-center shadow-2xl flex flex-col gap-3">
+      <div class="text-4xl">🚪</div>
+      <h3 class="font-game text-lg font-bold text-rose-400">Keluar Aplikasi?</h3>
+      <p id="exit-app-message" class="theme-muted text-xs leading-relaxed">
+        Apakah kamu yakin ingin keluar dari aplikasi <strong>Ular Tangga 2D - Chaos Edition</strong>?
+      </p>
+      <div class="flex gap-2 mt-1">
+        <button type="button" onclick="confirmExitApplication()" class="flex-1 min-h-[44px] py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-game text-xs font-bold shadow transition cursor-pointer">
+          Ya, Keluar
+        </button>
+        <button type="button" onclick="closeExitAppModal()" class="theme-btn-neutral flex-1 min-h-[44px] py-2.5 rounded-xl font-game text-xs font-bold border transition cursor-pointer">
+          Batal
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL COPET SKILL MANUAL (HANYA BISA DILIHAT SAAT PUNYA KARTU COPET) -->
+  <div id="modal-steal" style="display: none; z-index: 50;" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm items-center justify-center p-4">
+    <div class="theme-modal border-2 border-pink-400/80 rounded-3xl p-5 max-w-sm w-full text-center shadow-2xl flex flex-col gap-3">
+      <div>
+        <div class="text-3xl mb-0.5">🤏</div>
+        <h3 class="font-game text-lg font-bold text-pink-400">Copet Skill: Intip & Curi Kartu Lawan</h3>
+        <p class="theme-muted text-xs mt-0.5">Kartu lawan terbuka khusus untukmu! Ketuk kartu yang ingin dicuri:</p>
+      </div>
+
+      <div id="steal-targets-list" class="clean-scroll flex flex-col gap-2 max-h-[260px] overflow-y-auto pr-1 text-left"></div>
+
+      <button type="button" onclick="cancelTargetSelection()" class="theme-btn-neutral w-full min-h-[44px] py-2 rounded-xl text-xs font-bold border transition cursor-pointer">
+        Batal
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL PEMILIHAN TARGET PEMAIN -->
+  <div id="modal-target" style="display: none; z-index: 50;" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4">
+    <div class="theme-modal border-2 border-amber-400/80 rounded-3xl p-5 max-w-xs w-full text-center shadow-2xl">
+      <div id="target-modal-icon" class="text-3xl mb-1">🪝</div>
+      <h3 id="target-modal-title" class="font-game text-lg font-bold text-amber-400">Pilih Target Pemain</h3>
+      <p id="target-modal-desc" class="theme-muted text-xs mt-1 mb-3">Pilih lawan yang akan dikenai efek skill ini:</p>
+      <div id="target-players-list" class="clean-scroll flex flex-col gap-2 max-h-[240px] overflow-y-auto mb-3"></div>
+      <button type="button" onclick="cancelTargetSelection()" class="theme-btn-neutral w-full min-h-[44px] py-2 rounded-xl text-xs font-bold border transition cursor-pointer">
+        Batal
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL PILIH PETAK (SELF TELEPORT MANUAL & RANDOM / BLACK HOLE) -->
+  <div id="modal-tile-picker" style="display: none; z-index: 50;" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4">
+    <div class="theme-modal border-2 border-cyan-400/80 rounded-3xl p-5 max-w-xs w-full text-center shadow-2xl">
+      <div id="tile-picker-icon" class="text-3xl mb-1">🌀✨</div>
+      <h3 id="tile-picker-title" class="font-game text-lg font-bold text-cyan-400">Pilih Petak Tujuan</h3>
+      <p id="tile-picker-desc" class="theme-muted text-xs mt-1 mb-3">Masukkan nomor petak tujuan:</p>
+      <div id="tile-picker-quick-picks" class="flex flex-wrap justify-center gap-1.5 mb-3"></div>
+      <div class="flex items-center gap-2 mb-3">
+        <input id="tile-picker-input" type="number" min="1" max="99" placeholder="Nomor petak..." class="theme-input w-full min-h-[44px] px-3 py-2 rounded-xl border text-center font-game text-base font-bold focus:outline-none focus:border-cyan-400" />
+        <button type="button" id="tile-picker-confirm-btn" onclick="confirmTilePickerInput()" class="min-h-[44px] px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-game text-sm font-bold shrink-0 cursor-pointer">
+          Aktifkan
+        </button>
+      </div>
+      <button type="button" onclick="cancelTargetSelection()" class="theme-btn-neutral w-full min-h-[44px] py-2 rounded-xl text-xs font-bold border transition cursor-pointer">
+        Batal
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL PEMILIHAN ANGKA DADU SAKTI (1 SAMPAI 12) -->
+  <div id="modal-loaded-dice" style="display: none; z-index: 50;" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4">
+    <div class="theme-modal border-2 border-amber-400/80 rounded-3xl p-5 max-w-xs w-full text-center shadow-2xl">
+      <div class="text-3xl mb-1">🎲✨</div>
+      <h3 class="font-game text-xl font-bold text-amber-400">Dadu Sakti Aktif!</h3>
+      <p class="theme-muted text-xs mt-1 mb-3">Pilih angka langkah yang kamu inginkan (1–12):</p>
+      <div class="grid grid-cols-4 gap-2">
+        <button type="button" onclick="selectLoadedDice(1)" class="theme-btn-neutral min-h-[44px] py-2.5 rounded-xl hover:bg-amber-500 hover:text-slate-950 border font-game text-base font-bold transition cursor-pointer">1</button>
+        <button type="button" onclick="selectLoadedDice(2)" class="theme-btn-neutral min-h-[44px] py-2.5 rounded-xl hover:bg-amber-500 hover:text-slate-950 border font-game text-base font-bold transition cursor-pointer">2</button>
+        <button type="button" onclick="selectLoadedDice(3)" class="theme-btn-neutral min-h-[44px] py-2.5 rounded-xl hover:bg-amber-500 hover:text-slate-950 border font-game text-base font-bold transition cursor-pointer">3</button>
+        <button type="button" onclick="selectLoadedDice(4)" class="theme-btn-neutral min-h-[44px] py-2.5 rounded-xl hover:bg-amber-500 hover:text-slate-950 border font-game text-base font-bold transition cursor-pointer">4</button>
+        <button type="button" onclick="selectLoadedDice(5)" class="theme-btn-neutral min-h-[44px] py-2.5 rounded-xl hover:bg-amber-500 hover:text-slate-950 border font-game text-base font-bold transition cursor-pointer">5</button>
+        <button type="button" onclick="selectLoadedDice(6)" class="theme-btn-neutral min-h-[44px] py-2.5 rounded-xl hover:bg-amber-500 hover:text-slate-950 border font-game text-base font-bold transition cursor-pointer">6</button>
+        <button type="button" onclick="selectLoadedDice(7)" class="theme-btn-neutral min-h-[44px] py-2.5 rounded-xl hover:bg-amber-500 hover:text-slate-950 border font-game text-base font-bold transition cursor-pointer">7</button>
+        <button type="button" onclick="selectLoadedDice(8)" class="theme-btn-neutral min-h-[44px] py-2.5 rounded-xl hover:bg-amber-500 hover:text-slate-950 border font-game text-base font-bold transition cursor-pointer">8</button>
+        <button type="button" onclick="selectLoadedDice(9)" class="theme-btn-neutral min-h-[44px] py-2.5 rounded-xl hover:bg-amber-500 hover:text-slate-950 border font-game text-base font-bold transition cursor-pointer">9</button>
+        <button type="button" onclick="selectLoadedDice(10)" class="theme-btn-neutral min-h-[44px] py-2.5 rounded-xl hover:bg-amber-500 hover:text-slate-950 border font-game text-base font-bold transition cursor-pointer">10</button>
+        <button type="button" onclick="selectLoadedDice(11)" class="theme-btn-neutral min-h-[44px] py-2.5 rounded-xl hover:bg-amber-500 hover:text-slate-950 border font-game text-base font-bold transition cursor-pointer">11</button>
+        <button type="button" onclick="selectLoadedDice(12)" class="theme-btn-neutral min-h-[44px] py-2.5 rounded-xl hover:bg-amber-500 hover:text-slate-950 border font-game text-base font-bold transition cursor-pointer">12</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PEMENANG -->
+  <div id="modal-winner" style="display: none; z-index: 60;" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md items-center justify-center p-4">
+    <div class="theme-modal border-2 border-amber-400 rounded-3xl p-6 max-w-xs w-full text-center shadow-2xl">
+      <div class="text-5xl mb-2 animate-bounce">🏆</div>
+      <h2 id="winner-title" class="font-game text-2xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
+        PEMAIN 1 MENANG!
+      </h2>
+      <p id="winner-subtitle" class="theme-muted text-xs mt-1.5 mb-5">
+        Berhasil menaklukkan arena Ular Tangga Chaos!
+      </p>
+      <div class="flex flex-col gap-2">
+        <button type="button" onclick="startNewGameWithCurrentSettings()" class="w-full min-h-[48px] py-3 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-game text-base font-bold shadow-lg transition active:scale-95 cursor-pointer">
+          🔄 MAIN LAGI (MAP BARU)
+        </button>
+        <button type="button" onclick="openSetupModal()" class="theme-btn-neutral w-full min-h-[44px] py-2.5 rounded-xl font-game text-sm font-bold border transition cursor-pointer">
+          ⚙️ UBAH ARENA / PEMAIN
+        </button>
+      </div>
+      <p class="theme-muted text-[10px] mt-4">© 2026 Rexterco. All rights reserved.</p>
+    </div>
+  </div>
+
+  <!-- MODAL BUKU PANDUAN '📖 INFO SKILL' (DENGAN KATEGORI & LABEL TIER) -->
+  <div id="skill-guide-overlay" onclick="if(event.target === this) window.closeSkillGuide()" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 14px;">
+    <div style="width: 100%; max-width: 440px; max-height: 88vh; display: flex; flex-direction: column;" class="theme-modal border-2 border-amber-400 rounded-3xl p-4 shadow-2xl gap-2.5">
+      <div class="flex items-center justify-between border-b border-slate-500/25 pb-2">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/60 flex items-center justify-center text-xl">📖</div>
+          <div>
+            <h2 class="font-game text-base sm:text-lg font-bold text-amber-500 leading-tight">Buku Panduan Skill</h2>
+            <p class="theme-muted text-[10.5px]">Lewati/berhenti di petak <span class="text-amber-500 font-bold">?</span> untuk dapat kartu acak</p>
+          </div>
+        </div>
+        <button type="button" onclick="window.closeSkillGuide()" aria-label="Tutup" class="theme-btn-neutral w-10 h-10 rounded-full hover:bg-rose-600 hover:text-white font-bold flex items-center justify-center border transition cursor-pointer">
+          ✕
+        </button>
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <div id="skill-filter-tabs" class="grid grid-cols-5 gap-1">
+          <button type="button" data-filter="all" onclick="window.setSkillFilter('all')" class="skill-tab-btn min-h-[36px] py-1 px-1 rounded-xl text-[9.5px] font-bold border bg-amber-400 text-slate-950 border-amber-300 cursor-pointer">Semua</button>
+          <button type="button" data-filter="COMMON" onclick="window.setSkillFilter('COMMON')" class="skill-tab-btn min-h-[36px] py-1 px-1 rounded-xl text-[9.5px] font-bold border bg-slate-800 text-slate-300 border-slate-700 cursor-pointer">Common</button>
+          <button type="button" data-filter="RARE" onclick="window.setSkillFilter('RARE')" class="skill-tab-btn min-h-[36px] py-1 px-1 rounded-xl text-[9.5px] font-bold border bg-slate-800 text-slate-300 border-slate-700 cursor-pointer">Rare</button>
+          <button type="button" data-filter="EPIC" onclick="window.setSkillFilter('EPIC')" class="skill-tab-btn min-h-[36px] py-1 px-1 rounded-xl text-[9.5px] font-bold border bg-slate-800 text-slate-300 border-slate-700 cursor-pointer">Epic</button>
+          <button type="button" data-filter="MYTHIC" onclick="window.setSkillFilter('MYTHIC')" class="skill-tab-btn min-h-[36px] py-1 px-1 rounded-xl text-[9.5px] font-bold border bg-slate-800 text-slate-300 border-slate-700 cursor-pointer">Mythic</button>
+        </div>
+
+        <input id="skill-search-input" type="text" oninput="window.renderSkillGuideList()" placeholder="🔍 Cari nama, tier, atau efek skill..." class="theme-input w-full min-h-[40px] px-3 py-1.5 rounded-xl border text-xs focus:outline-none focus:border-amber-400" />
+      </div>
+
+      <div id="skill-guide-list" style="overflow-y: auto; flex: 1;" class="clean-scroll flex flex-col gap-2 pr-1"></div>
+
+      <div class="flex items-center justify-between pt-1.5 border-t border-slate-500/25">
+        <span class="theme-muted text-[10px]">© 2026 <strong class="text-amber-500">Rexterco</strong></span>
+        <button type="button" onclick="window.closeSkillGuide()" class="min-h-[42px] px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-game text-xs font-bold shadow transition cursor-pointer">
+          Tutup Panduan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+- =========================================================================
+- KONSTANTA KECEPATAN ANIMASI (DIPERLAMBAT AGAR NYAMAN DIIKUTI)
+- =========================================================================
+     */
+    const STEP_DELAY_MS = 430;          // Jeda tiap petak pion melangkah
+    const DICE_SPIN_FRAMES = 10;        // Jumlah putaran angka dadu
+    const DICE_FRAME_MS = 90;           // Jeda tiap frame kocok dadu (~900ms total)
+    const DICE_READ_PAUSE_MS = 380;     // Jeda baca angka dadu sebelum pion jalan
+    const ENTITY_TRIGGER_PAUSE_MS = 560;// Jeda sebelum naik tangga / turun ular
+
+    /**
+- =========================================================================
+- PERSISTENSI PENGATURAN LOKAL (localStorage) & TEMA TERANG / GELAP
+- =========================================================================
+     */
+    const STORAGE_KEY = 'rexterco_ulartangga_chaos_v6';
+    const MAX_PLAYERS = 16;
+
+    let uiTheme = 'dark'; // 'dark' | 'light'
+
+    let audioPrefs = {
+      sfxMuted: false,
+      bgmMuted: false
+    };
+
+    function applyThemeMode(mode) {
+      uiTheme = mode === 'light' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', uiTheme);
+      const iconText = uiTheme === 'light' ? '🌙' : '☀️';
+      const btn1 = document.getElementById('btn-theme-toggle');
+      const btn2 = document.getElementById('setup-btn-theme');
+      if (btn1) btn1.textContent = iconText;
+      if (btn2) btn2.textContent = iconText;
+
+      if (gameState && gameState.boardSize) {
+        buildBoard();
+      }
+    }
+
+    function toggleThemeMode() {
+      applyThemeMode(uiTheme === 'dark' ? 'light' : 'dark');
+      savePersistedPrefs();
+    }
+
+    function loadPersistedPrefs() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (parsed.uiTheme) {
+          uiTheme = parsed.uiTheme === 'light' ? 'light' : 'dark';
+        }
+        if (parsed.audioPrefs) {
+          audioPrefs.sfxMuted = Boolean(parsed.audioPrefs.sfxMuted);
+          audioPrefs.bgmMuted = Boolean(parsed.audioPrefs.bgmMuted);
+        }
+        return parsed;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function savePersistedPrefs() {
+      try {
+        const payload = {
+          uiTheme,
+          audioPrefs,
+          setupConfig: {
+            boardSize: setupConfig.boardSize,
+            count: setupConfig.count,
+            names: setupConfig.names,
+            customNameEdited: setupConfig.customNameEdited,
+            isBot: setupConfig.isBot
+          }
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      } catch (e) {}
+    }
+
+    /**
+- =========================================================================
+- AUDIO ENGINE:
+- 1. Amplified Web Audio API SFX (Master Gain 2.4 + DynamicsCompressorNode)
+- 2. Button click SFX via event delegation (confirm / back / click)
+- 3. Dual BGM Loader ('./audio/bgm-lobby.mp3' & './audio/bgm-game.mp3')
+-    dengan fallback otomatis ke Web Audio API synth loop
+- =========================================================================
+     */
+    let audioCtx = null;
+    let sfxMasterGain = null;
+    let bgmMasterGain = null;
+    let currentBgmMode = 'lobby';
+    let bgmSynthTimerId = null;
+    let bgmStepIndex = 0;
+
+    const BGM_MP3_SOURCES = {
+      lobby: './audio/bgm-lobby.mp3',
+      game: './audio/bgm-game.mp3'
+    };
+
+    const bgmTracks = { lobby: null, game: null };
+    const bgmMp3Status = { lobby: 'untested', game: 'untested' };
+
+    function initMp3Tracks() {
+      ['lobby', 'game'].forEach((mode) => {
+        if (bgmTracks[mode]) return;
+        try {
+          const audio = new Audio();
+          audio.src = BGM_MP3_SOURCES[mode];
+          audio.loop = true;
+          audio.preload = 'auto';
+          audio.volume = 0.22;
+
+          audio.addEventListener('canplaythrough', () => {
+            bgmMp3Status[mode] = 'ready';
+          });
+
+          audio.addEventListener('error', () => {
+            bgmMp3Status[mode] = 'failed';
+            if (currentBgmMode === mode && !audioPrefs.bgmMuted) {
+              startSynthBgmLoop(mode);
+            }
+          });
+
+          bgmTracks[mode] = audio;
+        } catch (e) {
+          bgmMp3Status[mode] = 'failed';
+        }
+      });
+    }
+
+    function getAudioChain() {
+      try {
+        if (!audioCtx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          audioCtx = new AudioCtx();
+
+          const compressor = audioCtx.createDynamicsCompressor();
+          compressor.threshold.setValueAtTime(-10, audioCtx.currentTime);
+          compressor.knee.setValueAtTime(12, audioCtx.currentTime);
+          compressor.ratio.setValueAtTime(10, audioCtx.currentTime);
+          compressor.attack.setValueAtTime(0.004, audioCtx.currentTime);
+          compressor.release.setValueAtTime(0.14, audioCtx.currentTime);
+
+          sfxMasterGain = audioCtx.createGain();
+          sfxMasterGain.gain.setValueAtTime(audioPrefs.sfxMuted ? 0.0001 : 2.4, audioCtx.currentTime);
+
+          bgmMasterGain = audioCtx.createGain();
+          bgmMasterGain.gain.setValueAtTime(audioPrefs.bgmMuted ? 0.0001 : 0.22, audioCtx.currentTime);
+
+          sfxMasterGain.connect(compressor);
+          bgmMasterGain.connect(compressor);
+          compressor.connect(audioCtx.destination);
+        }
+
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume().catch(() => {});
+        }
+
+        return { ctx: audioCtx, sfxOut: sfxMasterGain, bgmOut: bgmMasterGain };
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function syncAudioGainStates() {
+      if (audioCtx && sfxMasterGain && bgmMasterGain) {
+        const now = audioCtx.currentTime;
+        sfxMasterGain.gain.setTargetAtTime(audioPrefs.sfxMuted ? 0.0001 : 2.4, now, 0.02);
+        bgmMasterGain.gain.setTargetAtTime(audioPrefs.bgmMuted ? 0.0001 : 0.22, now, 0.02);
+      }
+
+      ['lobby', 'game'].forEach((mode) => {
+        const track = bgmTracks[mode];
+        if (track) {
+          track.muted = audioPrefs.bgmMuted;
+          track.volume = 0.22;
+        }
+      });
+
+      const btnSfx = document.getElementById('btn-sfx-toggle');
+      const btnBgm = document.getElementById('btn-bgm-toggle');
+      const setupBtnSfx = document.getElementById('setup-btn-sfx');
+      const setupBtnBgm = document.getElementById('setup-btn-bgm');
+
+      if (btnSfx) btnSfx.textContent = audioPrefs.sfxMuted ? '🔇' : '🔊';
+      if (btnBgm) btnBgm.textContent = audioPrefs.bgmMuted ? '🔇' : '🎵';
+      if (setupBtnSfx) setupBtnSfx.textContent = audioPrefs.sfxMuted ? '🔇' : '🔊';
+      if (setupBtnBgm) setupBtnBgm.textContent = audioPrefs.bgmMuted ? '🔇' : '🎵';
+    }
+
+    function toggleSfxMute() {
+      audioPrefs.sfxMuted = !audioPrefs.sfxMuted;
+      getAudioChain();
+      syncAudioGainStates();
+      savePersistedPrefs();
+    }
+
+    function toggleBgmMute() {
+      audioPrefs.bgmMuted = !audioPrefs.bgmMuted;
+      getAudioChain();
+      syncAudioGainStates();
+      savePersistedPrefs();
+      if (audioPrefs.bgmMuted) {
+        stopAllBgmPlayback();
+      } else {
+        startBgmLoop(currentBgmMode);
+      }
+    }
+
+    function playTone(freq, type = 'triangle', duration = 0.16, vol = 0.72, delay = 0, endFreq = null) {
+      if (audioPrefs.sfxMuted) return;
+      const chain = getAudioChain();
+      if (!chain) return;
+      const { ctx, sfxOut } = chain;
+      try {
+        const startTime = ctx.currentTime + delay;
+        const endTime = startTime + duration;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = type;
+        osc.frequency.setValueAtTime(Math.max(45, freq), startTime);
+        if (endFreq !== null) {
+          osc.frequency.exponentialRampToValueAtTime(Math.max(45, endFreq), endTime);
+        }
+
+        gain.gain.setValueAtTime(0.001, startTime);
+        gain.gain.linearRampToValueAtTime(vol, startTime + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.001, endTime);
+
+        osc.connect(gain);
+        gain.connect(sfxOut);
+
+        osc.start(startTime);
+        osc.stop(endTime + 0.02);
+      } catch (e) {}
+    }
+
+    function playButtonClickSfx(variant = 'click') {
+      if (audioPrefs.sfxMuted) return;
+      if (variant === 'back') {
+        playTone(540, 'triangle', 0.065, 0.58, 0, 320);
+      } else if (variant === 'confirm') {
+        playTone(500, 'triangle', 0.075, 0.64, 0, 780);
+      } else {
+        playTone(660, 'triangle', 0.05, 0.55, 0, 460);
+      }
+    }
+
+    /* Efek suara unik tiap skill */
+    function playSkillSfx(skillId) {
+      if (audioPrefs.sfxMuted) return;
+      switch (skillId) {
+        case 'ladder_boost':
+          playTone(440, 'triangle', 0.1, 0.75, 0, 587);
+          playTone(587, 'triangle', 0.1, 0.78, 0.08, 784);
+          playTone(784, 'triangle', 0.18, 0.84, 0.16, 1175);
+          break;
+        case 'rocket_col':
+          playTone(180, 'sawtooth', 0.28, 0.8, 0, 1480);
+          playTone(360, 'triangle', 0.25, 0.78, 0.06, 1760);
+          break;
+        case 'self_teleport':
+          playTone(340, 'triangle', 0.14, 0.76, 0, 1180);
+          playTone(980, 'sine', 0.18, 0.75, 0.11, 1480);
+          break;
+        case 'black_hole':
+          playTone(220, 'sawtooth', 0.35, 0.84, 0, 58);
+          playTone(420, 'triangle', 0.32, 0.74, 0.05, 75);
+          break;
+        case 'steal':
+          playTone(440, 'triangle', 0.09, 0.75, 0, 780);
+          playTone(880, 'triangle', 0.13, 0.78, 0.09, 1240);
+          break;
+        case 'magnet':
+          playTone(540, 'sawtooth', 0.28, 0.72, 0, 145);
+          playTone(360, 'triangle', 0.24, 0.75, 0.06, 120);
+          break;
+        case 'global_freeze':
+          playTone(1320, 'triangle', 0.16, 0.68, 0, 990);
+          playTone(1568, 'triangle', 0.18, 0.68, 0.07, 1175);
+          playTone(1046, 'triangle', 0.22, 0.72, 0.14, 660);
+          break;
+        case 'teleport_target':
+          playTone(260, 'triangle', 0.14, 0.78, 0, 1120);
+          playTone(1120, 'sawtooth', 0.16, 0.72, 0.13, 320);
+          break;
+        case 'chaos_shuffle':
+          [380, 620, 290, 790, 460].forEach((f, idx) => {
+            playTone(f, idx % 2 === 0 ? 'square' : 'sawtooth', 0.075, 0.56, idx * 0.06);
+          });
+          break;
+        case 'snake_curse':
+          playTone(720, 'sawtooth', 0.14, 0.72, 0, 420);
+          playTone(420, 'sawtooth', 0.2, 0.76, 0.12, 165);
+          break;
+        case 'turbo':
+          playTone(330, 'triangle', 0.1, 0.75, 0, 660);
+          playTone(660, 'square', 0.14, 0.68, 0.09, 1240);
+          break;
+        case 'swap':
+          playTone(480, 'triangle', 0.11, 0.75, 0, 720);
+          playTone(720, 'triangle', 0.11, 0.75, 0.12, 480);
+          break;
+        case 'hook':
+          playTone(300, 'triangle', 0.11, 0.75, 0, 850);
+          playTone(750, 'sawtooth', 0.15, 0.72, 0.12, 220);
+          break;
+        case 'freeze':
+          playTone(640, 'sawtooth', 0.16, 0.74, 0, 240);
+          playTone(420, 'square', 0.2, 0.72, 0.1, 140);
+          break;
+        case 'bomb':
+          playTone(900, 'square', 0.07, 0.64, 0, 650);
+          playTone(145, 'sawtooth', 0.32, 0.88, 0.08, 48);
+          break;
+        case 'shield':
+          playTone(440, 'triangle', 0.16, 0.72, 0);
+          playTone(554, 'triangle', 0.18, 0.72, 0.07);
+          playTone(659, 'triangle', 0.24, 0.75, 0.14);
+          break;
+        case 'loaded':
+          playTone(587, 'triangle', 0.1, 0.75, 0);
+          playTone(880, 'triangle', 0.14, 0.75, 0.08);
+          break;
+        default:
+          playTone(523, 'triangle', 0.14, 0.72, 0);
+      }
+    }
+
+    function playSfx(event) {
+      if (audioPrefs.sfxMuted) return;
+      if (event === 'step') playTone(440, 'triangle', 0.08, 0.64);
+      else if (event === 'dice') playTone(320 + Math.random() * 240, 'square', 0.06, 0.54);
+      else if (event === 'ladder') {
+        playTone(440, 'triangle', 0.12, 0.75, 0);
+        playTone(587, 'triangle', 0.12, 0.75, 0.09);
+        playTone(784, 'triangle', 0.2, 0.78, 0.18);
+      } else if (event === 'snake') {
+        playTone(360, 'sawtooth', 0.14, 0.74, 0, 260);
+        playTone(260, 'sawtooth', 0.14, 0.74, 0.1, 160);
+        playTone(160, 'sawtooth', 0.25, 0.78, 0.2, 95);
+      } else if (event === 'skill') {
+        playTone(523, 'triangle', 0.1, 0.75, 0);
+        playTone(659, 'triangle', 0.15, 0.75, 0.08);
+      } else if (event === 'win') {
+        [523, 659, 784, 1046].forEach((f, idx) => playTone(f, 'triangle', 0.22, 0.82, idx * 0.11));
+      }
+    }
+
+    /* Fallback Web Audio API Synth Loop jika MP3 belum ada */
+    const BGM_PATTERNS = {
+      lobby: {
+        tempoMs: 260,
+        notes: [261.63, 0, 329.63, 392.00, 329.63, 0, 293.66, 349.23, 261.63, 0, 392.00, 440.00, 392.00, 349.23, 329.63, 293.66]
+      },
+      game: {
+        tempoMs: 185,
+        notes: [329.63, 392.00, 523.25, 392.00, 440.00, 523.25, 659.25, 523.25, 392.00, 493.88, 587.33, 493.88, 440.00, 392.00, 329.63, 392.00]
+      }
+    };
+
+    function playBgmStep() {
+      if (audioPrefs.bgmMuted) return;
+      const chain = getAudioChain();
+      if (!chain) return;
+      const { ctx, bgmOut } = chain;
+      if (ctx.state !== 'running') return;
+
+      const pattern = BGM_PATTERNS[currentBgmMode] || BGM_PATTERNS.lobby;
+      const freq = pattern.notes[bgmStepIndex % pattern.notes.length];
+      bgmStepIndex += 1;
+
+      if (!freq) return;
+      try {
+        const now = ctx.currentTime;
+        const dur = (pattern.tempoMs / 1000) * 0.78;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = currentBgmMode === 'game' ? 'triangle' : 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(currentBgmMode === 'game' ? 0.3 : 0.26, now + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+
+        osc.connect(gain);
+        gain.connect(bgmOut);
+
+        osc.start(now);
+        osc.stop(now + dur + 0.02);
+      } catch (e) {}
+    }
+
+    function stopSynthBgmLoop() {
+      if (bgmSynthTimerId !== null) {
+        clearInterval(bgmSynthTimerId);
+        bgmSynthTimerId = null;
+      }
+    }
+
+    function startSynthBgmLoop(mode) {
+      stopSynthBgmLoop();
+      if (audioPrefs.bgmMuted) return;
+      const pattern = BGM_PATTERNS[mode] || BGM_PATTERNS.lobby;
+      bgmSynthTimerId = setInterval(playBgmStep, pattern.tempoMs);
+    }
+
+    function stopAllBgmPlayback() {
+      stopSynthBgmLoop();
+      ['lobby', 'game'].forEach((m) => {
+        const track = bgmTracks[m];
+        if (track) {
+          try { track.pause(); } catch (e) {}
+        }
+      });
+    }
+
+    function startBgmLoop(mode) {
+      const targetMode = mode === 'game' ? 'game' : 'lobby';
+      const modeChanged = currentBgmMode !== targetMode;
+      currentBgmMode = targetMode;
+
+      initMp3Tracks();
+      stopAllBgmPlayback();
+
+      if (audioPrefs.bgmMuted) return;
+
+      const activeTrack = bgmTracks[targetMode];
+      if (activeTrack && bgmMp3Status[targetMode] !== 'failed') {
+        if (modeChanged) {
+          try { activeTrack.currentTime = 0; } catch (e) {}
+        }
+        activeTrack.volume = 0.22;
+        activeTrack.muted = false;
+        const playPromise = activeTrack.play();
+        if (playPromise && typeof playPromise.then === 'function') {
+          playPromise
+            .then(() => {
+              bgmMp3Status[targetMode] = 'ready';
+              stopSynthBgmLoop();
+            })
+            .catch(() => {
+              startSynthBgmLoop(targetMode);
+            });
+          return;
+        }
+      }
+
+      startSynthBgmLoop(targetMode);
+    }
+
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn || btn.disabled) return;
+
+      getAudioChain();
+      if (!audioPrefs.bgmMuted) {
+        const activeTrack = bgmTracks[currentBgmMode];
+        const isMp3Playing = activeTrack && !activeTrack.paused && bgmMp3Status[currentBgmMode] === 'ready';
+        if (!isMp3Playing && bgmSynthTimerId === null) {
+          startBgmLoop(currentBgmMode);
+        }
+      }
+
+      if (btn.dataset.noClickSfx === 'true') return;
+
+      const text = (btn.dataset.sfx || btn.textContent || '').toLowerCase();
+      if (text.includes('back') || text.includes('batal') || text.includes('tutup') || text.includes('✕')) {
+        playButtonClickSfx('back');
+      } else if (text.includes('mulai') || text.includes('lanjutkan')) {
+        playButtonClickSfx('confirm');
+      } else {
+        playButtonClickSfx('click');
+      }
+    }, true);
+
+    /**
+- =========================================================================
+- CANCELLABLE TIMERS / ANIMATION LOCK MANAGER (AMAN SAAT RESTART & BACK)
+- =========================================================================
+     */
+    let activeTimers = new Set();
+    let matchSessionId = 0;
+
+    function trackedSleep(ms, sessionId) {
+      return new Promise((resolve) => {
+        const id = setTimeout(() => {
+          activeTimers.delete(id);
+          resolve(sessionId === matchSessionId);
+        }, ms);
+        activeTimers.add(id);
+      });
+    }
+
+    function clearAllMatchTimers() {
+      matchSessionId += 1;
+      activeTimers.forEach((id) => clearTimeout(id));
+      activeTimers.clear();
+
+      const appEl = document.getElementById('app-container');
+      const diceBox = document.getElementById('dice-box');
+      const fxSvg = document.getElementById('fx-svg');
+      const tokensLayer = document.getElementById('tokens-layer');
+
+      if (appEl) appEl.classList.remove('shake-effect');
+      if (diceBox) diceBox.classList.remove('dice-rolling');
+      if (fxSvg) fxSvg.innerHTML = '';
+      if (tokensLayer) {
+        tokensLayer.querySelectorAll('.boom-effect, .blackhole-vortex').forEach((el) => el.remove());
+      }
+    }
+
+    /**
+- =========================================================================
+- GENERATOR VARIASI MAP DINAMIS (ULAR, TANGGA, & PETAK MISTERI ACAK TIAP MAIN)
+- =========================================================================
+     */
+    const BOARD_PRESETS = {
+      10: { size: 10, maxTile: 100, label: '10x10', subLabel: '100 Petak', ladderCount: 7, snakeCount: 8, mysteryCount: 16 },
+      12: { size: 12, maxTile: 144, label: '12x12', subLabel: '144 Petak', ladderCount: 10, snakeCount: 10, mysteryCount: 22 },
+      15: { size: 15, maxTile: 225, label: '15x15', subLabel: '225 Mega', ladderCount: 14, snakeCount: 14, mysteryCount: 32 }
+    };
+
+    function generateDynamicBoardEntities(size) {
+      const preset = BOARD_PRESETS[size] || BOARD_PRESETS[10];
+      const maxTile = preset.maxTile;
+      const usedTiles = new Set([1, maxTile]);
+      const ladders = {};
+      const snakes = {};
+
+      const isTileFree = (t) => !usedTiles.has(t);
+
+      // 1. Generate Tangga dengan panjang bervariasi
+      let attempts = 0;
+      while (Object.keys(ladders).length < preset.ladderCount && attempts < 800) {
+        attempts++;
+        const minJump = Math.max(size + 3, 13);
+        const maxJump = Math.floor(maxTile * 0.45);
+        const jump = Math.floor(Math.random() * (maxJump - minJump + 1)) + minJump;
+
+        const start = Math.floor(Math.random() * (maxTile - size - jump - 2)) + 3;
+        const end = start + jump;
+
+        if (end >= maxTile - 1 || start <= 2) continue;
+        if (!isTileFree(start) || !isTileFree(end)) continue;
+
+        ladders[start] = end;
+        usedTiles.add(start);
+        usedTiles.add(end);
+      }
+
+      // 2. Generate Ular dengan panjang bervariasi
+      attempts = 0;
+      while (Object.keys(snakes).length < preset.snakeCount && attempts < 800) {
+        attempts++;
+        const minDrop = Math.max(size + 2, 12);
+        const maxDrop = Math.floor(maxTile * 0.46);
+        const drop = Math.floor(Math.random() * (maxDrop - minDrop + 1)) + minDrop;
+
+        const head = Math.floor(Math.random() * (maxTile - 2 - (minDrop + 4))) + (minDrop + 4);
+        const tail = head - drop;
+
+        if (head >= maxTile || tail <= 2) continue;
+        if (!isTileFree(head) || !isTileFree(tail)) continue;
+
+        snakes[head] = tail;
+        usedTiles.add(head);
+        usedTiles.add(tail);
+      }
+
+      // 3. Generate Petak Misteri (?) tersebar merata
+      const mysteryTiles = [];
+      const zoneSize = Math.floor((maxTile - 4) / preset.mysteryCount);
+      for (let i = 0; i < preset.mysteryCount; i++) {
+        const zStart = 3 + i * zoneSize;
+        const zEnd = Math.min(maxTile - 2, zStart + zoneSize - 1);
+        for (let tryM = 0; tryM < 15; tryM++) {
+          const cand = Math.floor(Math.random() * (zEnd - zStart + 1)) + zStart;
+          if (!usedTiles.has(cand) && !mysteryTiles.includes(cand)) {
+            mysteryTiles.push(cand);
+            break;
+          }
+        }
+      }
+
+      return { ladders, snakes, mysteryTiles };
+    }
+
+    /**
+- =========================================================================
+- PALET WARNA 16 PEMAIN
+- =========================================================================
+     */
+    const PLAYER_THEMES = [
+      { code: 'P1', tokenBg: 'from-rose-400 to-red-600 text-white', borderActive: 'border-rose-500 bg-rose-500/20', textAccent: 'text-rose-500', dot: 'bg-rose-500' },
+      { code: 'P2', tokenBg: 'from-cyan-300 to-blue-600 text-slate-950', borderActive: 'border-cyan-400 bg-cyan-500/20', textAccent: 'text-cyan-500', dot: 'bg-cyan-400' },
+      { code: 'P3', tokenBg: 'from-emerald-300 to-green-600 text-slate-950', borderActive: 'border-emerald-400 bg-emerald-500/20', textAccent: 'text-emerald-500', dot: 'bg-emerald-400' },
+      { code: 'P4', tokenBg: 'from-amber-300 to-orange-600 text-slate-950', borderActive: 'border-amber-400 bg-amber-500/20', textAccent: 'text-amber-500', dot: 'bg-amber-400' },
+      { code: 'P5', tokenBg: 'from-purple-400 to-indigo-600 text-white', borderActive: 'border-purple-400 bg-purple-500/20', textAccent: 'text-purple-500', dot: 'bg-purple-500' },
+      { code: 'P6', tokenBg: 'from-pink-300 to-fuchsia-600 text-white', borderActive: 'border-pink-400 bg-pink-500/20', textAccent: 'text-pink-500', dot: 'bg-pink-500' },
+      { code: 'P7', tokenBg: 'from-lime-300 to-lime-600 text-slate-950', borderActive: 'border-lime-400 bg-lime-500/20', textAccent: 'text-lime-600', dot: 'bg-lime-400' },
+      { code: 'P8', tokenBg: 'from-orange-300 to-red-500 text-slate-950', borderActive: 'border-orange-400 bg-orange-500/20', textAccent: 'text-orange-500', dot: 'bg-orange-500' },
+      { code: 'P9', tokenBg: 'from-teal-300 to-emerald-600 text-slate-950', borderActive: 'border-teal-400 bg-teal-500/20', textAccent: 'text-teal-500', dot: 'bg-teal-400' },
+      { code: 'P10', tokenBg: 'from-violet-300 to-purple-600 text-white', borderActive: 'border-violet-400 bg-violet-500/20', textAccent: 'text-violet-500', dot: 'bg-violet-400' },
+      { code: 'P11', tokenBg: 'from-yellow-200 to-amber-500 text-slate-950', borderActive: 'border-yellow-400 bg-yellow-500/20', textAccent: 'text-amber-500', dot: 'bg-yellow-400' },
+      { code: 'P12', tokenBg: 'from-sky-300 to-indigo-500 text-slate-950', borderActive: 'border-sky-400 bg-sky-500/20', textAccent: 'text-sky-500', dot: 'bg-sky-400' },
+      { code: 'P13', tokenBg: 'from-fuchsia-300 to-rose-600 text-white', borderActive: 'border-fuchsia-400 bg-fuchsia-500/20', textAccent: 'text-fuchsia-500', dot: 'bg-fuchsia-400' },
+      { code: 'P14', tokenBg: 'from-green-300 to-teal-600 text-slate-950', borderActive: 'border-green-400 bg-green-500/20', textAccent: 'text-green-500', dot: 'bg-green-400' },
+      { code: 'P15', tokenBg: 'from-red-300 to-pink-600 text-white', borderActive: 'border-red-400 bg-red-500/20', textAccent: 'text-red-500', dot: 'bg-red-400' },
+      { code: 'P16', tokenBg: 'from-indigo-300 to-cyan-600 text-slate-950', borderActive: 'border-indigo-400 bg-indigo-500/20', textAccent: 'text-indigo-500', dot: 'bg-indigo-400' }
+    ];
+
+    /**
+- =========================================================================
+- SISTEM TIER SKILL & KATALOG 17 SKILL (SESUAI UPDATE USER)
+- =========================================================================
+     */
+    const TIER_META = {
+      COMMON: { label: 'Common', badgeClass: 'bg-slate-900/80 text-slate-200 border-slate-400/50' },
+      RARE:   { label: 'Rare',   badgeClass: 'bg-sky-950/85 text-sky-200 border-sky-300/60' },
+      EPIC:   { label: 'Epic',   badgeClass: 'bg-purple-950/85 text-purple-200 border-purple-300/60' },
+      MYTHIC: { label: 'Mythic', badgeClass: 'bg-amber-950/85 text-amber-200 border-amber-300/70' }
+    };
+
+    const SKILL_CATALOG = {
+      ladder_boost: {
+        id: 'ladder_boost',
+        name: 'Tangga Darurat',
+        icon: '🪜',
+        tier: 'MYTHIC',
+        filterGroup: 'buff',
+        category: 'Buff Tinggi',
+        badgeColor: 'bg-amber-950/75 text-amber-200 border-amber-300/40',
+        desc: 'Panjat tangga besar sampai baris atas!',
+        fullDesc: 'Memunculkan tangga darurat raksasa yang menaikkan posisimu setinggi 4–5 baris (10x10), 5–6 baris (12x12), atau 7–8 baris (15x15) hingga baris paling atas papan (berhenti aman sebelum finish).',
+        mode: 'instant',
+        color: 'from-amber-500 to-yellow-800 border-amber-300 text-white'
+      },
+      rocket_col: {
+        id: 'rocket_col',
+        name: 'Roket Lurus',
+        icon: '🚀',
+        tier: 'MYTHIC',
+        filterGroup: 'buff',
+        category: 'Vertikal 5–10',
+        badgeColor: 'bg-orange-950/75 text-orange-200 border-orange-300/40',
+        desc: 'Melesat 5–10 baris sampai baris atas!',
+        fullDesc: 'Menyalakan roket vertikal di kolom tempatmu berdiri dan melesat lurus ke atas sejauh 5–6 baris (10x10), 7–8 baris (12x12), atau 9–10 baris (15x15) sampai ke baris teratas papan (aman sebelum finish).',
+        mode: 'instant',
+        color: 'from-orange-500 to-red-800 border-orange-300 text-white'
+      },
+      self_teleport: {
+        id: 'self_teleport',
+        name: 'Self Teleport',
+        icon: '🌀',
+        tier: 'MYTHIC',
+        filterGroup: 'buff',
+        category: 'Buff Taktik',
+        badgeColor: 'bg-teal-950/75 text-teal-200 border-teal-300/40',
+        desc: 'Pindah manual / acak (bukan finish)',
+        fullDesc: 'Memindahkan dirimu sendiri ke petak mana saja di seluruh papan tanpa batas jarak—bisa diisi manual maupun pilih acak, kecuali langsung ke petak finish.',
+        mode: 'self_teleport',
+        color: 'from-teal-500 to-emerald-900 border-teal-300 text-white'
+      },
+      black_hole: {
+        id: 'black_hole',
+        name: 'Black Hole',
+        icon: '🕳️',
+        tier: 'MYTHIC',
+        filterGroup: 'chaos',
+        category: 'Gravitasi Area',
+        badgeColor: 'bg-fuchsia-950/80 text-fuchsia-200 border-fuchsia-300/40',
+        desc: 'Sedot SEMUA lawan ke petak pilihan!',
+        fullDesc: 'Menaruh pusaran Black Hole di salah satu petak pilihanmu yang menarik SELURUH pemain lain ke petak tersebut, sementara kamu sendiri tidak ikut tertarik!',
+        mode: 'black_hole',
+        color: 'from-violet-600 to-slate-950 border-fuchsia-400 text-white'
+      },
+      steal: {
+        id: 'steal',
+        name: 'Copet Skill',
+        icon: '🤏',
+        tier: 'RARE',
+        filterGroup: 'chaos',
+        category: 'Manual Steal',
+        badgeColor: 'bg-pink-950/80 text-pink-200 border-pink-300/40',
+        desc: 'Intip & curi kartu milik lawan',
+        fullDesc: 'Hanya pemilik kartu Copet Skill yang dapat mengintip kartu tangan lawan, lalu memilih langsung pemain dan kartu spesifik yang ingin dicuri (dapat ditahan Tameng).',
+        mode: 'manual_steal',
+        color: 'from-pink-500 to-rose-900 border-pink-300 text-white'
+      },
+      magnet: {
+        id: 'magnet',
+        name: 'Magnet Raksasa',
+        icon: '🧲',
+        tier: 'EPIC',
+        filterGroup: 'chaos',
+        category: 'Area Chaos',
+        badgeColor: 'bg-red-950/80 text-red-200 border-red-300/40',
+        desc: 'Tarik semua pemain ke petakmu',
+        fullDesc: 'Memancarkan gelombang magnet raksasa yang menarik seluruh pemain aktif dari posisi mana pun di papan langsung ke petak tempatmu berdiri (kecuali yang memakai Tameng).',
+        mode: 'instant',
+        color: 'from-red-500 to-amber-900 border-red-300 text-white'
+      },
+      global_freeze: {
+        id: 'global_freeze',
+        name: 'Badai Beku',
+        icon: '❄️',
+        tier: 'EPIC',
+        filterGroup: 'chaos',
+        category: 'Area Control',
+        badgeColor: 'bg-cyan-950/80 text-cyan-200 border-cyan-300/40',
+        desc: 'Bekukan semua lawan 1 giliran',
+        fullDesc: 'Membekukan seluruh pemain aktif sekaligus selama 1 giliran sehingga mereka melewati giliran kocok dadu berikutnya (kecuali yang memakai Tameng).',
+        mode: 'instant',
+        color: 'from-sky-500 to-cyan-900 border-cyan-300 text-white'
+      },
+      teleport_target: {
+        id: 'teleport_target',
+        name: 'Portal Lawan',
+        icon: '🌌',
+        filterGroup: 'target',
+        tier: 'EPIC',
+        category: 'Portal Acak',
+        badgeColor: 'bg-indigo-950/80 text-indigo-200 border-indigo-300/40',
+        desc: 'Lempar 1 lawan ke petak acak bebas',
+        fullDesc: 'Pilih 1 pemain target lalu kirim langsung ke petak acak mana saja di seluruh papan tanpa batasan jarak, kecuali langsung ke petak finish.',
+        mode: 'target_player',
+        color: 'from-indigo-500 to-blue-950 border-indigo-300 text-white'
+      },
+      chaos_shuffle: {
+        id: 'chaos_shuffle',
+        name: 'Chaos Shuffle',
+        icon: '🌪️',
+        tier: 'EPIC',
+        filterGroup: 'chaos',
+        category: 'Acak Papan',
+        badgeColor: 'bg-fuchsia-950/80 text-fuchsia-200 border-fuchsia-300/40',
+        desc: 'Acak posisi semua pemain!',
+        fullDesc: 'Mengacak ulang posisi seluruh pemain aktif di papan secara serentak. Yang di depan bisa melorot, yang di belakang bisa langsung melesat!',
+        mode: 'instant',
+        color: 'from-fuchsia-500 to-violet-950 border-fuchsia-300 text-white'
+      },
+      snake_curse: {
+        id: 'snake_curse',
+        name: 'Kutukan Ular',
+        icon: '🐍',
+        tier: 'RARE',
+        filterGroup: 'target',
+        category: 'Target Ular',
+        badgeColor: 'bg-lime-950/80 text-lime-200 border-lime-300/40',
+        desc: 'Seret target ke kepala ular',
+        fullDesc: 'Menyeret target pilihanmu ke mulut ular terdekat di belakangnya sehingga langsung meluncur turun (atau mundur 8 langkah jika tak ada ular di belakang).',
+        mode: 'target_player',
+        color: 'from-lime-600 to-emerald-950 border-lime-300 text-white'
+      },
+      turbo: {
+        id: 'turbo',
+        name: 'Turbo x5',
+        icon: '⚡',
+        tier: 'EPIC',
+        filterGroup: 'buff',
+        category: 'Buff Diri',
+        badgeColor: 'bg-yellow-950/80 text-yellow-200 border-yellow-300/40',
+        desc: 'Gandakan angka dadu 5x!',
+        fullDesc: 'Menggandakan hasil kocokan dadu pada giliran ini menjadi 5x lipat (bisa melaju hingga 30 langkah dalam sekali tarikan!).',
+        mode: 'instant',
+        color: 'from-yellow-500 to-amber-800 border-yellow-200 text-white'
+      },
+      swap: {
+        id: 'swap',
+        name: 'Swap Posisi',
+        icon: '🔄',
+        tier: 'RARE',
+        filterGroup: 'target',
+        category: 'Tukar Tempat',
+        badgeColor: 'bg-purple-950/80 text-purple-200 border-purple-300/40',
+        desc: 'Tukar tempat dengan target',
+        fullDesc: 'Menukar posisi petakmu secara instan dengan 1 pemain target pilihanmu di papan.',
+        mode: 'target_player',
+        color: 'from-purple-500 to-indigo-900 border-purple-300 text-white'
+      },
+      hook: {
+        id: 'hook',
+        name: 'Hook Penarik',
+        icon: '🪝',
+        tier: 'RARE',
+        filterGroup: 'target',
+        category: 'Tarik Lawan',
+        badgeColor: 'bg-amber-950/80 text-amber-200 border-amber-300/40',
+        desc: 'Tarik 1 lawan ke petakmu',
+        fullDesc: 'Menembakkan tali kait emas ke 1 pemain target di depan dan menariknya mundur sejajar ke petak tempatmu berdiri.',
+        mode: 'target_player',
+        color: 'from-amber-600 to-orange-950 border-amber-300 text-white'
+      },
+      freeze: {
+        id: 'freeze',
+        name: 'Lumpuh',
+        icon: '☠️',
+        tier: 'EPIC',
+        filterGroup: 'target',
+        category: 'Racun Total',
+        badgeColor: 'bg-emerald-950/85 text-lime-200 border-lime-300/50',
+        desc: 'Stop 1 ronde + hapus semua skill',
+        fullDesc: 'Meracuni 1 target pilihan hingga lumpuh selama 1 ronde penuh (melewati gilirannya) sekaligus menghapus seluruh kartu skill yang dimilikinya.',
+        mode: 'target_player',
+        color: 'from-lime-600 to-green-950 border-lime-300 text-white'
+      },
+      bomb: {
+        id: 'bomb',
+        name: 'Bom Mundur',
+        icon: '💣',
+        tier: 'COMMON',
+        filterGroup: 'target',
+        category: 'Ledakan -10',
+        badgeColor: 'bg-rose-950/80 text-rose-200 border-rose-300/40',
+        desc: 'Target mundur 10 langkah',
+        fullDesc: 'Meledakkan 1 pemain target pilihanmu dengan bom kartun hingga terpental mundur 10 langkah (jika mendarat di ular/tangga akan langsung terpicu).',
+        mode: 'target_player',
+        color: 'from-rose-500 to-red-900 border-rose-300 text-white'
+      },
+      shield: {
+        id: 'shield',
+        name: 'Tameng',
+        icon: '🛡️',
+        tier: 'COMMON',
+        filterGroup: 'buff',
+        category: 'Pertahanan',
+        badgeColor: 'bg-sky-950/80 text-sky-200 border-sky-300/40',
+        desc: 'Kebal ular, black hole & lawan',
+        fullDesc: 'Melindungi dirimu selama 1 putaran penuh: kebal dari gigitan ular, Black Hole, racun lumpuh, badai beku, magnet, dan serangan/tarikan skill lawan.',
+        mode: 'instant',
+        color: 'from-sky-500 to-blue-900 border-sky-300 text-white'
+      },
+      loaded: {
+        id: 'loaded',
+        name: 'Dadu Sakti',
+        icon: '🎲',
+        tier: 'RARE',
+        filterGroup: 'buff',
+        category: 'Pilih 1–12',
+        badgeColor: 'bg-emerald-950/80 text-emerald-200 border-emerald-300/40',
+        desc: 'Pilih angka langkah 1–12',
+        fullDesc: 'Memilih angka langkah pasti dari 1 sampai 12 sebelum melempar dadu agar mudah mendarat di kaki tangga atau menghindari ular.',
+        mode: 'loaded_dice',
+        color: 'from-emerald-500 to-green-900 border-emerald-300 text-white'
+      }
+    };
+
+    const TOTAL_SKILL_COUNT = Object.keys(SKILL_CATALOG).length;
+
+    /**
+- =========================================================================
+- MODAL BUKU PANDUAN '📖 INFO SKILL' (FILTER TIER & LABEL TIER)
+- =========================================================================
+     */
+    let currentSkillFilter = 'all';
+
+    window.openSkillGuide = function (highlightSkillId = null) {
+      const overlay = document.getElementById('skill-guide-overlay');
+      const searchInput = document.getElementById('skill-search-input');
+      if (!overlay) return;
+
+      currentSkillFilter = 'all';
+      if (searchInput) {
+        searchInput.value = (highlightSkillId && SKILL_CATALOG[highlightSkillId])
+          ? SKILL_CATALOG[highlightSkillId].name
+          : '';
+      }
+
+      window.updateSkillFilterButtons();
+      window.renderSkillGuideList(highlightSkillId);
+      overlay.style.display = 'flex';
+    };
+
+    window.closeSkillGuide = function () {
+      const overlay = document.getElementById('skill-guide-overlay');
+      if (overlay) overlay.style.display = 'none';
+    };
+
+    window.setSkillFilter = function (filterKey) {
+      currentSkillFilter = filterKey;
+      const searchInput = document.getElementById('skill-search-input');
+      if (searchInput) searchInput.value = '';
+      window.updateSkillFilterButtons();
+      window.renderSkillGuideList();
+    };
+
+    window.updateSkillFilterButtons = function () {
+      document.querySelectorAll('.skill-tab-btn').forEach((btn) => {
+        const filterVal = btn.getAttribute('data-filter');
+        const isMatch = filterVal === currentSkillFilter;
+        if (filterVal === 'all') btn.textContent = `Semua (${TOTAL_SKILL_COUNT})`;
+        btn.className = isMatch
+          ? 'skill-tab-btn min-h-[36px] py-1 px-1 rounded-xl text-[9.5px] font-bold border bg-amber-400 text-slate-950 border-amber-300 cursor-pointer'
+          : 'skill-tab-btn theme-btn-neutral min-h-[36px] py-1 px-1 rounded-xl text-[9.5px] font-bold border cursor-pointer';
+      });
+    };
+
+    window.renderSkillGuideList = function (highlightSkillId = null) {
+      const listEl = document.getElementById('skill-guide-list');
+      if (!listEl) return;
+
+      const query = (document.getElementById('skill-search-input')?.value || '').trim().toLowerCase();
+      listEl.innerHTML = '';
+
+      const filtered = Object.values(SKILL_CATALOG).filter((skill) => {
+        const matchTier = currentSkillFilter === 'all' || skill.tier === currentSkillFilter;
+        const tierLabel = (TIER_META[skill.tier]?.label || '').toLowerCase();
+        const matchQuery = !query ||
+          skill.name.toLowerCase().includes(query) ||
+          tierLabel.includes(query) ||
+          skill.category.toLowerCase().includes(query) ||
+          skill.fullDesc.toLowerCase().includes(query);
+        return matchTier && matchQuery;
+      });
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `
+          <div class="theme-muted text-center py-8 text-xs">
+            Skill tidak ditemukan untuk kata kunci "<span class="text-amber-500 font-bold">${query}</span>".
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach((skill) => {
+        const isHighlighted = highlightSkillId === skill.id;
+        const tierObj = TIER_META[skill.tier] || TIER_META.COMMON;
+        const card = document.createElement('div');
+        card.className = `rounded-2xl p-2.5 border bg-gradient-to-r ${skill.color} flex items-start gap-2.5 shadow-sm ${
+          isHighlighted ? 'ring-2 ring-amber-300' : ''
+        }`;
+        card.innerHTML = `
+          <div class="w-10 h-10 rounded-xl bg-slate-950/55 border border-white/25 flex items-center justify-center text-xl shrink-0 mt-0.5 shadow-inner">
+            ${skill.icon}
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between gap-1 flex-wrap">
+              <span class="font-game text-sm font-bold text-white">${skill.name}</span>
+              <div class="flex items-center gap-1 shrink-0">
+                <span class="text-[8.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md border ${tierObj.badgeClass}">
+                  ★ ${tierObj.label}
+                </span>
+                <span class="text-[8.5px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded-md border ${skill.badgeColor}">
+                  ${skill.category}
+                </span>
+              </div>
+            </div>
+            <p class="text-[11px] text-white/95 leading-snug mt-1">${skill.fullDesc}</p>
+          </div>
+        `;
+        listEl.appendChild(card);
+      });
+    };
+
+    /**
+- =========================================================================
+- KONFIGURASI SETUP (2–16 PEMAIN + NAMA KUSTOM) & STATE GAME
+- =========================================================================
+     */
+    let setupConfig = {
+      boardSize: 10,
+      count: 4,
+      names: Array.from({ length: MAX_PLAYERS }, (_, i) => `Pemain ${i + 1}`),
+      customNameEdited: Array.from({ length: MAX_PLAYERS }, () => false),
+      isBot: Array.from({ length: MAX_PLAYERS }, (_, i) => i !== 0)
+    };
+
+    let gameState = {
+      boardSize: 10,
+      maxTile: 100,
+      ladders: {},
+      snakes: {},
+      mysteryTiles: [],
+      turnIndex: 0,
+      isBusy: false,
+      gameOver: false,
+      loadedDiceValue: null,
+      turboActive: false,
+      pendingSkill: null,
+      pendingTeleportTargetIndex: null,
+      tilePickerMode: null,
+      players: []
+    };
+
+    function openExitAppModal() {
+      document.getElementById('modal-exit-app').style.display = 'flex';
+    }
+
+    function closeExitAppModal() {
+      document.getElementById('modal-exit-app').style.display = 'none';
+    }
+
+    async function confirmExitApplication() {
+      // 1. Cek jembatan Capacitor App Plugin (Capacitor v3 - v6+)
+      try {
+        const capApp = window.Capacitor?.Plugins?.App;
+        if (capApp && typeof capApp.exitApp === 'function') {
+          await capApp.exitApp();
+          return;
+        }
+      } catch (e) {}
+
+      // 2. Fallback jembatan Cordova / WebView lama
+      try {
+        if (navigator.app && typeof navigator.app.exitApp === 'function') {
+          navigator.app.exitApp();
+          return;
+        }
+      } catch (e) {}
+
+      // 3. Fallback jika dibuka di browser biasa
+      try {
+        window.open('', '_self');
+        window.close();
+      } catch (e) {}
+
+      const msgEl = document.getElementById('exit-app-message');
+      if (msgEl) {
+        msgEl.innerHTML = 'Jika berjalan di browser, silakan tutup tab ini secara manual. Untuk APK Android, pastikan <strong>@capacitor/app</strong> sudah terinstal dan di-sync.';
+      }
+    }
+
+    // Tangani tombol Back fisik / gesture di HP Android
+    function registerAndroidBackButton() {
+      const capApp = window.Capacitor?.Plugins?.App;
+      if (!capApp || typeof capApp.addListener !== 'function') return;
+
+      capApp.addListener('backButton', () => {
+        const guideModal = document.getElementById('skill-guide-overlay');
+        const exitModal = document.getElementById('modal-exit-app');
+        const gameMenu = document.getElementById('modal-game-menu');
+        const setupModal = document.getElementById('modal-setup');
+        const stealModal = document.getElementById('modal-steal');
+        const targetModal = document.getElementById('modal-target');
+        const pickerModal = document.getElementById('modal-tile-picker');
+        const loadedModal = document.getElementById('modal-loaded-dice');
+
+        // Tutup modal yang sedang terbuka lebih dulu
+        if (guideModal && guideModal.style.display === 'flex') {
+          window.closeSkillGuide();
+        } else if (exitModal && exitModal.style.display === 'flex') {
+          closeExitAppModal();
+        } else if (
+          (stealModal && stealModal.style.display === 'flex') ||
+          (targetModal && targetModal.style.display === 'flex') ||
+          (pickerModal && pickerModal.style.display === 'flex') ||
+          (loadedModal && loadedModal.style.display === 'flex')
+        ) {
+          cancelTargetSelection();
+        } else if (gameMenu && gameMenu.style.display === 'flex') {
+          closeGameMenuModal();
+        } else if (setupModal && setupModal.style.display === 'flex') {
+          // Jika sudah di Lobby, munculkan konfirmasi keluar aplikasi
+          openExitAppModal();
+        } else {
+          // Jika sedang di dalam pertandingan, buka menu game
+          openGameMenuModal();
+        }
+      });
+    }
+
+    function openGameMenuModal() {
+      document.getElementById('modal-game-menu').style.display = 'flex';
+    }
+
+    function closeGameMenuModal() {
+      document.getElementById('modal-game-menu').style.display = 'none';
+    }
+
+    function restartFromGameMenu() {
+      closeGameMenuModal();
+      startNewGameWithCurrentSettings();
+    }
+
+    function backToSetupFromMenu() {
+      clearAllMatchTimers();
+      closeAllSkillModals();
+      closeGameMenuModal();
+      openSetupModal();
+    }
+
+    function openSetupModal() {
+      clearAllMatchTimers();
+      closeAllSkillModals();
+      document.getElementById('modal-winner').style.display = 'none';
+      startBgmLoop('lobby');
+      renderSetupModal();
+      document.getElementById('modal-setup').style.display = 'flex';
+    }
+
+    function setCustomPlayerCount(val) {
+      let num = parseInt(val, 10);
+      if (isNaN(num)) num = 4;
+      num = Math.max(2, Math.min(MAX_PLAYERS, num));
+      setupConfig.count = num;
+      savePersistedPrefs();
+      renderSetupModal();
+    }
+
+    function adjustPlayerCount(delta) {
+      setCustomPlayerCount(setupConfig.count + delta);
+    }
+
+    function renderSetupModal() {
+      const boardContainer = document.getElementById('setup-board-buttons');
+      boardContainer.innerHTML = '';
+
+      [10, 12, 15].forEach((sz) => {
+        const preset = BOARD_PRESETS[sz];
+        const active = setupConfig.boardSize === sz;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `min-h-[44px] py-2 px-1.5 rounded-xl border transition flex flex-col items-center cursor-pointer ${
+          active
+            ? 'bg-fuchsia-600 border-fuchsia-300 text-white shadow-md scale-[1.02]'
+            : 'theme-btn-neutral'
+        }`;
+        btn.innerHTML = `
+          <span class="font-game text-sm font-bold leading-tight">${preset.label}</span>
+          <span class="text-[9.5px] opacity-85">${preset.subLabel}</span>
+        `;
+        btn.onclick = () => {
+          setupConfig.boardSize = sz;
+          savePersistedPrefs();
+          renderSetupModal();
+        };
+        boardContainer.appendChild(btn);
+      });
+
+      const countInput = document.getElementById('setup-count-input');
+      const countBadge = document.getElementById('setup-count-badge');
+      if (countInput) countInput.value = setupConfig.count;
+      if (countBadge) countBadge.textContent = `${setupConfig.count} Pemain`;
+
+      const slotsContainer = document.getElementById('setup-slots-list');
+      slotsContainer.innerHTML = '';
+
+      for (let i = 0; i < setupConfig.count; i++) {
+        const theme = PLAYER_THEMES[i];
+        const isBot = setupConfig.isBot[i];
+
+        const row = document.createElement('div');
+        row.className = 'theme-subcard flex items-center justify-between gap-2 border rounded-xl px-2.5 py-1.5';
+
+        const leftPart = document.createElement('div');
+        leftPart.className = 'flex items-center gap-2 flex-1 min-w-0';
+
+        const badge = document.createElement('span');
+        badge.className = `w-6 h-6 rounded-full bg-gradient-to-br ${theme.tokenBg} border border-white flex items-center justify-center text-[9.5px] font-black shadow shrink-0`;
+        badge.textContent = theme.code;
+
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.maxLength = 16;
+        nameInput.value = setupConfig.names[i];
+        nameInput.placeholder = `Nama Pemain ${i + 1}`;
+        nameInput.className = 'theme-input w-full min-h-[38px] px-2 py-1 rounded-lg border text-xs font-bold focus:outline-none focus:border-amber-400';
+        nameInput.oninput = (e) => {
+          setupConfig.names[i] = e.target.value;
+          setupConfig.customNameEdited[i] = e.target.value.trim().length > 0;
+          savePersistedPrefs();
+        };
+
+        leftPart.appendChild(badge);
+        leftPart.appendChild(nameInput);
+
+        const roleBtn = document.createElement('button');
+        roleBtn.type = 'button';
+        roleBtn.onclick = () => toggleSlotBot(i);
+        roleBtn.className = `min-h-[40px] px-2.5 py-1 rounded-lg text-[10.5px] font-bold border transition shrink-0 cursor-pointer ${
+          isBot
+            ? 'bg-cyan-600/20 border-cyan-500/60 text-cyan-500'
+            : 'bg-emerald-600/20 border-emerald-500/60 text-emerald-500'
+        }`;
+        roleBtn.textContent = isBot ? '🤖 Bot' : '👤 Human';
+
+        row.appendChild(leftPart);
+        row.appendChild(roleBtn);
+        slotsContainer.appendChild(row);
+      }
+
+      syncAudioGainStates();
+    }
+
+    function toggleSlotBot(index) {
+      setupConfig.isBot[index] = !setupConfig.isBot[index];
+      if (!setupConfig.customNameEdited[index]) {
+        setupConfig.names[index] = setupConfig.isBot[index] ? `Bot ${index + 1}` : `Pemain ${index + 1}`;
+      }
+      savePersistedPrefs();
+      renderSetupModal();
+    }
+
+    function confirmSetupAndStart() {
+      savePersistedPrefs();
+      document.getElementById('modal-setup').style.display = 'none';
+      startBgmLoop('game');
+      startNewGameWithCurrentSettings();
+    }
+
+    function startNewGameWithCurrentSettings() {
+      clearAllMatchTimers();
+      closeAllSkillModals();
+      closeGameMenuModal();
+      document.getElementById('modal-winner').style.display = 'none';
+
+      const preset = BOARD_PRESETS[setupConfig.boardSize];
+      document.documentElement.style.setProperty('--board-size', String(preset.size));
+
+      const generatedMap = generateDynamicBoardEntities(preset.size);
+
+      gameState.boardSize = preset.size;
+      gameState.maxTile = preset.maxTile;
+      gameState.ladders = generatedMap.ladders;
+      gameState.snakes = generatedMap.snakes;
+      gameState.mysteryTiles = generatedMap.mysteryTiles;
+
+      gameState.turnIndex = 0;
+      gameState.isBusy = false;
+      gameState.gameOver = false;
+      gameState.loadedDiceValue = null;
+      gameState.turboActive = false;
+      gameState.pendingSkill = null;
+      gameState.pendingTeleportTargetIndex = null;
+      gameState.tilePickerMode = null;
+      gameState.players = [];
+
+      for (let i = 0; i < setupConfig.count; i++) {
+        const theme = PLAYER_THEMES[i];
+        const isBot = setupConfig.isBot[i];
+        const rawName = (setupConfig.names[i] || '').trim();
+        const finalName = rawName || (isBot ? `Bot ${i + 1}` : `Pemain ${i + 1}`);
+
+        gameState.players.push({
+          index: i,
+          code: theme.code,
+          name: finalName,
+          isBot: isBot,
+          theme: theme,
+          pos: 1,
+          shield: false,
+          frozen: false,
+          skills: []
+        });
+      }
+
+      document.getElementById('header-subtitle').textContent = `${preset.label} • ${setupConfig.count} Pemain`;
+      document.getElementById('dice-box').textContent = '🎲';
+      document.getElementById('dice-status').textContent = 'Siap';
+
+      const guideTitle = document.querySelector('#skill-guide-overlay h2');
+      if (guideTitle) guideTitle.textContent = `Buku Panduan ${TOTAL_SKILL_COUNT} Skill`;
+
+      buildBoard();
+      buildPlayerTokens();
+      updateUI();
+      announceTurnStart();
+    }
+
+    /**
+- =========================================================================
+- RENDER PAPAN ZIG-ZAG & SVG ULAR TANGGA
+- =========================================================================
+     */
+    function buildBoard() {
+      const size = gameState.boardSize;
+      const maxTile = gameState.maxTile;
+      const gridEl = document.getElementById('board-grid');
+      if (!gridEl) return;
+
+      gridEl.innerHTML = '';
+      gridEl.style.gridTemplateColumns = `repeat(${size}, minmax(0, 1fr))`;
+      gridEl.style.gridTemplateRows = `repeat(${size}, minmax(0, 1fr))`;
+
+      const numFontClass = size === 15 ? 'text-[7px] sm:text-[8px]' : (size === 12 ? 'text-[8px] sm:text-[9px]' : 'text-[9px] sm:text-[10px]');
+      const iconFontClass = size === 15 ? 'text-[8px] px-0.5' : 'text-[10px] sm:text-xs px-1';
+
+      for (let row = 0; row < size; row++) {
+        const rowFromBottom = (size - 1) - row;
+        for (let col = 0; col < size; col++) {
+          const actualCol = (rowFromBottom % 2 === 0) ? col : ((size - 1) - col);
+          const tileNum = (rowFromBottom * size) + actualCol + 1;
+
+          const cell = document.createElement('div');
+          const isEven = (row + col) % 2 === 0;
+
+          cell.style.backgroundColor = isEven ? 'var(--cell-even)' : 'var(--cell-odd)';
+          if (tileNum === maxTile) {
+            cell.style.background = uiTheme === 'light'
+              ? 'linear-gradient(135deg, #fde68a, #f59e0b)'
+              : 'linear-gradient(135deg, rgba(245,158,11,0.45), rgba(202,138,4,0.45))';
+          } else if (tileNum === 1) {
+            cell.style.background = uiTheme === 'light'
+              ? '#bbf7d0'
+              : 'rgba(6, 78, 59, 0.55)';
+          }
+
+          cell.className = 'board-cell flex flex-col justify-between p-[1px] sm:p-0.5';
+
+          const numSpan = document.createElement('span');
+          numSpan.style.color = tileNum === maxTile
+            ? (uiTheme === 'light' ? '#78350f' : '#fcd34d')
+            : 'var(--cell-num)';
+          numSpan.className = `${numFontClass} font-bold leading-none`;
+          numSpan.textContent = tileNum;
+          cell.appendChild(numSpan);
+
+          if (tileNum === maxTile) {
+            const crown = document.createElement('span');
+            crown.className = `${size === 15 ? 'text-[10px]' : 'text-xs sm:text-sm'} self-center my-auto leading-none`;
+            crown.textContent = '👑';
+            cell.appendChild(crown);
+          } else if (gameState.mysteryTiles.includes(tileNum)) {
+            const mystery = document.createElement('span');
+            mystery.className = `${iconFontClass} font-black text-amber-500 bg-amber-500/20 border border-amber-500/50 rounded self-center my-auto leading-tight`;
+            mystery.textContent = '?';
+            cell.appendChild(mystery);
+          }
+
+          gridEl.appendChild(cell);
+        }
+      }
+
+      drawSnakesAndLaddersSVG();
+    }
+
+    function getTileCoordinates(tileNumber) {
+      const size = gameState.boardSize;
+      const maxTile = gameState.maxTile;
+      const clamped = Math.max(1, Math.min(maxTile, tileNumber));
+      const zeroIdx = clamped - 1;
+      const rowFromBottom = Math.floor(zeroIdx / size);
+      const colInRow = zeroIdx % size;
+
+      const col = (rowFromBottom % 2 === 0) ? colInRow : ((size - 1) - colInRow);
+      const rowFromTop = (size - 1) - rowFromBottom;
+
+      const cellPercent = 100 / size;
+      const xPercent = (col * cellPercent) + (cellPercent / 2);
+      const yPercent = (rowFromTop * cellPercent) + (cellPercent / 2);
+
+      return { x: xPercent, y: yPercent, rowFromBottom, col };
+    }
+
+    function getClusterOffset(indexInTile, totalInTile) {
+      if (totalInTile <= 1) return { dx: 0, dy: 0 };
+      const scaleFactor = 10 / gameState.boardSize;
+      const radius = (totalInTile <= 4 ? 2.0 : 2.6) * scaleFactor;
+      const angle = (2 * Math.PI * indexInTile) / totalInTile - Math.PI / 4;
+      return {
+        dx: Math.cos(angle) * radius,
+        dy: Math.sin(angle) * radius
+      };
+    }
+
+    function drawSnakesAndLaddersSVG() {
+      const svg = document.getElementById('board-svg');
+      if (!svg) return;
+      svg.innerHTML = '';
+      const scale = 10 / gameState.boardSize;
+
+      Object.entries(gameState.ladders).forEach(([startStr, end]) => {
+        const start = parseInt(startStr, 10);
+        const p1 = getTileCoordinates(start);
+        const p2 = getTileCoordinates(end);
+
+        const x1 = p1.x * 10, y1 = p1.y * 10;
+        const x2 = p2.x * 10, y2 = p2.y * 10;
+
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const length = Math.hypot(dx, dy);
+        const angle = Math.atan2(dy, dx);
+
+        const offset = 14 * scale;
+        const nx = -Math.sin(angle) * offset;
+        const ny = Math.cos(angle) * offset;
+
+        const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        group.setAttribute('opacity', '0.9');
+
+        const railPrimary = uiTheme === 'light' ? '#d97706' : '#f59e0b';
+        const railSecondary = uiTheme === 'light' ? '#b45309' : '#d97706';
+        const rungColor = uiTheme === 'light' ? '#fef3c7' : '#fde68a';
+
+        group.appendChild(createSvgLine(x1 + nx, y1 + ny, x2 + nx, y2 + ny, railPrimary, 6.5 * scale));
+        group.appendChild(createSvgLine(x1 - nx, y1 - ny, x2 - nx, y2 - ny, railSecondary, 6.5 * scale));
+
+        const stepGap = 35 * scale;
+        const steps = Math.floor(length / stepGap);
+        for (let i = 1; i < steps; i++) {
+          const t = i / steps;
+          const rx = x1 + dx * t;
+          const ry = y1 + dy * t;
+          group.appendChild(createSvgLine(rx + nx, ry + ny, rx - nx, ry - ny, rungColor, 4.2 * scale));
+        }
+
+        svg.appendChild(group);
+      });
+
+      Object.entries(gameState.snakes).forEach(([headStr, tail], idx) => {
+        const head = parseInt(headStr, 10);
+        const pHead = getTileCoordinates(head);
+        const pTail = getTileCoordinates(tail);
+
+        const x1 = pHead.x * 10, y1 = pHead.y * 10;
+        const x2 = pTail.x * 10, y2 = pTail.y * 10;
+
+        const midX = (x1 + x2) / 2;
+        const midY = (y1 + y2) / 2;
+        const bend = (idx % 2 === 0 ? 1 : -1) * (65 * scale);
+        const angle = Math.atan2(y2 - y1, x2 - x1);
+        const cx1 = ((x1 + midX) / 2) - Math.sin(angle) * bend;
+        const cy1 = ((y1 + midY) / 2) + Math.cos(angle) * bend;
+        const cx2 = ((midX + x2) / 2) + Math.sin(angle) * bend;
+        const cy2 = ((midY + y2) / 2) - Math.cos(angle) * bend;
+
+        const d = `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
+
+        const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        group.setAttribute('opacity', '0.92');
+
+        const bodyOutline = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        bodyOutline.setAttribute('d', d);
+        bodyOutline.setAttribute('fill', 'none');
+        bodyOutline.setAttribute('stroke', '#450a0a');
+        bodyOutline.setAttribute('stroke-width', `${17 * scale}`);
+        bodyOutline.setAttribute('stroke-linecap', 'round');
+
+        const bodyFill = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        bodyFill.setAttribute('d', d);
+        bodyFill.setAttribute('fill', 'none');
+        bodyFill.setAttribute('stroke', idx % 2 === 0 ? '#ef4444' : '#10b981');
+        bodyFill.setAttribute('stroke-width', `${11 * scale}`);
+        bodyFill.setAttribute('stroke-linecap', 'round');
+        bodyFill.setAttribute('stroke-dasharray', `${15 * scale} ${8 * scale}`);
+
+        const headCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        headCircle.setAttribute('cx', x1);
+        headCircle.setAttribute('cy', y1);
+        headCircle.setAttribute('r', `${15 * scale}`);
+        headCircle.setAttribute('fill', idx % 2 === 0 ? '#dc2626' : '#059669');
+        headCircle.setAttribute('stroke', '#ffffff');
+        headCircle.setAttribute('stroke-width', `${2.2 * scale}`);
+
+        const eye1 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        eye1.setAttribute('cx', x1 - 4.5 * scale);
+        eye1.setAttribute('cy', y1 - 3 * scale);
+        eye1.setAttribute('r', `${2.8 * scale}`);
+        eye1.setAttribute('fill', '#fef08a');
+
+        const eye2 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        eye2.setAttribute('cx', x1 + 4.5 * scale);
+        eye2.setAttribute('cy', y1 - 3 * scale);
+        eye2.setAttribute('r', `${2.8 * scale}`);
+        eye2.setAttribute('fill', '#fef08a');
+
+        group.appendChild(bodyOutline);
+        group.appendChild(bodyFill);
+        group.appendChild(headCircle);
+        group.appendChild(eye1);
+        group.appendChild(eye2);
+        svg.appendChild(group);
+      });
+    }
+
+    function createSvgLine(x1, y1, x2, y2, color, width) {
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', x1);
+      line.setAttribute('y1', y1);
+      line.setAttribute('x2', x2);
+      line.setAttribute('y2', y2);
+      line.setAttribute('stroke', color);
+      line.setAttribute('stroke-width', width);
+      line.setAttribute('stroke-linecap', 'round');
+      return line;
+    }
+
+    function buildPlayerTokens() {
+      const layer = document.getElementById('tokens-layer');
+      layer.innerHTML = '';
+
+      const sizePct = gameState.boardSize === 15
+        ? (gameState.players.length > 8 ? 4.0 : 4.8)
+        : (gameState.boardSize === 12 ? 5.2 : 6.2);
+      const fontClass = gameState.boardSize === 15 ? 'text-[6.5px]' : (gameState.boardSize === 12 ? 'text-[7.5px]' : 'text-[8.5px]');
+
+      gameState.players.forEach((p) => {
+        const token = document.createElement('div');
+        token.id = `token-${p.index}`;
+        token.style.width = `${sizePct}%`;
+        token.style.height = `${sizePct}%`;
+        token.className = `player-token absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br ${p.theme.tokenBg} border-[1.5px] border-white shadow-lg flex items-center justify-center ${fontClass} font-black tracking-tighter`;
+        token.textContent = p.code;
+        layer.appendChild(token);
+      });
+    }
+
+    function updateUI() {
+      const stripEl = document.getElementById('players-status-strip');
+      stripEl.innerHTML = '';
+
+      const tileGroups = {};
+      gameState.players.forEach((p) => {
+        if (!tileGroups[p.pos]) tileGroups[p.pos] = [];
+        tileGroups[p.pos].push(p);
+      });
+
+      gameState.players.forEach((p, idx) => {
+        const isCurrent = idx === gameState.turnIndex;
+
+        const chip = document.createElement('div');
+        chip.className = `player-chip relative rounded-xl px-2 py-1.5 border transition-all duration-200 flex flex-col justify-between ${
+          isCurrent
+            ? `${p.theme.borderActive} shadow-md`
+            : 'theme-subcard opacity-85'
+        }`;
+
+        // Hanya tampilkan status pelindung / lumpuh (tanpa membocorkan kartu lawan di strip)
+        let statusBadges = '';
+        if (p.shield) statusBadges += `<span title="Tameng Aktif">🛡️</span>`;
+        if (p.frozen) statusBadges += `<span title="Lumpuh (Skip 1 Ronde)">☠️</span>`;
+
+        chip.innerHTML = `
+          <div class="flex items-center justify-between gap-1">
+            <div class="flex items-center gap-1 min-w-0">
+              <span class="w-2 h-2 rounded-full ${p.theme.dot} shrink-0 border border-white/80"></span>
+              <span class="text-[10px] font-extrabold truncate">${p.name}${p.isBot ? '🤖' : ''}</span>
+            </div>
+            <div class="text-[9.5px] leading-none flex items-center gap-0.5 shrink-0">${statusBadges}</div>
+          </div>
+          <div class="mt-0.5 flex items-baseline justify-between gap-1">
+            <span class="theme-muted text-[9px]">${p.code}</span>
+            <span class="font-game text-xs font-bold">${p.pos}<span class="theme-muted text-[8px] font-normal">/${gameState.maxTile}</span></span>
+          </div>
+        `;
+        stripEl.appendChild(chip);
+
+        const token = document.getElementById(`token-${idx}`);
+        if (token) {
+          const baseCoord = getTileCoordinates(p.pos);
+          const group = tileGroups[p.pos];
+          const indexInGroup = group.indexOf(p);
+          const offset = getClusterOffset(indexInGroup, group.length);
+
+          token.style.left = `${baseCoord.x + offset.dx}%`;
+          token.style.top = `${baseCoord.y + offset.dy}%`;
+          token.style.zIndex = isCurrent ? '25' : '20';
+
+          token.classList.toggle('shield-aura', p.shield);
+          token.classList.toggle('poison-aura', p.frozen);
+        }
+      });
+
+      const turboEl = document.getElementById('turbo-indicator');
+      if (gameState.turboActive) {
+        turboEl.classList.remove('hidden');
+      } else {
+        turboEl.classList.add('hidden');
+      }
+
+      renderSkillCards();
+      syncAudioGainStates();
+
+      const activePlayer = gameState.players[gameState.turnIndex];
+      const btnRoll = document.getElementById('btn-roll');
+      btnRoll.disabled = gameState.isBusy || gameState.gameOver || (activePlayer && activePlayer.isBot);
+    }
+
+    /**
+- =========================================================================
+- RENDER 3 SLOT KARTU SKILL PEMAIN AKTIF (DENGAN LABEL TIER)
+- =========================================================================
+     */
+    function renderSkillCards() {
+      const activePlayer = gameState.players[gameState.turnIndex];
+      if (!activePlayer) return;
+
+      const container = document.getElementById('skills-container');
+      const label = document.getElementById('skill-owner-label');
+      const counterEl = document.getElementById('skill-hand-counter');
+
+      label.textContent = `(${activePlayer.name})`;
+      label.className = `text-[11px] font-extrabold ${activePlayer.theme.textAccent} truncate`;
+      if (counterEl) counterEl.textContent = `${activePlayer.skills.length}/3`;
+
+      container.innerHTML = '';
+
+      for (let i = 0; i < 3; i++) {
+        const skillKey = activePlayer.skills[i];
+        if (skillKey && SKILL_CATALOG[skillKey]) {
+          const skill = SKILL_CATALOG[skillKey];
+          const tierObj = TIER_META[skill.tier] || TIER_META.COMMON;
+          const wrapper = document.createElement('div');
+          wrapper.className = 'skill-card-slot relative';
+
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.disabled = gameState.isBusy || gameState.gameOver || activePlayer.isBot;
+          btn.onclick = () => initiateSkill(i);
+          btn.className = `skill-card-btn border-2 bg-gradient-to-b ${skill.color} disabled:opacity-50 shadow-md cursor-pointer`;
+
+          btn.innerHTML = `
+            <div class="w-full flex items-center justify-start gap-1 pr-5">
+              <span class="text-[7.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border ${tierObj.badgeClass} shrink-0">
+                ★ ${tierObj.label}
+              </span>
+            </div>
+
+            <div class="flex flex-col items-center my-auto py-0.5">
+              <div class="w-8 h-8 rounded-xl bg-slate-950/35 border border-white/25 flex items-center justify-center text-lg leading-none shadow-inner mb-1">
+                ${skill.icon}
+              </div>
+              <span class="font-game text-[11px] font-bold leading-tight text-white line-clamp-1">
+                ${skill.name}
+              </span>
+            </div>
+
+            <span class="text-[8.5px] text-white/90 font-medium leading-tight line-clamp-1 w-full bg-slate-950/30 rounded-md px-1 py-0.5">
+              ${skill.desc}
+            </span>
+          `;
+
+          const infoBadge = document.createElement('button');
+          infoBadge.type = 'button';
+          infoBadge.title = `Info ${skill.name}`;
+          infoBadge.className = 'absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-slate-950/85 hover:bg-amber-400 text-amber-300 hover:text-slate-950 border border-white/30 text-[9px] font-black flex items-center justify-center z-10 shadow cursor-pointer';
+          infoBadge.textContent = 'ⓘ';
+          infoBadge.onclick = (e) => {
+            e.stopPropagation();
+            window.openSkillGuide(skill.id);
+          };
+
+          wrapper.appendChild(btn);
+          wrapper.appendChild(infoBadge);
+          container.appendChild(wrapper);
+        } else {
+          const emptySlot = document.createElement('div');
+          emptySlot.className = 'skill-card-slot';
+          emptySlot.innerHTML = `
+            <div class="skill-card-empty">
+              <div class="w-7 h-7 rounded-full border border-dashed border-amber-500/50 bg-amber-500/10 flex items-center justify-center text-xs font-black text-amber-500 mb-1">
+                ?
+              </div>
+              <span class="theme-muted text-[9.5px] font-bold leading-tight">Slot ${i + 1} Kosong</span>
+              <span class="theme-muted text-[8px] mt-0.5 leading-tight">Injak petak <span class="text-amber-500 font-bold">?</span></span>
+            </div>
+          `;
+          container.appendChild(emptySlot);
+        }
+      }
+    }
+
+    function setLog(message) {
+      document.getElementById('action-log').textContent = message;
+    }
+
+    /**
+- =========================================================================
+- RESOLUSI ULAR & TANGGA UNIVERSAL (BERLAKU SETELAH DADU, BOM, BLACK HOLE,
+- MAGNET, SWAP, TELEPORT, ROKET, & TANGGA DARURAT)
+- =========================================================================
+     */
+    async function resolveTileBoardEffects(player, sid, sourceLabel = '') {
+      if (!player || sid !== matchSessionId) return false;
+
+      // 1. Cek Tangga di petak tujuan
+      if (gameState.ladders[player.pos]) {
+        const ladderDest = gameState.ladders[player.pos];
+        playSfx('ladder');
+        setLog(`🪜 ${sourceLabel ? sourceLabel + ' → ' : ''}${player.name} mendarat di kaki tangga ${player.pos} dan memanjat ke petak ${ladderDest}!`);
+        if (!(await trackedSleep(ENTITY_TRIGGER_PAUSE_MS, sid))) return false;
+        player.pos = ladderDest;
+        updateUI();
+        triggerExplosionVisual(ladderDest, '✨');
+        if (!(await trackedSleep(560, sid))) return false;
+        return true;
+      }
+
+      // 2. Cek Ular di petak tujuan
+      if (gameState.snakes[player.pos]) {
+        const snakeDest = gameState.snakes[player.pos];
+        if (player.shield) {
+          player.shield = false;
+          playSkillSfx('shield');
+          triggerExplosionVisual(player.pos, '🛡️');
+          setLog(`🛡️ Tameng aktif! ${player.name} kebal dari gigitan ular di petak ${player.pos}!`);
+          updateUI();
+          if (!(await trackedSleep(680, sid))) return false;
+        } else {
+          playSfx('snake');
+          setLog(`🐍 ${sourceLabel ? sourceLabel + ' → ' : ''}${player.name} terkena kepala ular di petak ${player.pos} dan meluncur ke ${snakeDest}!`);
+          if (!(await trackedSleep(ENTITY_TRIGGER_PAUSE_MS, sid))) return false;
+          player.pos = snakeDest;
+          updateUI();
+          triggerExplosionVisual(snakeDest, '🐍');
+          if (!(await trackedSleep(560, sid))) return false;
+        }
+        return true;
+      }
+
+      return false;
+    }
+
+    /**
+- =========================================================================
+- PERHITUNGAN SKALA ROKET LURUS (5-10 BARIS SAMPAI BARIS ATAS)
+- & TANGGA DARURAT BESAR (SAMPAI BARIS ATAS)
+- =========================================================================
+     */
+    function calculateRocketVerticalDestination(currentTile) {
+      const size = gameState.boardSize;
+      const coord = getTileCoordinates(currentTile);
+      const currentRow = coord.rowFromBottom; // 0 .. size-1
+      const currentCol = coord.col;           // 0 .. size-1
+
+      // Skala kenaikan vertikal 5-10 baris tergantung besar map:
+      // 10x10 -> 5-6 baris | 12x12 -> 7-8 baris | 15x15 -> 9-10 baris
+      let rowBoost = 5;
+      if (size === 10) {
+        rowBoost = 5 + Math.floor(Math.random() * 2); // 5 atau 6 baris
+      } else if (size === 12) {
+        rowBoost = 7 + Math.floor(Math.random() * 2); // 7 atau 8 baris
+      } else {
+        rowBoost = 9 + Math.floor(Math.random() * 2); // 9 atau 10 baris
+      }
+
+      // Kini bisa naik sampai baris paling atas (size - 1), berhenti aman maksimal di maxTile - 1
+      const targetRow = Math.min(size - 1, currentRow + rowBoost);
+      const colInRow = (targetRow % 2 === 0) ? currentCol : ((size - 1) - currentCol);
+      let destTile = (targetRow * size) + colInRow + 1;
+
+      if (destTile >= gameState.maxTile) {
+        destTile = gameState.maxTile - 1;
+      }
+      if (destTile <= currentTile) {
+        destTile = Math.min(gameState.maxTile - 1, currentTile + 1);
+      }
+      return destTile;
+    }
+
+    function calculateEmergencyLadderDestination(currentTile) {
+      const size = gameState.boardSize;
+      // Skala lonjakan tangga darurat besar: 4-5 baris (10x10), 5-6 baris (12x12), 7-8 baris (15x15)
+      // Bisa mencapai baris paling atas (maksimal maxTile - 1 agar tidak langsung auto-finish)
+      const rowScale = size === 10 ? 5 : (size === 12 ? 6 : 8);
+      const directClimbTile = Math.min(gameState.maxTile - 1, Math.max(currentTile + 1, currentTile + size * rowScale));
+
+      // Cek apakah ada tangga alami di depan yang puncaknya lebih tinggi atau sejajar
+      const ladderStarts = Object.keys(gameState.ladders)
+        .map(Number)
+        .filter(s => s > currentTile && gameState.ladders[s] < gameState.maxTile)
+        .sort((a, b) => gameState.ladders[b] - gameState.ladders[a]);
+
+      if (ladderStarts.length > 0) {
+        const bestLadderStart = ladderStarts[0];
+        const bestLadderTop = gameState.ladders[bestLadderStart];
+        if (bestLadderTop >= directClimbTile) {
+          return { viaBase: bestLadderStart, destTile: bestLadderTop };
+        }
+      }
+
+      return { viaBase: null, destTile: directClimbTile };
+    }
+
+    /**
+- =========================================================================
+- EKSEKUSI SKILL
+- =========================================================================
+     */
+    function initiateSkill(skillIndex) {
+      if (gameState.isBusy || gameState.gameOver) return;
+      const user = gameState.players[gameState.turnIndex];
+      const skillKey = user.skills[skillIndex];
+      if (!skillKey || !SKILL_CATALOG[skillKey]) return;
+
+      const skill = SKILL_CATALOG[skillKey];
+
+      if (skill.mode === 'manual_steal') {
+        gameState.pendingSkill = { skillKey, skillIndex };
+        openManualStealModal();
+      } else if (skill.mode === 'instant') {
+        user.skills.splice(skillIndex, 1);
+        executeInstantSkill(skillKey, user);
+      } else if (skill.mode === 'loaded_dice') {
+        user.skills.splice(skillIndex, 1);
+        playSkillSfx('loaded');
+        updateUI();
+        document.getElementById('modal-loaded-dice').style.display = 'flex';
+      } else if (skill.mode === 'self_teleport') {
+        gameState.pendingSkill = { skillKey, skillIndex };
+        openTilePickerModal('self_teleport', user);
+      } else if (skill.mode === 'black_hole') {
+        gameState.pendingSkill = { skillKey, skillIndex };
+        openTilePickerModal('black_hole', user);
+      } else if (skill.mode === 'target_player') {
+        gameState.pendingSkill = { skillKey, skillIndex };
+        openTargetModal(skill);
+      }
+    }
+
+    function openManualStealModal() {
+      const user = gameState.players[gameState.turnIndex];
+      const listEl = document.getElementById('steal-targets-list');
+      listEl.innerHTML = '';
+
+      const opponentsWithCards = gameState.players.filter(p => p.index !== user.index && p.skills.length > 0);
+
+      if (opponentsWithCards.length === 0) {
+        listEl.innerHTML = `
+          <div class="theme-subcard theme-muted text-center py-5 px-3 rounded-2xl border text-xs">
+            Belum ada pemain lawan yang memiliki kartu skill untuk dicopet!
+          </div>
+        `;
+      } else {
+        opponentsWithCards.forEach((victim) => {
+          const box = document.createElement('div');
+          box.className = 'theme-subcard rounded-2xl border p-2.5 flex flex-col gap-1.5';
+
+          const headerRow = document.createElement('div');
+          headerRow.className = 'flex items-center justify-between';
+          headerRow.innerHTML = `
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full ${victim.theme.dot}"></span>
+              <span class="text-xs font-extrabold">${victim.name}</span>
+              ${victim.shield ? '<span class="text-[10px] bg-sky-500/20 text-sky-400 border border-sky-400/50 px-1.5 rounded">🛡️ Tameng</span>' : ''}
+            </div>
+            <span class="theme-muted text-[10px]">Petak ${victim.pos}</span>
+          `;
+          box.appendChild(headerRow);
+
+          const cardsRow = document.createElement('div');
+          cardsRow.className = 'grid grid-cols-3 gap-1.5';
+
+          victim.skills.forEach((sKey, sIdx) => {
+            const sk = SKILL_CATALOG[sKey];
+            if (!sk) return;
+            const tierObj = TIER_META[sk.tier] || TIER_META.COMMON;
+            const pickBtn = document.createElement('button');
+            pickBtn.type = 'button';
+            pickBtn.onclick = () => executeManualSteal(victim.index, sIdx);
+            pickBtn.className = `min-h-[64px] p-1.5 rounded-xl border bg-gradient-to-b ${sk.color} hover:brightness-110 active:scale-95 text-center flex flex-col items-center justify-center cursor-pointer`;
+            pickBtn.innerHTML = `
+              <span class="text-[7px] font-black uppercase px-1 rounded border ${tierObj.badgeClass} mb-0.5">${tierObj.label}</span>
+              <span class="text-sm leading-none">${sk.icon}</span>
+              <span class="text-[9.5px] font-extrabold leading-tight mt-0.5 line-clamp-1">${sk.name}</span>
+              <span class="text-[8px] text-pink-200 font-bold mt-0.5">Curi 🤏</span>
+            `;
+            cardsRow.appendChild(pickBtn);
+          });
+
+          box.appendChild(cardsRow);
+          listEl.appendChild(box);
+        });
+      }
+
+      document.getElementById('modal-steal').style.display = 'flex';
+    }
+
+    async function executeManualSteal(victimIndex, stolenCardIdx) {
+      const sid = matchSessionId;
+      const user = gameState.players[gameState.turnIndex];
+      const victim = gameState.players[victimIndex];
+      const pending = gameState.pendingSkill;
+      closeAllSkillModals();
+
+      if (!pending || !victim || !user) return;
+      user.skills.splice(pending.skillIndex, 1);
+
+      gameState.isBusy = true;
+      playSkillSfx('steal');
+      updateUI();
+
+      if (victim.shield) {
+        victim.shield = false;
+        triggerExplosionVisual(victim.pos, '🛡️');
+        setLog(`🛡️ ${victim.name} menggagalkan Copet Skill dari ${user.name} dengan Tameng!`);
+      } else {
+        const stolenKey = victim.skills.splice(stolenCardIdx, 1)[0];
+        if (stolenKey && SKILL_CATALOG[stolenKey]) {
+          if (user.skills.length < 3) {
+            user.skills.push(stolenKey);
+          } else {
+            user.skills.shift();
+            user.skills.push(stolenKey);
+          }
+          const stolenSkill = SKILL_CATALOG[stolenKey];
+          triggerExplosionVisual(victim.pos, '🤏');
+          setLog(`🤏 COPET! ${user.name} mencuri ${stolenSkill.icon} ${stolenSkill.name} dari ${victim.name}!`);
+        }
+      }
+
+      updateUI();
+      if (!(await trackedSleep(900, sid))) return;
+      gameState.isBusy = false;
+      updateUI();
+    }
+
+    async function executeInstantSkill(skillKey, user) {
+      const sid = matchSessionId;
+      gameState.isBusy = true;
+      playSkillSfx(skillKey);
+      updateUI();
+
+      if (skillKey === 'ladder_boost') {
+        const climbInfo = calculateEmergencyLadderDestination(user.pos);
+        if (climbInfo.viaBase) {
+          triggerExplosionVisual(user.pos, '🪜');
+          setLog(`🪜 TANGGA DARURAT! ${user.name} loncat ke tangga ${climbInfo.viaBase} dan memanjat tinggi ke petak ${climbInfo.destTile}!`);
+          user.pos = climbInfo.viaBase;
+          updateUI();
+          if (!(await trackedSleep(560, sid))) return;
+          playSfx('ladder');
+          user.pos = climbInfo.destTile;
+          updateUI();
+          triggerExplosionVisual(climbInfo.destTile, '✨');
+          if (!(await trackedSleep(750, sid))) return;
+        } else {
+          triggerExplosionVisual(user.pos, '🪜');
+          setLog(`🪜 TANGGA DARURAT RAKSASA! ${user.name} memanjat tinggi dari petak ${user.pos} ke petak ${climbInfo.destTile}!`);
+          if (!(await trackedSleep(480, sid))) return;
+          playSfx('ladder');
+          user.pos = climbInfo.destTile;
+          updateUI();
+          triggerExplosionVisual(climbInfo.destTile, '✨');
+          if (!(await trackedSleep(750, sid))) return;
+        }
+
+        await resolveTileBoardEffects(user, sid, 'Tangga Darurat');
+        if (sid !== matchSessionId) return;
+      }
+      else if (skillKey === 'rocket_col') {
+        const startCoord = getTileCoordinates(user.pos);
+        const destTile = calculateRocketVerticalDestination(user.pos);
+        const destCoord = getTileCoordinates(destTile);
+        const jumpedRows = Math.max(1, destCoord.rowFromBottom - startCoord.rowFromBottom);
+
+        triggerExplosionVisual(user.pos, '🔥');
+        setLog(`🚀 ROKET LURUS! ${user.name} melesat lurus ${jumpedRows} baris ke atas (petak ${user.pos} → ${destTile})!`);
+        if (!(await trackedSleep(480, sid))) return;
+        user.pos = destTile;
+        updateUI();
+        triggerExplosionVisual(destTile, '🚀');
+        if (!(await trackedSleep(750, sid))) return;
+
+        // Jika di petak pendaratan roket ada tangga atau ular, langsung terpicu!
+        await resolveTileBoardEffects(user, sid, 'Roket Lurus');
+        if (sid !== matchSessionId) return;
+      }
+      else if (skillKey === 'shield') {
+        user.shield = true;
+        triggerExplosionVisual(user.pos, '🛡️');
+        setLog(`🛡️ ${user.name} mengaktifkan Tameng! Kebal ular, Black Hole, racun lumpuh & serangan lawan.`);
+        updateUI();
+        if (!(await trackedSleep(800, sid))) return;
+      }
+      else if (skillKey === 'turbo') {
+        gameState.turboActive = true;
+        triggerExplosionVisual(user.pos, '⚡');
+        setLog(`⚡ TURBO x5! Langkah dadu ${user.name} giliran ini digandakan 5x lipat!`);
+        updateUI();
+        if (!(await trackedSleep(800, sid))) return;
+      }
+      else if (skillKey === 'magnet') {
+        document.getElementById('app-container').classList.add('shake-effect');
+        setTimeout(() => document.getElementById('app-container')?.classList.remove('shake-effect'), 500);
+
+        let pulledCount = 0;
+        let blockedCount = 0;
+        const affectedPlayers = [];
+
+        gameState.players.forEach((p) => {
+          if (p.index === user.index) return;
+          if (p.shield) {
+            p.shield = false;
+            blockedCount++;
+            triggerExplosionVisual(p.pos, '🛡️');
+          } else {
+            p.pos = user.pos;
+            pulledCount++;
+            affectedPlayers.push(p);
+          }
+        });
+
+        triggerExplosionVisual(user.pos, '🧲');
+        setLog(`🧲 MAGNET RAKSASA! ${user.name} menarik ${pulledCount} pemain ke petak ${user.pos}${blockedCount > 0 ? ` (${blockedCount} ditahan Tameng)` : ''}!`);
+        updateUI();
+        if (!(await trackedSleep(950, sid))) return;
+
+        for (const p of affectedPlayers) {
+          await resolveTileBoardEffects(p, sid, 'Magnet');
+          if (sid !== matchSessionId) return;
+        }
+      }
+      else if (skillKey === 'global_freeze') {
+        let frozenCount = 0;
+        let blockedCount = 0;
+
+        gameState.players.forEach((p) => {
+          if (p.index === user.index) return;
+          if (p.shield) {
+            p.shield = false;
+            blockedCount++;
+            triggerExplosionVisual(p.pos, '🛡️');
+          } else {
+            p.frozen = true;
+            frozenCount++;
+            triggerExplosionVisual(p.pos, '❄️');
+          }
+        });
+
+        setLog(`❄️ BADAI BEKU! ${user.name} membekukan ${frozenCount} lawan sekaligus${blockedCount > 0 ? ` (${blockedCount} ditahan Tameng)` : ''}!`);
+        updateUI();
+        if (!(await trackedSleep(950, sid))) return;
+      }
+      else if (skillKey === 'chaos_shuffle') {
+        document.getElementById('app-container').classList.add('shake-effect');
+        setTimeout(() => document.getElementById('app-container')?.classList.remove('shake-effect'), 500);
+
+        const maxSafe = gameState.maxTile - 1;
+        const minSafe = 1;
+        const movedPlayers = [];
+
+        gameState.players.forEach((p) => {
+          if (p.index !== user.index && p.shield) {
+            p.shield = false;
+            triggerExplosionVisual(p.pos, '🛡️');
+          } else {
+            p.pos = Math.floor(Math.random() * (maxSafe - minSafe + 1)) + minSafe;
+            triggerExplosionVisual(p.pos, '🌪️');
+            movedPlayers.push(p);
+          }
+        });
+
+        setLog(`🌪️ CHAOS SHUFFLE! ${user.name} mengacak ulang posisi semua pemain di papan!`);
+        updateUI();
+        if (!(await trackedSleep(1000, sid))) return;
+
+        for (const p of movedPlayers) {
+          await resolveTileBoardEffects(p, sid, 'Chaos Shuffle');
+          if (sid !== matchSessionId) return;
+        }
+      }
+
+      gameState.isBusy = false;
+      updateUI();
+    }
+
+    function openTargetModal(skill) {
+      const user = gameState.players[gameState.turnIndex];
+      document.getElementById('target-modal-icon').textContent = skill.icon;
+      document.getElementById('target-modal-title').textContent = `${skill.name}: Pilih Target`;
+      document.getElementById('target-modal-desc').textContent = skill.desc;
+
+      const listEl = document.getElementById('target-players-list');
+      listEl.innerHTML = '';
+
+      gameState.players.forEach((candidate) => {
+        if (candidate.index === user.index) return;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'theme-subcard w-full min-h-[46px] flex items-center justify-between px-3 py-2.5 rounded-xl border transition cursor-pointer';
+
+        let statusTag = '';
+        if (candidate.shield) statusTag += '<span class="text-xs ml-1">🛡️</span>';
+        if (candidate.frozen) statusTag += '<span class="text-xs ml-1">☠️</span>';
+
+        btn.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-gradient-to-br ${candidate.theme.tokenBg} border border-white flex items-center justify-center text-[10px] font-black">
+              ${candidate.code}
+            </span>
+            <div class="text-left">
+              <div class="text-xs font-bold flex items-center">${candidate.name} ${statusTag}</div>
+              <div class="theme-muted text-[10px]">Petak <span class="text-amber-500 font-bold">${candidate.pos}</span> / ${gameState.maxTile}</div>
+            </div>
+          </div>
+          <span class="text-xs font-bold text-amber-500">Pilih →</span>
+        `;
+
+        btn.onclick = () => {
+          const pending = gameState.pendingSkill;
+          closeAllSkillModals();
+          if (!pending) return;
+
+          user.skills.splice(pending.skillIndex, 1);
+          executeTargetedSkill(pending.skillKey, user, candidate);
+        };
+
+        listEl.appendChild(btn);
+      });
+
+      document.getElementById('modal-target').style.display = 'flex';
+    }
+
+    function openTilePickerModal(mode, subjectPlayer) {
+      gameState.tilePickerMode = mode;
+      const iconEl = document.getElementById('tile-picker-icon');
+      const titleEl = document.getElementById('tile-picker-title');
+      const descEl = document.getElementById('tile-picker-desc');
+      const inputEl = document.getElementById('tile-picker-input');
+      const quickEl = document.getElementById('tile-picker-quick-picks');
+      const confirmBtn = document.getElementById('tile-picker-confirm-btn');
+
+      quickEl.innerHTML = '';
+      inputEl.value = '';
+
+      if (mode === 'self_teleport') {
+        const maxSelfDest = gameState.maxTile - 1;
+        iconEl.textContent = '🌀✨';
+        titleEl.textContent = 'Self Teleport (Manual / Acak)';
+        descEl.textContent = `Isi nomor petak tujuan (1 – ${maxSelfDest}) atau pilih acak bebas (tidak bisa langsung finish):`;
+        inputEl.min = 1;
+        inputEl.max = maxSelfDest;
+        inputEl.placeholder = `1 - ${maxSelfDest}`;
+        confirmBtn.textContent = 'Teleport';
+
+        const ladderStarts = Object.keys(gameState.ladders)
+          .map(Number)
+          .filter(s => s <= maxSelfDest)
+          .sort((a, b) => b - a);
+        const bestLadder = ladderStarts[0] || Math.floor(maxSelfDest * 0.7);
+
+        const presets = [
+          { label: '🎲 Acak (Random)', isRandom: true },
+          { label: `🔥 Sebelum Finish (${maxSelfDest})`, tile: maxSelfDest },
+          { label: `🪜 Kaki Tangga (${bestLadder})`, tile: bestLadder }
+        ];
+
+        presets.forEach((p) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = p.isRandom
+            ? 'min-h-[38px] px-3 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/35 border border-emerald-400/70 text-[10px] font-extrabold text-emerald-400 transition cursor-pointer'
+            : 'min-h-[38px] px-2.5 py-1 rounded-lg bg-teal-600/20 hover:bg-teal-600/35 border border-teal-500/60 text-[10px] font-bold text-teal-400 transition cursor-pointer';
+          btn.textContent = p.label;
+          btn.onclick = () => {
+            if (p.isRandom) {
+              const randTile = Math.floor(Math.random() * maxSelfDest) + 1;
+              executeSelfTeleportToTile(randTile, true);
+            } else {
+              executeSelfTeleportToTile(p.tile, false);
+            }
+          };
+          quickEl.appendChild(btn);
+        });
+      }
+      else if (mode === 'black_hole') {
+        const maxBhTile = gameState.maxTile - 1;
+        iconEl.textContent = '🕳️🌌';
+        titleEl.textContent = 'Pasang Black Hole';
+        descEl.textContent = `Taruh Black Hole di petak (1 – ${maxBhTile}). Semua lawan tersedot ke sana, kamu tetap aman!`;
+        inputEl.min = 1;
+        inputEl.max = maxBhTile;
+        inputEl.placeholder = `1 - ${maxBhTile}`;
+        confirmBtn.textContent = 'Pasang 🕳️';
+
+        const snakeHeads = Object.keys(gameState.snakes).map(Number).sort((a, b) => b - a);
+        const bigSnake = snakeHeads[0] || Math.floor(gameState.maxTile * 0.6);
+
+        const presets = [
+          { label: '🏁 Petak 1 (Start)', tile: 1 },
+          { label: `🐍 Kepala Ular (${bigSnake})`, tile: bigSnake },
+          { label: `📍 Petak ${Math.floor(gameState.maxTile * 0.25)}`, tile: Math.floor(gameState.maxTile * 0.25) }
+        ];
+
+        presets.forEach((p) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'min-h-[38px] px-2.5 py-1 rounded-lg bg-fuchsia-600/20 hover:bg-fuchsia-600/35 border border-fuchsia-500/60 text-[10px] font-bold text-fuchsia-400 transition cursor-pointer';
+          btn.textContent = p.label;
+          btn.onclick = () => executeBlackHoleAtTile(p.tile);
+          quickEl.appendChild(btn);
+        });
+      }
+
+      document.getElementById('modal-tile-picker').style.display = 'flex';
+    }
+
+    function confirmTilePickerInput() {
+      const val = parseInt(document.getElementById('tile-picker-input').value, 10);
+      const mode = gameState.tilePickerMode;
+
+      if (mode === 'self_teleport') {
+        const maxSelf = gameState.maxTile - 1;
+        if (isNaN(val) || val < 1 || val > maxSelf) {
+          setLog(`⚠️ Self Teleport bisa dipilih antara petak 1 hingga ${maxSelf} (tidak bisa langsung finish)!`);
+          return;
+        }
+        executeSelfTeleportToTile(val, false);
+      } else if (mode === 'black_hole') {
+        const maxBh = gameState.maxTile - 1;
+        if (isNaN(val) || val < 1 || val > maxBh) {
+          setLog(`⚠️ Pilih petak Black Hole antara 1 hingga ${maxBh}.`);
+          return;
+        }
+        executeBlackHoleAtTile(val);
+      }
+    }
+
+    async function executeSelfTeleportToTile(destTile, isRandom = false) {
+      const sid = matchSessionId;
+      const user = gameState.players[gameState.turnIndex];
+      const pending = gameState.pendingSkill;
+      closeAllSkillModals();
+
+      if (!pending || !user) return;
+      user.skills.splice(pending.skillIndex, 1);
+
+      gameState.isBusy = true;
+      playSkillSfx('self_teleport');
+      triggerExplosionVisual(user.pos, '🌀');
+      setLog(`🌀 SELF TELEPORT${isRandom ? ' (ACAK)' : ''}! ${user.name} berpindah ke petak ${destTile}!`);
+      updateUI();
+
+      if (!(await trackedSleep(480, sid))) return;
+      user.pos = destTile;
+      updateUI();
+      triggerExplosionVisual(destTile, '✨');
+      if (!(await trackedSleep(650, sid))) return;
+
+      await resolveTileBoardEffects(user, sid, 'Self Teleport');
+      if (sid !== matchSessionId) return;
+
+      gameState.isBusy = false;
+      updateUI();
+    }
+
+    function showBlackHoleVortex(tilePos) {
+      const coord = getTileCoordinates(tilePos);
+      const layer = document.getElementById('tokens-layer');
+      const vortex = document.createElement('div');
+      vortex.className = 'blackhole-vortex absolute text-4xl sm:text-5xl z-30 drop-shadow-[0_0_12px_rgba(192,132,252,0.95)]';
+      vortex.style.left = `${coord.x}%`;
+      vortex.style.top = `${coord.y}%`;
+      vortex.textContent = '🕳️';
+      layer.appendChild(vortex);
+      setTimeout(() => vortex.remove(), 2200);
+    }
+
+    async function executeBlackHoleAtTile(holeTile) {
+      const sid = matchSessionId;
+      const user = gameState.players[gameState.turnIndex];
+      const pending = gameState.pendingSkill;
+      closeAllSkillModals();
+
+      if (!pending || !user) return;
+      user.skills.splice(pending.skillIndex, 1);
+
+      gameState.isBusy = true;
+      playSkillSfx('black_hole');
+      showBlackHoleVortex(holeTile);
+      document.getElementById('app-container').classList.add('shake-effect');
+      setTimeout(() => document.getElementById('app-container')?.classList.remove('shake-effect'), 500);
+
+      setLog(`🕳️ BLACK HOLE muncul di petak ${holeTile}! Menyedot semua lawan (kecuali ${user.name})...`);
+      updateUI();
+      if (!(await trackedSleep(650, sid))) return;
+
+      let suckedCount = 0;
+      let blockedCount = 0;
+      const suckedPlayers = [];
+
+      gameState.players.forEach((p) => {
+        if (p.index === user.index) return; // Pemakai Black Hole TIDAK ikut tersedot
+        if (p.shield) {
+          p.shield = false;
+          blockedCount++;
+          triggerExplosionVisual(p.pos, '🛡️');
+        } else {
+          p.pos = holeTile;
+          suckedCount++;
+          suckedPlayers.push(p);
+        }
+      });
+
+      setLog(`🕳️ GRAVITASI BLACK HOLE! ${suckedCount} lawan tersedot ke petak ${holeTile}${blockedCount > 0 ? ` (${blockedCount} ditahan Tameng)` : ''}!`);
+      updateUI();
+      if (!(await trackedSleep(900, sid))) return;
+
+      // Jika petak Black Hole memiliki ular atau tangga, semua lawan yang tersedot langsung mengalaminya!
+      if (suckedPlayers.length > 0 && (gameState.snakes[holeTile] || gameState.ladders[holeTile])) {
+        if (gameState.snakes[holeTile]) {
+          const tail = gameState.snakes[holeTile];
+          playSfx('snake');
+          setLog(`🐍 Petak Black Hole ${holeTile} ada kepala ular! Semua lawan yang tersedot meluncur ke ${tail}!`);
+          if (!(await trackedSleep(560, sid))) return;
+          suckedPlayers.forEach((p) => { p.pos = tail; });
+          updateUI();
+          if (!(await trackedSleep(650, sid))) return;
+        } else if (gameState.ladders[holeTile]) {
+          const top = gameState.ladders[holeTile];
+          playSfx('ladder');
+          setLog(`🪜 Petak Black Hole ${holeTile} ada kaki tangga! Lawan yang tersedot naik ke ${top}!`);
+          if (!(await trackedSleep(560, sid))) return;
+          suckedPlayers.forEach((p) => { p.pos = top; });
+          updateUI();
+          if (!(await trackedSleep(650, sid))) return;
+        }
+      }
+
+      gameState.isBusy = false;
+      updateUI();
+    }
+
+    function cancelTargetSelection() {
+      gameState.pendingSkill = null;
+      gameState.pendingTeleportTargetIndex = null;
+      gameState.tilePickerMode = null;
+      closeAllSkillModals();
+    }
+
+    function closeAllSkillModals() {
+      ['modal-steal', 'modal-target', 'modal-tile-picker', 'modal-loaded-dice'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+    }
+
+    async function executeTargetedSkill(skillKey, user, target) {
+      const sid = matchSessionId;
+      gameState.isBusy = true;
+      updateUI();
+
+      if (target.shield) {
+        target.shield = false;
+        playSkillSfx('shield');
+        triggerExplosionVisual(target.pos, '🛡️');
+        setLog(`🛡️ ${target.name} memblokir ${SKILL_CATALOG[skillKey].name} dari ${user.name} dengan Tameng!`);
+        updateUI();
+        if (!(await trackedSleep(900, sid))) return;
+        gameState.isBusy = false;
+        updateUI();
+        return;
+      }
+
+      playSkillSfx(skillKey);
+
+      if (skillKey === 'teleport_target') {
+        const maxDest = gameState.maxTile - 1;
+        const destTile = Math.floor(Math.random() * maxDest) + 1;
+        triggerExplosionVisual(target.pos, '🌌');
+        setLog(`🌌 PORTAL LAWAN! ${user.name} melempar ${target.name} ke petak acak ${destTile}!`);
+        target.pos = destTile;
+        updateUI();
+        triggerExplosionVisual(destTile, '✨');
+        if (!(await trackedSleep(750, sid))) return;
+
+        await resolveTileBoardEffects(target, sid, 'Portal Lawan');
+        if (sid !== matchSessionId) return;
+      }
+      else if (skillKey === 'swap') {
+        const tempPos = user.pos;
+        user.pos = target.pos;
+        target.pos = tempPos;
+
+        triggerExplosionVisual(user.pos, '🔄');
+        triggerExplosionVisual(target.pos, '🔄');
+        setLog(`🔄 SWAP! ${user.name} bertukar posisi dengan ${target.name} (Petak ${user.pos} ↔ ${target.pos})!`);
+        updateUI();
+        if (!(await trackedSleep(850, sid))) return;
+
+        // Resolusi ular/tangga untuk kedua pemain yang bertukar posisi
+        await resolveTileBoardEffects(user, sid, 'Swap');
+        if (sid !== matchSessionId) return;
+        await resolveTileBoardEffects(target, sid, 'Swap');
+        if (sid !== matchSessionId) return;
+      }
+      else if (skillKey === 'freeze') {
+        const wipedCount = target.skills.length;
+        target.skills = [];
+        target.frozen = true;
+        triggerExplosionVisual(target.pos, '☠️');
+        setLog(`☠️ LUMPUH! ${user.name} meracuni ${target.name} (stop 1 ronde & ${wipedCount} kartu skill musnah)!`);
+        updateUI();
+        if (!(await trackedSleep(950, sid))) return;
+      }
+      else if (skillKey === 'hook') {
+        const fromPos = target.pos;
+        const toPos = user.pos;
+
+        if (fromPos <= toPos) {
+          setLog(`🪝 ${user.name} menarik ${target.name}, namun posisinya tidak berada di depan.`);
+          if (!(await trackedSleep(800, sid))) return;
+        } else {
+          setLog(`🪝 HOOK! ${user.name} menarik ${target.name} dari petak ${fromPos} mundur ke petak ${toPos}!`);
+          if (!(await animateHookPull(toPos, fromPos, sid))) return;
+          target.pos = toPos;
+          updateUI();
+          if (!(await trackedSleep(750, sid))) return;
+
+          await resolveTileBoardEffects(target, sid, 'Hook');
+          if (sid !== matchSessionId) return;
+        }
+      }
+      else if (skillKey === 'bomb') {
+        triggerExplosionVisual(target.pos, '💥');
+        document.getElementById('app-container').classList.add('shake-effect');
+        setTimeout(() => document.getElementById('app-container')?.classList.remove('shake-effect'), 500);
+
+        const destPos = Math.max(1, target.pos - 10);
+        setLog(`💣 BOOM! ${user.name} meledakkan ${target.name} mundur 10 langkah ke petak ${destPos}!`);
+        if (!(await movePlayerStepByStep(target.index, destPos, sid))) return;
+
+        // Wajib cek ular/tangga di petak hasil ledakan bom!
+        await resolveTileBoardEffects(target, sid, 'Ledakan Bom');
+        if (sid !== matchSessionId) return;
+      }
+      else if (skillKey === 'snake_curse') {
+        const snakeHeads = Object.keys(gameState.snakes).map(Number).sort((a, b) => b - a);
+        const chosenHead = snakeHeads.find(h => h <= target.pos);
+
+        if (chosenHead) {
+          const snakeTail = gameState.snakes[chosenHead];
+          triggerExplosionVisual(target.pos, '🐍');
+          setLog(`🐍 KUTUKAN ULAR! ${user.name} menyeret ${target.name} ke kepala ular ${chosenHead} → meluncur ke ${snakeTail}!`);
+          target.pos = chosenHead;
+          updateUI();
+          if (!(await trackedSleep(560, sid))) return;
+          playSfx('snake');
+          target.pos = snakeTail;
+          updateUI();
+          if (!(await trackedSleep(700, sid))) return;
+        } else {
+          const fallbackDest = Math.max(1, target.pos - 8);
+          triggerExplosionVisual(target.pos, '🐍');
+          setLog(`🐍 KUTUKAN ULAR! Tak ada ular di belakang ${target.name}, dipaksa mundur 8 langkah ke petak ${fallbackDest}!`);
+          if (!(await movePlayerStepByStep(target.index, fallbackDest, sid))) return;
+
+          await resolveTileBoardEffects(target, sid, 'Kutukan Ular');
+          if (sid !== matchSessionId) return;
+        }
+      }
+
+      gameState.isBusy = false;
+      updateUI();
+    }
+
+    async function animateHookPull(userTile, targetTile, sid) {
+      const fxSvg = document.getElementById('fx-svg');
+      const pUser = getTileCoordinates(userTile);
+      const pTarget = getTileCoordinates(targetTile);
+
+      const x1 = pUser.x * 10, y1 = pUser.y * 10;
+      const x2 = pTarget.x * 10, y2 = pTarget.y * 10;
+
+      const chainLine = createSvgLine(x1, y1, x2, y2, '#fbbf24', 8);
+      chainLine.setAttribute('stroke-dasharray', '14 8');
+
+      const hookHead = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      hookHead.setAttribute('cx', x2);
+      hookHead.setAttribute('cy', y2);
+      hookHead.setAttribute('r', '16');
+      hookHead.setAttribute('fill', '#f59e0b');
+      hookHead.setAttribute('stroke', '#ffffff');
+      hookHead.setAttribute('stroke-width', '3');
+
+      fxSvg.appendChild(chainLine);
+      fxSvg.appendChild(hookHead);
+
+      const ok = await trackedSleep(620, sid);
+      fxSvg.innerHTML = '';
+      return ok;
+    }
+
+    function selectLoadedDice(num) {
+      gameState.loadedDiceValue = num;
+      closeAllSkillModals();
+      document.getElementById('dice-box').textContent = num;
+      document.getElementById('dice-status').textContent = `Sakti (${num})`;
+      setLog(`🎲 Dadu Sakti siap! Tekan Kocok Dadu untuk maju ${num} langkah.`);
+    }
+
+    function triggerExplosionVisual(tilePos, emoji = '💥') {
+      const coord = getTileCoordinates(tilePos);
+      const layer = document.getElementById('tokens-layer');
+      const boom = document.createElement('div');
+      boom.className = 'boom-effect absolute text-3xl sm:text-4xl z-30';
+      boom.style.left = `${coord.x}%`;
+      boom.style.top = `${coord.y}%`;
+      boom.textContent = emoji;
+      layer.appendChild(boom);
+      setTimeout(() => boom.remove(), 800);
+    }
+
+    /**
+- =========================================================================
+- KOCOK DADU & PERGERAKAN LANGKAH DEMI LANGKAH
+- =========================================================================
+     */
+    async function handleRollDice() {
+      if (gameState.isBusy || gameState.gameOver) return;
+      const sid = matchSessionId;
+      gameState.isBusy = true;
+      playButtonClickSfx('confirm');
+      updateUI();
+
+      const player = gameState.players[gameState.turnIndex];
+      const diceBox = document.getElementById('dice-box');
+      const diceStatus = document.getElementById('dice-status');
+      const maxTile = gameState.maxTile;
+
+      diceBox.classList.add('dice-rolling');
+      diceStatus.textContent = 'Mengocok...';
+
+      for (let i = 0; i < DICE_SPIN_FRAMES; i++) {
+        diceBox.textContent = Math.floor(Math.random() * 6) + 1;
+        playSfx('dice');
+        if (!(await trackedSleep(DICE_FRAME_MS, sid))) return;
+      }
+
+      diceBox.classList.remove('dice-rolling');
+
+      const baseRoll = gameState.loadedDiceValue !== null
+        ? gameState.loadedDiceValue
+        : (Math.floor(Math.random() * 6) + 1);
+
+      const isTurbo = gameState.turboActive;
+      const finalSteps = isTurbo ? baseRoll * 5 : baseRoll;
+
+      gameState.loadedDiceValue = null;
+      gameState.turboActive = false;
+
+      diceBox.textContent = isTurbo ? `${baseRoll}x5` : baseRoll;
+      diceStatus.textContent = isTurbo ? `Turbo ${finalSteps}!` : `Angka ${baseRoll}`;
+
+      const startPos = player.pos;
+      let nextPos = player.pos + finalSteps;
+      let bounced = false;
+
+      if (nextPos > maxTile) {
+        const excess = nextPos - maxTile;
+        nextPos = Math.max(1, maxTile - excess);
+        bounced = true;
+        setLog(`🎲 ${player.name} dapat ${finalSteps} — kelebihan! Memantul ke petak ${nextPos}.`);
+      } else {
+        setLog(`🎲 ${player.name} dapat ${finalSteps}${isTurbo ? ' (Turbo x5!)' : ''}, bersiap maju ke petak ${nextPos}...`);
+      }
+
+      if (!(await trackedSleep(DICE_READ_PAUSE_MS, sid))) return;
+
+      if (!(await movePlayerStepByStep(player.index, nextPos, sid))) return;
+
+      if (player.pos === maxTile) {
+        declareWinner(player);
+        return;
+      }
+
+      const passedTiles = [];
+      if (!bounced) {
+        for (let t = startPos + 1; t <= nextPos; t++) passedTiles.push(t);
+      } else {
+        for (let t = startPos + 1; t <= maxTile; t++) passedTiles.push(t);
+        for (let t = maxTile - 1; t >= nextPos; t--) passedTiles.push(t);
+      }
+
+      // 1. Cek Petak Misteri (?)
+      const hitMystery = passedTiles.some(t => gameState.mysteryTiles.includes(t));
+      if (hitMystery) {
+        grantRandomSkill(player);
+        if (!(await trackedSleep(800, sid))) return;
+      }
+
+      // 2. Cek Tangga & Ular di petak pendaratan dadu
+      await resolveTileBoardEffects(player, sid, '');
+      if (sid !== matchSessionId) return;
+
+      if (player.pos === maxTile) {
+        declareWinner(player);
+        return;
+      }
+
+      await advanceToNextTurn();
+    }
+
+    async function movePlayerStepByStep(playerIndex, targetPos, sid = matchSessionId) {
+      const player = gameState.players[playerIndex];
+      while (player && player.pos !== targetPos) {
+        if (sid !== matchSessionId) return false;
+        if (player.pos < targetPos) player.pos += 1;
+        else player.pos -= 1;
+        playSfx('step');
+        updateUI();
+        if (!(await trackedSleep(STEP_DELAY_MS, sid))) return false;
+      }
+      return sid === matchSessionId;
+    }
+
+    function grantRandomSkill(player) {
+      const keys = Object.keys(SKILL_CATALOG);
+      const randomKey = keys[Math.floor(Math.random() * keys.length)];
+      const skill = SKILL_CATALOG[randomKey];
+
+      playSfx('skill');
+      if (player.skills.length < 3) {
+        player.skills.push(randomKey);
+        setLog(`🎁 Petak Misteri! ${player.name} dapat ${skill.icon} ${skill.name}!`);
+      } else {
+        player.skills.shift();
+        player.skills.push(randomKey);
+        setLog(`🎁 Kartu penuh! ${player.name} menukar dengan ${skill.icon} ${skill.name}!`);
+      }
+      updateUI();
+    }
+
+    async function advanceToNextTurn() {
+      gameState.turnIndex = (gameState.turnIndex + 1) % gameState.players.length;
+      await announceTurnStart();
+    }
+
+    async function announceTurnStart() {
+      if (gameState.gameOver) return;
+      const sid = matchSessionId;
+      const currentPlayer = gameState.players[gameState.turnIndex];
+
+      if (currentPlayer.shield) {
+        currentPlayer.shield = false;
+      }
+
+      if (currentPlayer.frozen) {
+        currentPlayer.frozen = false;
+        gameState.isBusy = true;
+        updateUI();
+        setLog(`☠️ ${currentPlayer.name} sedang LUMPUH (Stop 1 ronde)! Giliran dilewati.`);
+        if (!(await trackedSleep(1300, sid))) return;
+        await advanceToNextTurn();
+        return;
+      }
+
+      gameState.isBusy = false;
+      document.getElementById('dice-status').textContent = 'Siap';
+      setLog(`Giliran ${currentPlayer.name}! Pakai skill atau kocok dadu.`);
+      updateUI();
+
+      if (currentPlayer.isBot && !gameState.gameOver) {
+        runBotTurn(currentPlayer, sid);
+      }
+    }
+
+    /**
+- =========================================================================
+- AI BOT CERDAS UNTUK SEMUA SKILL
+- =========================================================================
+     */
+    async function runBotTurn(bot, sid) {
+      gameState.isBusy = true;
+      updateUI();
+      if (!(await trackedSleep(820, sid))) return;
+
+      if (bot.skills.length > 0 && Math.random() < 0.75) {
+        const skillIndex = Math.floor(Math.random() * bot.skills.length);
+        const skillKey = bot.skills[skillIndex];
+        const skill = SKILL_CATALOG[skillKey];
+
+        if (skill) {
+          const opponents = gameState.players
+            .filter(p => p.index !== bot.index)
+            .sort((a, b) => b.pos - a.pos);
+          const leader = opponents[0];
+
+          let shouldUse = true;
+          if (skillKey === 'swap' && leader && leader.pos <= bot.pos + 4) shouldUse = false;
+          if (skillKey === 'hook' && leader && leader.pos <= bot.pos + 2) shouldUse = false;
+          if (skillKey === 'chaos_shuffle' && leader && bot.pos >= leader.pos) shouldUse = false;
+          if (skillKey === 'magnet' && leader && bot.pos >= leader.pos) shouldUse = false;
+          if (skillKey === 'self_teleport' && bot.pos >= gameState.maxTile - 2) shouldUse = false;
+
+          if (shouldUse) {
+            bot.skills.splice(skillIndex, 1);
+
+            if (skill.mode === 'manual_steal') {
+              const richVictims = opponents.filter(o => o.skills.length > 0);
+              if (richVictims.length > 0) {
+                const victim = richVictims[0];
+                playSkillSfx('steal');
+                if (victim.shield) {
+                  victim.shield = false;
+                  triggerExplosionVisual(victim.pos, '🛡️');
+                  setLog(`🛡️ ${victim.name} memblokir Copet Skill dari ${bot.name}!`);
+                } else {
+                  const stolenKey = victim.skills.shift();
+                  if (stolenKey && SKILL_CATALOG[stolenKey] && bot.skills.length < 3) bot.skills.push(stolenKey);
+                  const stSk = SKILL_CATALOG[stolenKey];
+                  triggerExplosionVisual(victim.pos, '🤏');
+                  setLog(`🤏 COPET! ${bot.name} mencuri ${stSk ? stSk.icon + ' ' + stSk.name : 'kartu'} dari ${victim.name}!`);
+                }
+                updateUI();
+                if (!(await trackedSleep(850, sid))) return;
+              }
+            } else if (skill.mode === 'self_teleport') {
+              const destSelf = gameState.maxTile - 1;
+              playSkillSfx('self_teleport');
+              triggerExplosionVisual(bot.pos, '🌀');
+              setLog(`🌀 ${bot.name} memakai Self Teleport ke petak ${destSelf}!`);
+              bot.pos = destSelf;
+              updateUI();
+              if (!(await trackedSleep(750, sid))) return;
+              await resolveTileBoardEffects(bot, sid, 'Self Teleport');
+              if (sid !== matchSessionId) return;
+            } else if (skill.mode === 'black_hole') {
+              const snakeHeads = Object.keys(gameState.snakes).map(Number).sort((a, b) => b - a);
+              const holeDest = snakeHeads[0] || 1;
+              gameState.pendingSkill = { skillKey: 'black_hole', skillIndex: 0 };
+              bot.skills.unshift('black_hole');
+              await executeBlackHoleAtTile(holeDest);
+              if (sid !== matchSessionId) return;
+            } else if (skill.mode === 'instant') {
+              await executeInstantSkill(skillKey, bot);
+              if (sid !== matchSessionId) return;
+            } else if (skill.mode === 'loaded_dice') {
+              gameState.loadedDiceValue = 12;
+              playSkillSfx('loaded');
+              setLog(`🎲 ${bot.name} memakai Dadu Sakti (Angka 12)!`);
+              updateUI();
+              if (!(await trackedSleep(700, sid))) return;
+            } else if (skill.mode === 'target_player' && leader) {
+              await executeTargetedSkill(skillKey, bot, leader);
+              if (sid !== matchSessionId) return;
+            }
+          }
+        }
+      }
+
+      if (sid !== matchSessionId) return;
+      gameState.isBusy = false;
+      await handleRollDice();
+    }
+
+    function declareWinner(winner) {
+      gameState.gameOver = true;
+      gameState.isBusy = false;
+      playSfx('win');
+      updateUI();
+
+      document.getElementById('winner-title').textContent = `${winner.name.toUpperCase()} MENANG!`;
+      document.getElementById('winner-subtitle').textContent =
+        `${winner.name} menaklukkan papan ${gameState.boardSize}x${gameState.boardSize} (${gameState.maxTile} petak) mengalahkan ${gameState.players.length - 1} lawan!`;
+
+      document.getElementById('modal-winner').style.display = 'flex';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = loadPersistedPrefs();
+      if (saved && saved.setupConfig) {
+        if ([10, 12, 15].includes(saved.setupConfig.boardSize)) setupConfig.boardSize = saved.setupConfig.boardSize;
+        if (typeof saved.setupConfig.count === 'number') {
+          setupConfig.count = Math.max(2, Math.min(MAX_PLAYERS, saved.setupConfig.count));
+        }
+        if (Array.isArray(saved.setupConfig.names)) {
+          saved.setupConfig.names.slice(0, MAX_PLAYERS).forEach((n, idx) => {
+            if (typeof n === 'string' && n.trim()) setupConfig.names[idx] = n;
+          });
+        }
+        if (Array.isArray(saved.setupConfig.customNameEdited)) {
+          saved.setupConfig.customNameEdited.slice(0, MAX_PLAYERS).forEach((v, idx) => {
+            setupConfig.customNameEdited[idx] = Boolean(v);
+          });
+        }
+        if (Array.isArray(saved.setupConfig.isBot)) {
+          saved.setupConfig.isBot.slice(0, MAX_PLAYERS).forEach((b, idx) => {
+            setupConfig.isBot[idx] = Boolean(b);
+          });
+        }
+      }
+
+      applyThemeMode(uiTheme);
+      initMp3Tracks();
+      registerAndroidBackButton();
+      startNewGameWithCurrentSettings();
+      openSetupModal();
+      syncAudioGainStates();
+    });
+  </script>
+</body>
+</html>
