@@ -383,6 +383,14 @@
       animation: shieldPulse 1.5s infinite;
     }
 
+    @keyframes charmPulse {
+      0%, 100% { box-shadow: 0 0 0 2.5px rgba(251, 191, 36, 0.98), 0 0 12px rgba(245, 158, 11, 0.9); }
+      50% { box-shadow: 0 0 0 4.5px rgba(253, 224, 71, 0.65), 0 0 18px rgba(251, 191, 36, 1); }
+    }
+    .charm-aura {
+      animation: charmPulse 1.35s infinite;
+    }
+
     @keyframes freezePulse {
       0%, 100% { filter: brightness(1.15) saturate(1.25); box-shadow: 0 0 0 2.5px rgba(56, 189, 248, 0.98), 0 0 13px rgba(14, 165, 233, 0.92); }
       50% { filter: brightness(1.32) saturate(1.4); box-shadow: 0 0 0 4.5px rgba(186, 230, 253, 0.75), 0 0 18px rgba(56, 189, 248, 1); }
@@ -491,7 +499,7 @@
 
           <div class="flex items-center gap-1.5 shrink-0">
             <span id="loaded-indicator" class="hidden text-[9.5px] font-extrabold text-emerald-400 bg-emerald-500/20 border border-emerald-400/60 px-2 py-0.5 rounded-full animate-pulse">
-              🎯 DADU SAKTI
+              🎲 DADU SAKTI
             </span>
             <span id="turbo-indicator" class="hidden text-[9.5px] font-extrabold text-amber-400 bg-amber-500/20 border border-amber-400/60 px-2 py-0.5 rounded-full animate-pulse">
               ⚡ TURBO x5
@@ -692,6 +700,19 @@
     </div>
   </div>
 
+  <!-- MODAL PILIH ANGKA DADU SAKTI (1-12) -->
+  <div id="modal-loaded-dice" style="display: none; z-index: 50;" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4">
+    <div class="theme-modal border-2 border-sky-400/85 rounded-3xl p-5 max-w-xs w-full text-center shadow-2xl">
+      <div class="text-3xl mb-1">🎲</div>
+      <h3 class="font-game text-lg font-bold text-sky-400">Dadu Sakti: Pilih Angka (1–12)</h3>
+      <p class="theme-muted text-xs mt-1 mb-3">Tentukan angka langkah dadu untuk giliran ini:</p>
+      <div id="loaded-dice-grid" class="grid grid-cols-4 gap-2 mb-3"></div>
+      <button type="button" onclick="cancelTargetSelection()" class="theme-btn-neutral w-full min-h-[44px] py-2 rounded-xl text-xs font-bold border transition cursor-pointer">
+        Batal
+      </button>
+    </div>
+  </div>
+
   <!-- MODAL PILIH PETAK (BLACK HOLE: START 1 & ACAK + INPUT MANUAL) -->
   <div id="modal-tile-picker" style="display: none; z-index: 50;" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4">
     <div class="theme-modal border-2 border-cyan-400/80 rounded-3xl p-5 max-w-xs w-full text-center shadow-2xl">
@@ -775,7 +796,7 @@
     const DICE_READ_PAUSE_MS = 380;
     const ENTITY_TRIGGER_PAUSE_MS = 560;
 
-    const STORAGE_KEY = 'rexterco_ulartangga_chaos_v12';
+    const STORAGE_KEY = 'rexterco_ulartangga_chaos_v14';
     const MAX_PLAYERS = 16;
 
     window.CUSTOM_AUDIO_CONFIG = {
@@ -801,7 +822,7 @@
       if (!diceBox) return;
 
       const num = Number(value);
-      if (isTurbo && num >= 1 && num <= 6) {
+      if (isTurbo && num >= 1 && num <= 12) {
         diceBox.innerHTML = `<span class="font-game text-xs font-black text-amber-600 leading-none">${num}x5</span>`;
         return;
       }
@@ -994,7 +1015,7 @@
           compressor.release.setValueAtTime(0.14, audioCtx.currentTime);
 
           sfxMasterGain = audioCtx.createGain();
-          sfxMasterGain.gain.setValueAtTime(audioPrefs.sfxMuted ? 0.0001 : 2.4, audioCtx.currentTime);
+          sfxMasterGain.gain.setValueAtTime(audioPrefs.sfxMuted ? 0.0001 : 3.2, audioCtx.currentTime);
 
           bgmMasterGain = audioCtx.createGain();
           bgmMasterGain.gain.setValueAtTime(audioPrefs.bgmMuted ? 0.0001 : 0.22, audioCtx.currentTime);
@@ -1020,7 +1041,7 @@
 
       if (audioCtx && sfxMasterGain && bgmMasterGain) {
         const now = audioCtx.currentTime;
-        sfxMasterGain.gain.setTargetAtTime(effectiveSfxMuted ? 0.0001 : 2.4, now, 0.015);
+        sfxMasterGain.gain.setTargetAtTime(effectiveSfxMuted ? 0.0001 : 3.2, now, 0.015);
         bgmMasterGain.gain.setTargetAtTime(effectiveBgmMuted ? 0.0001 : 0.22, now, 0.015);
       }
 
@@ -1177,6 +1198,48 @@
       } catch (e) {}
     }
 
+    function playIceBlastSfx() {
+      if (audioPrefs.sfxMuted || isAppBackgrounded || isScreenCurrentlyHidden()) return;
+      const chain = getAudioChain();
+      if (!chain) return;
+      const { ctx, sfxOut } = chain;
+      try {
+        const bufferSize = Math.floor(ctx.sampleRate * 0.55);
+        const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+        }
+
+        const noise = ctx.createBufferSource();
+        noise.buffer = noiseBuffer;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(2400, ctx.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(950, ctx.currentTime + 0.52);
+        filter.Q.setValueAtTime(3.2, ctx.currentTime);
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.001, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.85, ctx.currentTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.55);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(sfxOut);
+
+        noise.start(ctx.currentTime);
+        noise.stop(ctx.currentTime + 0.56);
+      } catch (e) {}
+
+      const iceShards = [2637, 3136, 2093, 3520, 2793, 1760];
+      iceShards.forEach((freq, i) => {
+        playTone(freq, 'sine', 0.14, 0.72, i * 0.055, freq * 0.88);
+        playTone(freq * 1.25, 'triangle', 0.09, 0.45, i * 0.055 + 0.015, freq * 0.95);
+      });
+    }
+
     function playButtonClickSfx(variant = 'click') {
       if (audioPrefs.sfxMuted || isAppBackgrounded || isScreenCurrentlyHidden()) return;
       if (variant === 'back') {
@@ -1222,6 +1285,16 @@
     function playSkillSfx(skillId) {
       if (audioPrefs.sfxMuted || isAppBackgrounded || isScreenCurrentlyHidden()) return;
       switch (skillId) {
+        case 'sprint_dash':
+          playTone(480, 'triangle', 0.08, 0.72, 0, 760);
+          playTone(640, 'triangle', 0.08, 0.75, 0.07, 980);
+          playTone(860, 'sine', 0.12, 0.78, 0.14, 1240);
+          break;
+        case 'charm_reflect':
+          playTone(659.25, 'sine', 0.16, 0.78, 0, 880);
+          playTone(880, 'triangle', 0.18, 0.82, 0.09, 1318.5);
+          playTone(1318.5, 'sine', 0.24, 0.86, 0.18, 1760);
+          break;
         case 'ladder_boost':
           playTone(440, 'triangle', 0.1, 0.75, 0, 587);
           playTone(587, 'triangle', 0.1, 0.78, 0.08, 784);
@@ -1248,9 +1321,7 @@
           playTone(360, 'triangle', 0.24, 0.75, 0.06, 120);
           break;
         case 'global_freeze':
-          playTone(1320, 'triangle', 0.16, 0.68, 0, 990);
-          playTone(1568, 'triangle', 0.18, 0.68, 0.07, 1175);
-          playTone(1046, 'triangle', 0.22, 0.72, 0.14, 660);
+          playIceBlastSfx();
           break;
         case 'chaos_shuffle':
           [380, 620, 290, 790, 460].forEach((f, idx) => {
@@ -1299,9 +1370,10 @@
       if (audioPrefs.sfxMuted || isAppBackgrounded || isScreenCurrentlyHidden()) return;
       if (event === 'step') playTone(440, 'triangle', 0.08, 0.64);
       else if (event === 'dice') {
-        const baseFreq = 260 + Math.random() * 190;
-        playTone(baseFreq, 'square', 0.075, 0.85, 0, baseFreq * 0.72);
-        playTone(baseFreq * 1.45, 'triangle', 0.085, 0.95, 0.012, baseFreq * 0.85);
+        const pitch = 780 + Math.random() * 520;
+        playTone(pitch, 'square', 0.045, 1.0, 0, pitch * 0.65);
+        playTone(pitch * 1.35, 'triangle', 0.055, 1.0, 0.008, pitch * 0.8);
+        playTone(320 + Math.random() * 140, 'sawtooth', 0.05, 0.85, 0.015, 190);
       }
       else if (event === 'ladder') {
         playTone(440, 'triangle', 0.12, 0.75, 0);
@@ -1583,6 +1655,18 @@
     };
 
     const SKILL_CATALOG = {
+      charm_reflect: {
+        id: 'charm_reflect',
+        name: 'Jimat Pantul',
+        icon: '🧿',
+        tier: 'MYTHIC',
+        category: 'Pantul & Kebal Chaos',
+        badgeColor: 'bg-amber-950/85 text-amber-200 border-amber-300/60',
+        desc: 'Pantulkan skill target & kebal chaos',
+        fullDesc: 'Memantulkan seluruh skill target kembali ke penyerang dan membuatmu kebal dari skill chaos/area (kecuali Copet Skill).',
+        mode: 'instant',
+        color: 'from-amber-500 via-yellow-600 to-slate-950 border-amber-300 text-white'
+      },
       black_hole: {
         id: 'black_hole',
         name: 'Black Hole',
@@ -1615,33 +1699,33 @@
         category: 'Global Chaos',
         badgeColor: 'bg-red-950/80 text-red-200 border-red-300/40',
         desc: 'Tarik semua pemain ke petakmu',
-        fullDesc: 'Menarik seluruh pemain lain dari mana pun di papan langsung ke petak tempatmu berdiri (kecuali pemain yang dilindungi Tameng).',
+        fullDesc: 'Menarik seluruh pemain lain dari mana pun di papan langsung ke petak tempatmu berdiri (kecuali pemain yang dilindungi Tameng atau Jimat).',
         mode: 'instant',
         color: 'from-red-500 to-amber-900 border-red-300 text-white'
+      },
+      steal: {
+        id: 'steal',
+        name: 'Copet Skill',
+        icon: '🤏',
+        tier: 'MYTHIC',
+        category: 'Steal Skill',
+        badgeColor: 'bg-pink-950/80 text-pink-200 border-pink-300/40',
+        desc: 'Intip & curi kartu milik lawan',
+        fullDesc: 'Mengintip kartu tangan lawan lalu mencuri 1 kartu pilihan secara langsung (menembus Jimat, namun dapat ditahan oleh Tameng).',
+        mode: 'manual_steal',
+        color: 'from-pink-500 to-rose-900 border-pink-300 text-white'
       },
       portal_warp: {
         id: 'portal_warp',
         name: 'Portal Warp',
         icon: '🌀',
-        tier: 'MYTHIC',
+        tier: 'EPIC',
         category: 'Random Warp',
         badgeColor: 'bg-teal-950/80 text-teal-200 border-teal-300/40',
         desc: 'Warp acak ke diri sendiri / lawan',
-        fullDesc: 'Mengirim dirimu sendiri atau 1 pemain target pilihan ke petak acak bebas di papan. Efek ke lawan dapat ditahan oleh Tameng.',
+        fullDesc: 'Mengirim dirimu sendiri atau 1 pemain target pilihan ke petak acak bebas di papan. Efek ke lawan dapat dipantulkan oleh Jimat atau ditahan Tameng.',
         mode: 'portal_warp',
         color: 'from-teal-500 to-indigo-900 border-teal-300 text-white'
-      },
-      global_freeze: {
-        id: 'global_freeze',
-        name: 'Badai Beku',
-        icon: '❄️',
-        tier: 'EPIC',
-        category: 'Area Control',
-        badgeColor: 'bg-cyan-950/80 text-cyan-200 border-cyan-300/40',
-        desc: 'Bekukan semua lawan 1 giliran',
-        fullDesc: 'Membekukan seluruh pemain lawan dengan efek es biru selama 1 giliran sehingga mereka melewati giliran kocok dadu berikutnya (kecuali yang memakai Tameng).',
-        mode: 'instant',
-        color: 'from-sky-500 to-cyan-900 border-cyan-300 text-white'
       },
       rocket_col: {
         id: 'rocket_col',
@@ -1655,30 +1739,6 @@
         mode: 'instant',
         color: 'from-orange-500 to-red-800 border-orange-300 text-white'
       },
-      ladder_boost: {
-        id: 'ladder_boost',
-        name: 'Tangga Darurat',
-        icon: '🪜',
-        tier: 'EPIC',
-        category: 'Lonjakan Tinggi',
-        badgeColor: 'bg-amber-950/75 text-amber-200 border-amber-300/40',
-        desc: 'Panjat tangga besar ke atas!',
-        fullDesc: 'Menaikkan posisimu setinggi beberapa baris ke atas atau memanfaatkan tangga di depan untuk mendaki jauh lebih cepat.',
-        mode: 'instant',
-        color: 'from-amber-500 to-yellow-800 border-amber-300 text-white'
-      },
-      loaded: {
-        id: 'loaded',
-        name: 'Dadu Sakti',
-        icon: '🎯',
-        tier: 'EPIC',
-        category: 'Buff Dadu',
-        badgeColor: 'bg-emerald-950/80 text-emerald-200 border-emerald-300/40',
-        desc: 'Dadu giliran ini pasti 4–6!',
-        fullDesc: 'Mengatur kocokan dadu pada giliran ini agar selalu keluar angka tinggi (4, 5, atau 6) untuk mempercepat langkahmu.',
-        mode: 'instant',
-        color: 'from-emerald-500 to-teal-900 border-emerald-300 text-white'
-      },
       turbo: {
         id: 'turbo',
         name: 'Turbo x5',
@@ -1691,35 +1751,11 @@
         mode: 'instant',
         color: 'from-yellow-500 to-amber-800 border-yellow-200 text-white'
       },
-      freeze: {
-        id: 'freeze',
-        name: 'Lumpuh',
-        icon: '☠️',
-        tier: 'EPIC',
-        category: 'Disrupt Target',
-        badgeColor: 'bg-emerald-950/85 text-lime-200 border-lime-300/50',
-        desc: 'Stop 1 ronde + hapus semua skill',
-        fullDesc: 'Membuat 1 target pilihan lumpuh selama 1 ronde (melewati gilirannya) sekaligus menghapus seluruh kartu skill yang sedang dipegangnya.',
-        mode: 'target_player',
-        color: 'from-lime-600 to-green-950 border-lime-300 text-white'
-      },
-      steal: {
-        id: 'steal',
-        name: 'Copet Skill',
-        icon: '🤏',
-        tier: 'RARE',
-        category: 'Steal Skill',
-        badgeColor: 'bg-pink-950/80 text-pink-200 border-pink-300/40',
-        desc: 'Intip & curi kartu milik lawan',
-        fullDesc: 'Mengintip kartu tangan lawan lalu mencuri 1 kartu pilihan secara langsung (dapat ditahan oleh Tameng).',
-        mode: 'manual_steal',
-        color: 'from-pink-500 to-rose-900 border-pink-300 text-white'
-      },
       swap: {
         id: 'swap',
         name: 'Swap Posisi',
         icon: '🔄',
-        tier: 'RARE',
+        tier: 'EPIC',
         category: 'Tukar Posisi',
         badgeColor: 'bg-purple-950/80 text-purple-200 border-purple-300/40',
         desc: 'Tukar tempat dengan target',
@@ -1731,13 +1767,49 @@
         id: 'hook',
         name: 'Hook Penarik',
         icon: '🪝',
-        tier: 'RARE',
+        tier: 'EPIC',
         category: 'Tarik Lawan',
         badgeColor: 'bg-amber-950/80 text-amber-200 border-amber-300/40',
         desc: 'Tarik 1 lawan ke petakmu',
         fullDesc: 'Menarik 1 pemain target yang berada di depan agar mundur sejajar ke petak tempatmu berdiri.',
         mode: 'target_player',
         color: 'from-amber-600 to-orange-950 border-amber-300 text-white'
+      },
+      loaded: {
+        id: 'loaded',
+        name: 'Dadu Sakti',
+        icon: '🎲',
+        tier: 'RARE',
+        category: 'Buff Dadu',
+        badgeColor: 'bg-emerald-950/80 text-emerald-200 border-emerald-300/40',
+        desc: 'Pilih angka dadu 1–12!',
+        fullDesc: 'Memilih sendiri angka dadu antara 1 hingga 12 untuk giliran ini agar langkahmu mendarat tepat di petak yang diinginkan.',
+        mode: 'loaded_dice',
+        color: 'from-emerald-500 to-teal-900 border-emerald-300 text-white'
+      },
+      ladder_boost: {
+        id: 'ladder_boost',
+        name: 'Tangga Darurat',
+        icon: '🪜',
+        tier: 'RARE',
+        category: 'Panjat Tangga',
+        badgeColor: 'bg-amber-950/75 text-amber-200 border-amber-300/40',
+        desc: 'Naik tangga terdekat / +8 petak',
+        fullDesc: 'Menuju kaki tangga terdekat di depanmu lalu memanjatnya. Jika tidak ada tangga di depan, langsung maju naik 8 langkah.',
+        mode: 'instant',
+        color: 'from-amber-500 to-yellow-800 border-amber-300 text-white'
+      },
+      freeze: {
+        id: 'freeze',
+        name: 'Lumpuh',
+        icon: '☠️',
+        tier: 'RARE',
+        category: 'Disrupt Target',
+        badgeColor: 'bg-emerald-950/85 text-lime-200 border-lime-300/50',
+        desc: 'Stop 1 ronde + hapus semua skill',
+        fullDesc: 'Membuat 1 target pilihan lumpuh selama 1 ronde (melewati gilirannya) sekaligus menghapus seluruh kartu skill yang sedang dipegangnya.',
+        mode: 'target_player',
+        color: 'from-lime-600 to-green-950 border-lime-300 text-white'
       },
       snake_curse: {
         id: 'snake_curse',
@@ -1750,6 +1822,30 @@
         fullDesc: 'Menyeret target pilihanmu ke kepala ular terdekat di belakangnya (atau mundur 8 langkah jika tidak ada ular di belakang).',
         mode: 'target_player',
         color: 'from-lime-600 to-emerald-950 border-lime-300 text-white'
+      },
+      sprint_dash: {
+        id: 'sprint_dash',
+        name: 'Lari Cepat',
+        icon: '🏃',
+        tier: 'COMMON',
+        category: 'Gerak +10',
+        badgeColor: 'bg-emerald-950/80 text-emerald-200 border-emerald-300/40',
+        desc: 'Lari maju 10 langkah!',
+        fullDesc: 'Berlari maju 10 langkah secara berurutan di papan untuk mengejar ketertinggalan atau mengambil petak misteri di depan.',
+        mode: 'instant',
+        color: 'from-emerald-500 to-cyan-800 border-emerald-300 text-white'
+      },
+      global_freeze: {
+        id: 'global_freeze',
+        name: 'Badai Beku',
+        icon: '❄️',
+        tier: 'COMMON',
+        category: 'Area Control',
+        badgeColor: 'bg-cyan-950/80 text-cyan-200 border-cyan-300/40',
+        desc: 'Bekukan semua lawan 1 giliran',
+        fullDesc: 'Membekukan seluruh pemain lawan dengan efek es biru selama 1 giliran sehingga mereka melewati giliran kocok dadu berikutnya (kecuali yang memakai Tameng atau Jimat).',
+        mode: 'instant',
+        color: 'from-sky-500 to-cyan-900 border-cyan-300 text-white'
       },
       bomb: {
         id: 'bomb',
@@ -1873,7 +1969,7 @@
       turnIndex: 0,
       isBusy: false,
       gameOver: false,
-      loadedActive: false,
+      loadedValue: null,
       turboActive: false,
       pendingSkill: null,
       tilePickerMode: null,
@@ -1949,6 +2045,7 @@
         const setupModal = document.getElementById('modal-setup');
         const stealModal = document.getElementById('modal-steal');
         const targetModal = document.getElementById('modal-target');
+        const loadedDiceModal = document.getElementById('modal-loaded-dice');
         const pickerModal = document.getElementById('modal-tile-picker');
 
         if (guideModal && guideModal.style.display === 'flex') {
@@ -1958,6 +2055,7 @@
         } else if (
           (stealModal && stealModal.style.display === 'flex') ||
           (targetModal && targetModal.style.display === 'flex') ||
+          (loadedDiceModal && loadedDiceModal.style.display === 'flex') ||
           (pickerModal && pickerModal.style.display === 'flex')
         ) {
           cancelTargetSelection();
@@ -2130,7 +2228,7 @@
       gameState.turnIndex = 0;
       gameState.isBusy = false;
       gameState.gameOver = false;
-      gameState.loadedActive = false;
+      gameState.loadedValue = null;
       gameState.turboActive = false;
       gameState.pendingSkill = null;
       gameState.tilePickerMode = null;
@@ -2150,6 +2248,7 @@
           theme: theme,
           pos: 1,
           shield: false,
+          charmActive: false,
           frozen: false,
           paralyzed: false,
           skills: []
@@ -2424,6 +2523,7 @@
         }`;
 
         let statusBadges = '';
+        if (p.charmActive) statusBadges += `<span title="Jimat Pantul Aktif">🧿</span>`;
         if (p.shield) statusBadges += `<span title="Tameng Aktif">🛡️</span>`;
         if (p.frozen) statusBadges += `<span title="Beku Es (Skip 1 Giliran)">❄️</span>`;
         if (p.paralyzed) statusBadges += `<span title="Lumpuh (Skip 1 Ronde)">☠️</span>`;
@@ -2454,7 +2554,8 @@
           token.style.top = `${baseCoord.y + offset.dy}%`;
           token.style.zIndex = isCurrent ? '25' : '20';
 
-          token.classList.toggle('shield-aura', p.shield);
+          token.classList.toggle('charm-aura', p.charmActive);
+          token.classList.toggle('shield-aura', p.shield && !p.charmActive);
           token.classList.toggle('freeze-aura', p.frozen);
           token.classList.toggle('poison-aura', p.paralyzed);
         }
@@ -2462,8 +2563,12 @@
 
       const loadedEl = document.getElementById('loaded-indicator');
       if (loadedEl) {
-        if (gameState.loadedActive) loadedEl.classList.remove('hidden');
-        else loadedEl.classList.add('hidden');
+        if (gameState.loadedValue !== null) {
+          loadedEl.textContent = `🎲 SAKTI: ${gameState.loadedValue}`;
+          loadedEl.classList.remove('hidden');
+        } else {
+          loadedEl.classList.add('hidden');
+        }
       }
 
       const turboEl = document.getElementById('turbo-indicator');
@@ -2631,24 +2736,19 @@
     }
 
     function calculateEmergencyLadderDestination(currentTile) {
-      const size = gameState.boardSize;
-      const rowScale = size === 10 ? 5 : (size === 12 ? 6 : 8);
-      const directClimbTile = Math.min(gameState.maxTile - 1, Math.max(currentTile + 1, currentTile + size * rowScale));
-
-      const ladderStarts = Object.keys(gameState.ladders)
+      const nearestLadderStarts = Object.keys(gameState.ladders)
         .map(Number)
-        .filter(s => s > currentTile && gameState.ladders[s] < gameState.maxTile)
-        .sort((a, b) => gameState.ladders[b] - gameState.ladders[a]);
+        .filter((s) => s > currentTile && gameState.ladders[s] < gameState.maxTile)
+        .sort((a, b) => a - b);
 
-      if (ladderStarts.length > 0) {
-        const bestLadderStart = ladderStarts[0];
-        const bestLadderTop = gameState.ladders[bestLadderStart];
-        if (bestLadderTop >= directClimbTile) {
-          return { viaBase: bestLadderStart, destTile: bestLadderTop };
-        }
+      if (nearestLadderStarts.length > 0) {
+        const nearestStart = nearestLadderStarts[0];
+        const nearestTop = gameState.ladders[nearestStart];
+        return { viaBase: nearestStart, destTile: nearestTop };
       }
 
-      return { viaBase: null, destTile: directClimbTile };
+      const fallbackDest = Math.min(gameState.maxTile - 1, Math.max(currentTile + 1, currentTile + 8));
+      return { viaBase: null, destTile: fallbackDest };
     }
 
     function initiateSkill(skillIndex) {
@@ -2662,6 +2762,9 @@
       if (skill.mode === 'manual_steal') {
         gameState.pendingSkill = { skillKey, skillIndex };
         openManualStealModal();
+      } else if (skill.mode === 'loaded_dice') {
+        gameState.pendingSkill = { skillKey, skillIndex };
+        openLoadedDiceModal();
       } else if (skill.mode === 'instant') {
         user.skills.splice(skillIndex, 1);
         executeInstantSkill(skillKey, user);
@@ -2672,6 +2775,44 @@
         gameState.pendingSkill = { skillKey, skillIndex };
         openTargetModal(skill);
       }
+    }
+
+    function openLoadedDiceModal() {
+      const gridEl = document.getElementById('loaded-dice-grid');
+      if (!gridEl) return;
+      gridEl.innerHTML = '';
+
+      for (let num = 1; num <= 12; num++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'theme-subcard min-h-[44px] rounded-xl border border-sky-400/50 hover:bg-sky-500 hover:text-slate-950 font-game text-base font-bold transition active:scale-95 cursor-pointer';
+        btn.textContent = String(num);
+        btn.onclick = () => confirmLoadedDiceChoice(num);
+        gridEl.appendChild(btn);
+      }
+
+      document.getElementById('modal-loaded-dice').style.display = 'flex';
+    }
+
+    async function confirmLoadedDiceChoice(chosenNumber) {
+      const sid = matchSessionId;
+      const user = gameState.players[gameState.turnIndex];
+      const pending = gameState.pendingSkill;
+      closeAllSkillModals();
+
+      if (!pending || !user) return;
+      user.skills.splice(pending.skillIndex, 1);
+
+      gameState.isBusy = true;
+      gameState.loadedValue = Math.max(1, Math.min(12, Number(chosenNumber) || 6));
+      playSkillSfx('loaded');
+      triggerExplosionVisual(user.pos, '🎲');
+      setLog(`🎲 DADU SAKTI! ${user.name} mengunci angka dadu menjadi ${gameState.loadedValue}!`);
+      updateUI();
+
+      if (!(await trackedSleep(650, sid))) return;
+      gameState.isBusy = false;
+      updateUI();
     }
 
     function openManualStealModal() {
@@ -2698,6 +2839,7 @@
             <div class="flex items-center gap-1.5">
               <span class="w-2.5 h-2.5 rounded-full ${victim.theme.dot}"></span>
               <span class="text-xs font-extrabold">${victim.name}</span>
+              ${victim.charmActive ? '<span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-400/50 px-1.5 rounded">🧿 Jimat</span>' : ''}
               ${victim.shield ? '<span class="text-[10px] bg-sky-500/20 text-sky-400 border border-sky-400/50 px-1.5 rounded">🛡️ Tameng</span>' : ''}
             </div>
             <span class="theme-muted text-[10px]">Petak ${victim.pos}</span>
@@ -2761,7 +2903,7 @@
           }
           const stolenSkill = SKILL_CATALOG[stolenKey];
           triggerExplosionVisual(victim.pos, '🤏');
-          setLog(`🤏 COPET! ${user.name} mencuri ${stolenSkill.icon} ${stolenSkill.name} dari ${victim.name}!`);
+          setLog(`🤏 COPET! ${user.name} mencuri ${stolenSkill.icon} ${stolenSkill.name} dari ${victim.name}${victim.charmActive ? ' (Jimat tidak menahan Copet)' : ''}!`);
         }
       }
 
@@ -2771,24 +2913,142 @@
       updateUI();
     }
 
+    async function applyTargetedEffectToPlayer(skillKey, caster, victim, sid) {
+      if (!victim || sid !== matchSessionId) return;
+
+      if (victim.shield) {
+        victim.shield = false;
+        playSkillSfx('shield');
+        triggerExplosionVisual(victim.pos, '🛡️');
+        setLog(`🛡️ ${victim.name} memblokir ${SKILL_CATALOG[skillKey].name} dari ${caster.name} dengan Tameng!`);
+        updateUI();
+        if (!(await trackedSleep(850, sid))) return;
+        return;
+      }
+
+      if (skillKey === 'portal_warp') {
+        const maxDest = gameState.maxTile - 1;
+        const destTile = Math.floor(Math.random() * maxDest) + 1;
+        triggerExplosionVisual(victim.pos, '🌀');
+        setLog(`🌀 PORTAL WARP! ${victim.name} terlempar ke petak acak ${destTile}!`);
+        victim.pos = destTile;
+        updateUI();
+        triggerExplosionVisual(destTile, '✨');
+        if (!(await trackedSleep(750, sid))) return;
+
+        await resolveTileBoardEffects(victim, sid, 'Portal Warp');
+      } else if (skillKey === 'freeze') {
+        const wipedCount = victim.skills.length;
+        victim.skills = [];
+        victim.paralyzed = true;
+        triggerExplosionVisual(victim.pos, '☠️');
+        setLog(`☠️ LUMPUH! ${victim.name} lumpuh (stop 1 ronde & ${wipedCount} kartu skill musnah)!`);
+        updateUI();
+        if (!(await trackedSleep(900, sid))) return;
+      } else if (skillKey === 'hook') {
+        const fromPos = victim.pos;
+        const toPos = caster.pos;
+
+        if (fromPos <= toPos) {
+          setLog(`🪝 Efek Hook tidak dapat menarik ${victim.name} dari petak ${fromPos} ke ${toPos}.`);
+          if (!(await trackedSleep(750, sid))) return;
+        } else {
+          setLog(`🪝 HOOK! ${victim.name} tertarik dari petak ${fromPos} ke petak ${toPos}!`);
+          if (!(await animateHookPull(toPos, fromPos, sid))) return;
+          victim.pos = toPos;
+          updateUI();
+          if (!(await trackedSleep(750, sid))) return;
+
+          await resolveTileBoardEffects(victim, sid, 'Hook');
+        }
+      } else if (skillKey === 'bomb') {
+        triggerExplosionVisual(victim.pos, '💥');
+        document.getElementById('app-container').classList.add('shake-effect');
+        setTimeout(() => document.getElementById('app-container')?.classList.remove('shake-effect'), 500);
+
+        const destPos = Math.max(1, victim.pos - 10);
+        setLog(`💣 BOOM! ${victim.name} terpental mundur 10 langkah ke petak ${destPos}!`);
+        if (!(await movePlayerStepByStep(victim.index, destPos, sid))) return;
+
+        await resolveTileBoardEffects(victim, sid, 'Ledakan Bom');
+      } else if (skillKey === 'snake_curse') {
+        const snakeHeads = Object.keys(gameState.snakes).map(Number).sort((a, b) => b - a);
+        const chosenHead = snakeHeads.find(h => h <= victim.pos);
+
+        if (chosenHead) {
+          const snakeTail = gameState.snakes[chosenHead];
+          triggerExplosionVisual(victim.pos, '🐍');
+          setLog(`🐍 KUTUKAN ULAR! ${victim.name} terseret ke kepala ular ${chosenHead} → meluncur ke ${snakeTail}!`);
+          victim.pos = chosenHead;
+          updateUI();
+          if (!(await trackedSleep(560, sid))) return;
+          playSfx('snake');
+          victim.pos = snakeTail;
+          updateUI();
+          if (!(await trackedSleep(700, sid))) return;
+        } else {
+          const fallbackDest = Math.max(1, victim.pos - 8);
+          triggerExplosionVisual(victim.pos, '🐍');
+          setLog(`🐍 KUTUKAN ULAR! Tak ada ular di belakang ${victim.name}, mundur 8 langkah ke petak ${fallbackDest}!`);
+          if (!(await movePlayerStepByStep(victim.index, fallbackDest, sid))) return;
+
+          await resolveTileBoardEffects(victim, sid, 'Kutukan Ular');
+        }
+      }
+    }
+
     async function executeInstantSkill(skillKey, user) {
       const sid = matchSessionId;
       gameState.isBusy = true;
       playSkillSfx(skillKey);
       updateUI();
 
-      if (skillKey === 'loaded') {
-        gameState.loadedActive = true;
-        triggerExplosionVisual(user.pos, '🎯');
-        setLog(`🎯 DADU SAKTI! Kocokan dadu ${user.name} giliran ini dipastikan keluar angka 4–6!`);
+      if (skillKey === 'charm_reflect') {
+        user.charmActive = true;
+        triggerExplosionVisual(user.pos, '🧿');
+        setLog(`🧿 JIMAT PANTUL AKTIF! ${user.name} memantulkan skill target & kebal skill chaos (kecuali Copet)!`);
         updateUI();
-        if (!(await trackedSleep(800, sid))) return;
+        if (!(await trackedSleep(850, sid))) return;
+      }
+      else if (skillKey === 'sprint_dash') {
+        const destPos = Math.min(gameState.maxTile, user.pos + 10);
+        const startPos = user.pos;
+        triggerExplosionVisual(user.pos, '🏃');
+        setLog(`🏃 LARI CEPAT! ${user.name} berlari maju 10 langkah ke petak ${destPos}...`);
+        if (!(await movePlayerStepByStep(user.index, destPos, sid))) return;
+
+        if (user.pos === gameState.maxTile) {
+          declareWinner(user);
+          return;
+        }
+
+        const passedTiles = [];
+        for (let t = startPos + 1; t <= destPos; t++) passedTiles.push(t);
+        if (passedTiles.some(t => gameState.mysteryTiles.includes(t))) {
+          const ok = await grantRandomSkillWithGacha(user, sid);
+          if (!ok) return;
+        }
+
+        await resolveTileBoardEffects(user, sid, 'Lari Cepat');
+        if (sid !== matchSessionId) return;
+
+        if (user.pos === gameState.maxTile) {
+          declareWinner(user);
+          return;
+        }
+      }
+      else if (skillKey === 'loaded') {
+        gameState.loadedValue = 6;
+        triggerExplosionVisual(user.pos, '🎲');
+        setLog(`🎲 DADU SAKTI! Kocokan dadu ${user.name} aktif.`);
+        updateUI();
+        if (!(await trackedSleep(700, sid))) return;
       }
       else if (skillKey === 'ladder_boost') {
         const climbInfo = calculateEmergencyLadderDestination(user.pos);
         if (climbInfo.viaBase) {
           triggerExplosionVisual(user.pos, '🪜');
-          setLog(`🪜 TANGGA DARURAT! ${user.name} loncat ke tangga ${climbInfo.viaBase} dan memanjat tinggi ke petak ${climbInfo.destTile}!`);
+          setLog(`🪜 TANGGA DARURAT! ${user.name} menuju tangga terdekat di petak ${climbInfo.viaBase} dan memanjat ke petak ${climbInfo.destTile}!`);
           user.pos = climbInfo.viaBase;
           updateUI();
           if (!(await trackedSleep(560, sid))) return;
@@ -2799,17 +3059,11 @@
           if (!(await trackedSleep(750, sid))) return;
         } else {
           triggerExplosionVisual(user.pos, '🪜');
-          setLog(`🪜 TANGGA DARURAT RAKSASA! ${user.name} memanjat tinggi dari petak ${user.pos} ke petak ${climbInfo.destTile}!`);
-          if (!(await trackedSleep(480, sid))) return;
-          playSfx('ladder');
-          user.pos = climbInfo.destTile;
-          updateUI();
-          triggerExplosionVisual(climbInfo.destTile, '✨');
-          if (!(await trackedSleep(750, sid))) return;
+          setLog(`🪜 TANGGA DARURAT! Tak ada tangga di depan, ${user.name} naik 8 langkah dari petak ${user.pos} ke petak ${climbInfo.destTile}!`);
+          if (!(await movePlayerStepByStep(user.index, climbInfo.destTile, sid))) return;
+          await resolveTileBoardEffects(user, sid, 'Tangga Darurat');
+          if (sid !== matchSessionId) return;
         }
-
-        await resolveTileBoardEffects(user, sid, 'Tangga Darurat');
-        if (sid !== matchSessionId) return;
       }
       else if (skillKey === 'rocket_col') {
         const startCoord = getTileCoordinates(user.pos);
@@ -2852,7 +3106,10 @@
 
         gameState.players.forEach((p) => {
           if (p.index === user.index) return;
-          if (p.shield) {
+          if (p.charmActive) {
+            blockedCount++;
+            triggerExplosionVisual(p.pos, '🧿');
+          } else if (p.shield) {
             p.shield = false;
             blockedCount++;
             triggerExplosionVisual(p.pos, '🛡️');
@@ -2864,7 +3121,7 @@
         });
 
         triggerExplosionVisual(user.pos, '🧲');
-        setLog(`🧲 MAGNET RAKSASA! ${user.name} menarik ${pulledCount} pemain ke petak ${user.pos}${blockedCount > 0 ? ` (${blockedCount} ditahan Tameng)` : ''}!`);
+        setLog(`🧲 MAGNET RAKSASA! ${user.name} menarik ${pulledCount} pemain ke petak ${user.pos}${blockedCount > 0 ? ` (${blockedCount} kebal Tameng/Jimat)` : ''}!`);
         updateUI();
         if (!(await trackedSleep(950, sid))) return;
 
@@ -2879,7 +3136,10 @@
 
         gameState.players.forEach((p) => {
           if (p.index === user.index) return;
-          if (p.shield) {
+          if (p.charmActive) {
+            blockedCount++;
+            triggerExplosionVisual(p.pos, '🧿');
+          } else if (p.shield) {
             p.shield = false;
             blockedCount++;
             triggerExplosionVisual(p.pos, '🛡️');
@@ -2890,7 +3150,7 @@
           }
         });
 
-        setLog(`❄️ BADAI BEKU! ${user.name} membekukan ${frozenCount} lawan dengan es biru${blockedCount > 0 ? ` (${blockedCount} ditahan Tameng)` : ''}!`);
+        setLog(`❄️ BADAI BEKU! ${user.name} membekukan ${frozenCount} lawan dengan es biru${blockedCount > 0 ? ` (${blockedCount} kebal Tameng/Jimat)` : ''}!`);
         updateUI();
         if (!(await trackedSleep(950, sid))) return;
       }
@@ -2901,9 +3161,13 @@
         const maxSafe = gameState.maxTile - 1;
         const minSafe = 1;
         const movedPlayers = [];
+        let immuneCharmCount = 0;
 
         gameState.players.forEach((p) => {
-          if (p.index !== user.index && p.shield) {
+          if (p.index !== user.index && p.charmActive) {
+            immuneCharmCount++;
+            triggerExplosionVisual(p.pos, '🧿');
+          } else if (p.index !== user.index && p.shield) {
             p.shield = false;
             triggerExplosionVisual(p.pos, '🛡️');
           } else {
@@ -2913,7 +3177,7 @@
           }
         });
 
-        setLog(`🌪️ CHAOS SHUFFLE! ${user.name} mengacak ulang posisi semua pemain di papan!`);
+        setLog(`🌪️ CHAOS SHUFFLE! ${user.name} mengacak posisi pemain${immuneCharmCount > 0 ? ` (${immuneCharmCount} kebal Jimat)` : ''}!`);
         updateUI();
         if (!(await trackedSleep(1000, sid))) return;
 
@@ -2950,7 +3214,8 @@
 
         let statusTag = '';
         if (isSelf) statusTag += '<span class="text-[10px] bg-teal-500/20 text-teal-400 border border-teal-400/50 px-1.5 rounded ml-1.5">Diri Sendiri</span>';
-        if (candidate.shield) statusTag += '<span class="text-xs ml-1">🛡️</span>';
+        if (candidate.charmActive) statusTag += '<span class="text-xs ml-1" title="Jimat Pantul">🧿</span>';
+        if (candidate.shield) statusTag += '<span class="text-xs ml-1" title="Tameng">🛡️</span>';
         if (candidate.frozen) statusTag += '<span class="text-xs ml-1">❄️</span>';
         if (candidate.paralyzed) statusTag += '<span class="text-xs ml-1">☠️</span>';
 
@@ -3072,7 +3337,7 @@
       document.getElementById('app-container').classList.add('shake-effect');
       setTimeout(() => document.getElementById('app-container')?.classList.remove('shake-effect'), 500);
 
-      setLog(`🕳️ BLACK HOLE${isRandom ? ' (ACAK)' : ''} muncul di petak ${holeTile}! Menyedot semua lawan (kecuali ${user.name})...`);
+      setLog(`🕳️ BLACK HOLE${isRandom ? ' (ACAK)' : ''} muncul di petak ${holeTile}! Menyedot lawan...`);
       updateUI();
       if (!(await trackedSleep(650, sid))) return;
 
@@ -3082,7 +3347,10 @@
 
       gameState.players.forEach((p) => {
         if (p.index === user.index) return;
-        if (p.shield) {
+        if (p.charmActive) {
+          blockedCount++;
+          triggerExplosionVisual(p.pos, '🧿');
+        } else if (p.shield) {
           p.shield = false;
           blockedCount++;
           triggerExplosionVisual(p.pos, '🛡️');
@@ -3093,7 +3361,7 @@
         }
       });
 
-      setLog(`🕳️ GRAVITASI BLACK HOLE! ${suckedCount} lawan tersedot ke petak ${holeTile}${blockedCount > 0 ? ` (${blockedCount} ditahan Tameng)` : ''}!`);
+      setLog(`🕳️ GRAVITASI BLACK HOLE! ${suckedCount} lawan tersedot ke petak ${holeTile}${blockedCount > 0 ? ` (${blockedCount} kebal Tameng/Jimat)` : ''}!`);
       updateUI();
       if (!(await trackedSleep(900, sid))) return;
 
@@ -3128,7 +3396,7 @@
     }
 
     function closeAllSkillModals() {
-      ['modal-steal', 'modal-target', 'modal-tile-picker'].forEach((id) => {
+      ['modal-steal', 'modal-target', 'modal-loaded-dice', 'modal-tile-picker'].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
       });
@@ -3140,6 +3408,19 @@
       updateUI();
 
       const isSelfTarget = target.index === user.index;
+
+      if (!isSelfTarget && target.charmActive) {
+        playSkillSfx('charm_reflect');
+        triggerExplosionVisual(target.pos, '🧿');
+        setLog(`🧿 JIMAT PANTUL! ${SKILL_CATALOG[skillKey].name} dari ${user.name} dipantulkan kembali ke ${user.name}!`);
+        updateUI();
+        if (!(await trackedSleep(850, sid))) return;
+        await applyTargetedEffectToPlayer(skillKey, target, user, sid);
+        if (sid !== matchSessionId) return;
+        gameState.isBusy = false;
+        updateUI();
+        return;
+      }
 
       if (!isSelfTarget && target.shield) {
         target.shield = false;
@@ -3155,20 +3436,7 @@
 
       playSkillSfx(skillKey);
 
-      if (skillKey === 'portal_warp') {
-        const maxDest = gameState.maxTile - 1;
-        const destTile = Math.floor(Math.random() * maxDest) + 1;
-        triggerExplosionVisual(target.pos, '🌀');
-        setLog(`🌀 PORTAL WARP! ${user.name} mengirim ${isSelfTarget ? 'dirinya sendiri' : target.name} ke petak acak ${destTile}!`);
-        target.pos = destTile;
-        updateUI();
-        triggerExplosionVisual(destTile, '✨');
-        if (!(await trackedSleep(750, sid))) return;
-
-        await resolveTileBoardEffects(target, sid, 'Portal Warp');
-        if (sid !== matchSessionId) return;
-      }
-      else if (skillKey === 'swap') {
+      if (skillKey === 'swap') {
         const tempPos = user.pos;
         user.pos = target.pos;
         target.pos = tempPos;
@@ -3183,70 +3451,9 @@
         if (sid !== matchSessionId) return;
         await resolveTileBoardEffects(target, sid, 'Swap');
         if (sid !== matchSessionId) return;
-      }
-      else if (skillKey === 'freeze') {
-        const wipedCount = target.skills.length;
-        target.skills = [];
-        target.paralyzed = true;
-        triggerExplosionVisual(target.pos, '☠️');
-        setLog(`☠️ LUMPUH! ${user.name} melumpuhkan ${target.name} (stop 1 ronde & ${wipedCount} kartu skill musnah)!`);
-        updateUI();
-        if (!(await trackedSleep(950, sid))) return;
-      }
-      else if (skillKey === 'hook') {
-        const fromPos = target.pos;
-        const toPos = user.pos;
-
-        if (fromPos <= toPos) {
-          setLog(`🪝 ${user.name} menarik ${target.name}, namun posisinya tidak berada di depan.`);
-          if (!(await trackedSleep(800, sid))) return;
-        } else {
-          setLog(`🪝 HOOK! ${user.name} menarik ${target.name} dari petak ${fromPos} mundur ke petak ${toPos}!`);
-          if (!(await animateHookPull(toPos, fromPos, sid))) return;
-          target.pos = toPos;
-          updateUI();
-          if (!(await trackedSleep(750, sid))) return;
-
-          await resolveTileBoardEffects(target, sid, 'Hook');
-          if (sid !== matchSessionId) return;
-        }
-      }
-      else if (skillKey === 'bomb') {
-        triggerExplosionVisual(target.pos, '💥');
-        document.getElementById('app-container').classList.add('shake-effect');
-        setTimeout(() => document.getElementById('app-container')?.classList.remove('shake-effect'), 500);
-
-        const destPos = Math.max(1, target.pos - 10);
-        setLog(`💣 BOOM! ${user.name} meledakkan ${target.name} mundur 10 langkah ke petak ${destPos}!`);
-        if (!(await movePlayerStepByStep(target.index, destPos, sid))) return;
-
-        await resolveTileBoardEffects(target, sid, 'Ledakan Bom');
+      } else {
+        await applyTargetedEffectToPlayer(skillKey, user, target, sid);
         if (sid !== matchSessionId) return;
-      }
-      else if (skillKey === 'snake_curse') {
-        const snakeHeads = Object.keys(gameState.snakes).map(Number).sort((a, b) => b - a);
-        const chosenHead = snakeHeads.find(h => h <= target.pos);
-
-        if (chosenHead) {
-          const snakeTail = gameState.snakes[chosenHead];
-          triggerExplosionVisual(target.pos, '🐍');
-          setLog(`🐍 KUTUKAN ULAR! ${user.name} menyeret ${target.name} ke kepala ular ${chosenHead} → meluncur ke ${snakeTail}!`);
-          target.pos = chosenHead;
-          updateUI();
-          if (!(await trackedSleep(560, sid))) return;
-          playSfx('snake');
-          target.pos = snakeTail;
-          updateUI();
-          if (!(await trackedSleep(700, sid))) return;
-        } else {
-          const fallbackDest = Math.max(1, target.pos - 8);
-          triggerExplosionVisual(target.pos, '🐍');
-          setLog(`🐍 KUTUKAN ULAR! Tak ada ular di belakang ${target.name}, dipaksa mundur 8 langkah ke petak ${fallbackDest}!`);
-          if (!(await movePlayerStepByStep(target.index, fallbackDest, sid))) return;
-
-          await resolveTileBoardEffects(target, sid, 'Kutukan Ular');
-          if (sid !== matchSessionId) return;
-        }
       }
 
       gameState.isBusy = false;
@@ -3383,14 +3590,15 @@
 
       diceBox.classList.remove('dice-rolling');
 
-      const isLoaded = gameState.loadedActive;
+      const chosenLoaded = gameState.loadedValue;
+      const isLoaded = chosenLoaded !== null;
       const baseRoll = isLoaded
-        ? (4 + Math.floor(Math.random() * 3))
+        ? chosenLoaded
         : (Math.floor(Math.random() * 6) + 1);
       const isTurbo = gameState.turboActive;
       const finalSteps = isTurbo ? baseRoll * 5 : baseRoll;
 
-      gameState.loadedActive = false;
+      gameState.loadedValue = null;
       gameState.turboActive = false;
 
       renderDiceFace(baseRoll, isTurbo);
@@ -3551,7 +3759,16 @@
           if (shouldUse) {
             bot.skills.splice(skillIndex, 1);
 
-            if (skill.mode === 'manual_steal') {
+            if (skill.mode === 'loaded_dice') {
+              const needed = gameState.maxTile - bot.pos;
+              const pick = (needed >= 1 && needed <= 12) ? needed : (8 + Math.floor(Math.random() * 5));
+              gameState.loadedValue = pick;
+              playSkillSfx('loaded');
+              triggerExplosionVisual(bot.pos, '🎲');
+              setLog(`🎲 DADU SAKTI! ${bot.name} memilih angka dadu ${pick}!`);
+              updateUI();
+              if (!(await trackedSleep(750, sid))) return;
+            } else if (skill.mode === 'manual_steal') {
               const richVictims = opponents.filter(o => o.skills.length > 0);
               if (richVictims.length > 0) {
                 const victim = richVictims[0];
