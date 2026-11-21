@@ -78,7 +78,6 @@
       font-family: var(--font-display);
     }
 
-    /* Surface theming helpers */
     .theme-card {
       background: var(--card-bg);
       border-color: var(--card-border);
@@ -106,7 +105,16 @@
       color: var(--text-muted);
     }
 
-    /* Custom subtle scrollbars for horizontal strips */
+    .btn-menu-polished {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      border: 1px solid rgba(196, 181, 253, 0.45);
+      box-shadow: 0 4px 12px -2px rgba(79, 70, 229, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    }
+    .btn-menu-polished:hover {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      box-shadow: 0 6px 16px -2px rgba(99, 102, 241, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    }
+
     .clean-scroll::-webkit-scrollbar {
       height: 4px;
       width: 4px;
@@ -119,7 +127,6 @@
       border-radius: 999px;
     }
 
-    /* Shell responsif portrait HP dengan safe-area-inset */
     .app-shell {
       width: 100%;
       max-width: 480px;
@@ -136,7 +143,6 @@
       box-sizing: border-box;
     }
 
-    /* Strip pemain horizontal agar 2-16 pemain tidak memanjangkan layar */
     .players-strip {
       display: flex;
       gap: 6px;
@@ -152,7 +158,6 @@
       touch-action: manipulation;
     }
 
-    /* Papan kotak proporsional di layar portrait */
     .board-wrapper {
       width: 100%;
       display: flex;
@@ -193,9 +198,6 @@
       border: 0.5px solid var(--cell-border);
     }
 
-    /* =========================================================================
-       REFINED SKILL DOCK & CARD STYLING (RAPI, PROPORSIONAL, SENTUH NYAMAN)
-       ========================================================================= */
     .skill-hand-strip {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -262,7 +264,83 @@
       text-align: center;
     }
 
-    /* Animasi getar layar saat ledakan / chaos / magnet / black hole */
+    /* Animasi Dadu 3D-feel & Pip Dots */
+    .dice-cube {
+      position: relative;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 55%, #cbd5e1 100%);
+      border: 2px solid #94a3b8;
+      box-shadow:
+        0 4px 0 #64748b,
+        0 7px 14px rgba(0, 0, 0, 0.38),
+        inset 0 2px 3px rgba(255, 255, 255, 0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s ease;
+    }
+
+    .dice-pips-grid {
+      width: 76%;
+      height: 76%;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      align-items: center;
+      justify-items: center;
+    }
+
+    .dice-pip {
+      width: 6.5px;
+      height: 6.5px;
+      border-radius: 999px;
+      background: #0f172a;
+      box-shadow: inset 0 1px 1.5px rgba(0, 0, 0, 0.65), 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .dice-pip.pip-one {
+      width: 8px;
+      height: 8px;
+      background: #dc2626;
+    }
+
+    @keyframes diceGameTumble {
+      0% {
+        transform: translateY(0px) rotate(0deg) scale(1);
+        box-shadow: 0 4px 0 #64748b, 0 7px 14px rgba(0, 0, 0, 0.38);
+      }
+      25% {
+        transform: translateY(-9px) rotate(95deg) scale(1.14);
+        box-shadow: 0 12px 0 #64748b, 0 18px 22px rgba(0, 0, 0, 0.45);
+      }
+      50% {
+        transform: translateY(2px) rotate(190deg) scale(0.94);
+        box-shadow: 0 2px 0 #64748b, 0 4px 8px rgba(0, 0, 0, 0.35);
+      }
+      75% {
+        transform: translateY(-7px) rotate(280deg) scale(1.1);
+        box-shadow: 0 10px 0 #64748b, 0 15px 20px rgba(0, 0, 0, 0.42);
+      }
+      100% {
+        transform: translateY(0px) rotate(360deg) scale(1);
+        box-shadow: 0 4px 0 #64748b, 0 7px 14px rgba(0, 0, 0, 0.38);
+      }
+    }
+    .dice-rolling {
+      animation: diceGameTumble 0.36s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+    }
+
+    @keyframes diceLandPop {
+      0% { transform: scale(1.24) rotate(-8deg); }
+      55% { transform: scale(0.93) rotate(4deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+    .dice-land-pop {
+      animation: diceLandPop 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
     @keyframes screenShake {
       0%, 100% { transform: translate(0, 0) rotate(0deg); }
       20% { transform: translate(-6px, 4px) rotate(-1deg); }
@@ -274,26 +352,29 @@
       animation: screenShake 0.48s cubic-bezier(.36,.07,.19,.97) both;
     }
 
-    /* Animasi kocok dadu santai & jelas */
-    @keyframes diceRoll {
-      0% { transform: rotate(0deg) scale(1); }
-      20% { transform: rotate(-22deg) scale(1.16); }
-      40% { transform: rotate(20deg) scale(0.94); }
-      60% { transform: rotate(-16deg) scale(1.14); }
-      80% { transform: rotate(14deg) scale(0.98); }
-      100% { transform: rotate(0deg) scale(1); }
+    @keyframes gachaFlashTick {
+      0% { transform: scale(0.92); }
+      50% { transform: scale(1.04); }
+      100% { transform: scale(1); }
     }
-    .dice-rolling {
-      animation: diceRoll 0.45s ease-in-out infinite;
+    .gacha-tick-pop {
+      animation: gachaFlashTick 0.11s ease-out;
     }
 
-    /* Kecepatan gerak pion nyaman diikuti (430ms per langkah, transisi 0.4s) */
+    @keyframes gachaLockImpact {
+      0% { transform: scale(1.22); }
+      55% { transform: scale(0.95); }
+      100% { transform: scale(1); }
+    }
+    .gacha-lock-impact {
+      animation: gachaLockImpact 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
     .player-token {
       transition: left 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.4s cubic-bezier(0.22, 1, 0.36, 1), transform 0.35s ease;
       will-change: left, top;
     }
 
-    /* Aura pelindung Tameng */
     @keyframes shieldPulse {
       0%, 100% { box-shadow: 0 0 0 2.5px rgba(56, 189, 248, 0.95), 0 0 10px rgba(56, 189, 248, 0.8); }
       50% { box-shadow: 0 0 0 4.5px rgba(125, 211, 252, 0.55), 0 0 16px rgba(56, 189, 248, 1); }
@@ -302,7 +383,14 @@
       animation: shieldPulse 1.5s infinite;
     }
 
-    /* Aura racun / lumpuh */
+    @keyframes freezePulse {
+      0%, 100% { filter: brightness(1.15) saturate(1.25); box-shadow: 0 0 0 2.5px rgba(56, 189, 248, 0.98), 0 0 13px rgba(14, 165, 233, 0.92); }
+      50% { filter: brightness(1.32) saturate(1.4); box-shadow: 0 0 0 4.5px rgba(186, 230, 253, 0.75), 0 0 18px rgba(56, 189, 248, 1); }
+    }
+    .freeze-aura {
+      animation: freezePulse 1.2s infinite;
+    }
+
     @keyframes poisonPulse {
       0%, 100% { filter: brightness(1.12) saturate(1.3); box-shadow: 0 0 0 2.5px rgba(74, 222, 128, 0.95), 0 0 12px rgba(22, 163, 74, 0.9); }
       50% { filter: brightness(1.32) saturate(1.5); box-shadow: 0 0 0 4px rgba(163, 230, 53, 0.65), 0 0 18px rgba(21, 128, 61, 1); }
@@ -311,7 +399,6 @@
       animation: poisonPulse 1.2s infinite;
     }
 
-    /* Animasi pusaran Black Hole */
     @keyframes blackHoleSpin {
       0% { transform: translate(-50%, -50%) rotate(0deg) scale(0.92); }
       50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.12); }
@@ -322,7 +409,6 @@
       pointer-events: none;
     }
 
-    /* Efek ledakan / kemunculan emoji di papan */
     @keyframes boomPop {
       0% { transform: translate(-50%, -50%) scale(0.2); opacity: 1; }
       60% { transform: translate(-50%, -50%) scale(1.4); opacity: 1; }
@@ -336,10 +422,8 @@
 </head>
 <body>
 
-  <!-- CONTAINER UTAMA GAME -->
   <div id="app-container" class="app-shell">
 
-    <!-- HEADER IN-GAME -->
     <header class="theme-card flex items-center justify-between backdrop-blur-md border rounded-2xl px-2.5 py-1.5 shadow-lg gap-1">
       <div class="flex items-center gap-1.5 min-w-0">
         <span class="text-xl shrink-0">🐍</span>
@@ -352,37 +436,29 @@
       </div>
 
       <div class="flex items-center gap-1 shrink-0">
-        <!-- Toggle Mode Terang / Gelap -->
         <button type="button" id="btn-theme-toggle" onclick="toggleThemeMode()" title="Ganti Mode Terang / Gelap" class="theme-btn-neutral min-h-[40px] px-2 py-1 rounded-xl border active:scale-95 transition text-[11px] font-bold cursor-pointer">
           ☀️
         </button>
-        <!-- Tombol Info Skill -->
         <button type="button" onclick="window.openSkillGuide()" title="Buku Panduan Skill" class="min-h-[40px] px-2 py-1 rounded-xl bg-amber-500/20 hover:bg-amber-500/35 active:scale-95 border border-amber-500/70 text-[10.5px] font-bold text-amber-500 transition flex items-center gap-0.5 cursor-pointer">
           <span>📖</span>
           <span>Skill</span>
         </button>
-        <!-- Tombol Mute / Unmute SFX -->
         <button type="button" id="btn-sfx-toggle" onclick="toggleSfxMute()" title="Mute / Unmute Efek Suara" class="theme-btn-neutral min-h-[40px] px-1.5 py-1 rounded-xl border active:scale-95 text-amber-500 transition text-[10.5px] font-bold cursor-pointer">
           🔊
         </button>
-        <!-- Tombol Mute / Unmute BGM -->
         <button type="button" id="btn-bgm-toggle" onclick="toggleBgmMute()" title="Mute / Unmute Musik Latar" class="theme-btn-neutral min-h-[40px] px-1.5 py-1 rounded-xl border active:scale-95 text-cyan-500 transition text-[10.5px] font-bold cursor-pointer">
           🎵
         </button>
-        <!-- Tombol Menu (Mulai Ulang & Back) -->
-        <button type="button" onclick="openGameMenuModal()" class="min-h-[40px] px-2.5 py-1 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-[10.5px] font-bold text-white shadow transition flex items-center gap-1 cursor-pointer">
-          <span>☰</span>
-          <span>Menu</span>
+        <button type="button" onclick="openGameMenuModal()" class="btn-menu-polished min-h-[40px] px-3 py-1 rounded-xl active:scale-95 text-[11px] font-bold text-white transition flex items-center gap-1.5 cursor-pointer">
+          <span class="text-xs leading-none">☰</span>
+          <span class="tracking-wide">Menu</span>
         </button>
       </div>
     </header>
 
-    <!-- STATUS PEMAIN & LOG AKSI (KARTU LAWAN DISEMBUNYIKAN KECUALI PUNYA COPET) -->
     <section class="theme-card backdrop-blur-md border rounded-2xl p-2 shadow-lg flex flex-col gap-1.5">
-      <!-- Strip horizontal daftar pemain (2-16) -->
       <div id="players-status-strip" class="players-strip clean-scroll"></div>
 
-      <!-- Log Aksi -->
       <div class="theme-subcard border rounded-xl px-2.5 py-1.5 flex items-center gap-2">
         <span class="text-xs shrink-0">📢</span>
         <p id="action-log" class="text-[11px] font-semibold text-amber-500 truncate">
@@ -391,7 +467,6 @@
       </div>
     </section>
 
-    <!-- PAPAN ULAR TANGGA KOTAK -->
     <main class="board-wrapper">
       <div class="board-stage">
         <div id="board-grid" class="board-grid"></div>
@@ -401,9 +476,7 @@
       </div>
     </main>
 
-    <!-- PANEL KONTROL BAWAH: DOCK KARTU SKILL RAPI & DADU -->
     <section class="theme-card backdrop-blur-md border rounded-2xl p-2.5 shadow-xl flex flex-col gap-2">
-      <!-- Header Dock Kartu Skill -->
       <div>
         <div class="flex items-center justify-between gap-1.5 mb-1.5">
           <div class="flex items-center gap-1.5 min-w-0">
@@ -417,6 +490,9 @@
           </div>
 
           <div class="flex items-center gap-1.5 shrink-0">
+            <span id="loaded-indicator" class="hidden text-[9.5px] font-extrabold text-emerald-400 bg-emerald-500/20 border border-emerald-400/60 px-2 py-0.5 rounded-full animate-pulse">
+              🎯 DADU SAKTI
+            </span>
             <span id="turbo-indicator" class="hidden text-[9.5px] font-extrabold text-amber-400 bg-amber-500/20 border border-amber-400/60 px-2 py-0.5 rounded-full animate-pulse">
               ⚡ TURBO x5
             </span>
@@ -426,18 +502,14 @@
           </div>
         </div>
 
-        <!-- 3 Slot Kartu Skill Rapi -->
         <div id="skills-container" class="skill-hand-strip clean-scroll"></div>
       </div>
 
       <div class="h-px bg-slate-500/25 w-full"></div>
 
-      <!-- Baris Kocok Dadu -->
       <div class="flex items-center justify-between gap-2.5">
-        <div class="theme-subcard flex items-center gap-2 border rounded-xl px-2.5 py-1.5">
-          <div id="dice-box" class="w-10 h-10 rounded-xl bg-gradient-to-br from-white to-slate-200 text-slate-900 shadow-inner flex items-center justify-center font-game text-xl font-extrabold border-2 border-slate-300">
-            🎲
-          </div>
+        <div class="theme-subcard flex items-center gap-2.5 border rounded-xl px-2.5 py-1.5">
+          <div id="dice-box" class="dice-cube"></div>
           <div class="flex flex-col">
             <span class="theme-muted text-[9px] uppercase tracking-wider font-bold">Dadu</span>
             <span id="dice-status" class="text-[11px] font-bold text-emerald-500">Siap</span>
@@ -451,7 +523,6 @@
       </div>
     </section>
 
-    <!-- FOOTER COPYRIGHT PERMANEN IN-GAME -->
     <footer class="text-center py-0.5">
       <p class="theme-muted text-[11px] font-semibold tracking-wide">
         © 2026 <span class="text-amber-500 font-bold">Rexterco</span>. All rights reserved.
@@ -459,7 +530,26 @@
     </footer>
   </div>
 
-  <!-- MODAL MENU IN-GAME (MULAI ULANG & BACK) -->
+  <!-- OVERLAY GACHA ROULETTE SAAT MENDAPAT SKILL -->
+  <div id="gacha-roulette-overlay" style="display: none; z-index: 75;" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4 pointer-events-none">
+    <div class="theme-modal border-2 border-amber-400 rounded-3xl p-4 max-w-[270px] w-full text-center shadow-2xl flex flex-col items-center gap-2">
+      <div class="flex items-center justify-between w-full text-[10px] font-extrabold uppercase tracking-wider">
+        <span id="gacha-player-label" class="text-amber-400 truncate">🎰 Gacha Skill</span>
+        <span id="gacha-status-badge" class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/50">ROLLING...</span>
+      </div>
+
+      <div id="gacha-slot-card" class="w-full rounded-2xl border-2 p-3 bg-gradient-to-b from-indigo-600 to-slate-900 border-indigo-300 text-white flex flex-col items-center justify-center min-h-[118px] shadow-inner transition-colors">
+        <span id="gacha-slot-tier" class="text-[8.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded border bg-slate-950/70 text-slate-200 border-white/30 mb-1.5">
+          ★ ROLLING
+        </span>
+        <div id="gacha-slot-icon" class="text-4xl leading-none mb-1">❓</div>
+        <div id="gacha-slot-name" class="font-game text-base font-bold leading-tight">Mengacak Kartu...</div>
+        <div id="gacha-slot-desc" class="text-[10px] text-white/85 mt-0.5 line-clamp-1">Menunggu hasil gacha</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL MENU IN-GAME -->
   <div id="modal-game-menu" onclick="if(event.target === this) closeGameMenuModal()" style="display: none; z-index: 55;" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4">
     <div class="theme-modal border-2 border-indigo-500/80 rounded-3xl p-5 max-w-xs w-full text-center shadow-2xl flex flex-col gap-2.5">
       <div class="text-3xl">☰</div>
@@ -482,7 +572,7 @@
     </div>
   </div>
 
-  <!-- MODAL SETUP ARENA / LOBBY (2-16 PEMAIN & NAMA KUSTOM + MODE TERANG + TOMBOL KELUAR APLIKASI) -->
+  <!-- MODAL SETUP ARENA / LOBBY -->
   <div id="modal-setup" style="display: flex; z-index: 40;" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md items-center justify-center p-3 sm:p-4 overflow-y-auto">
     <div class="theme-modal border-2 border-indigo-500/80 rounded-3xl p-4 sm:p-5 max-w-sm w-full shadow-2xl flex flex-col gap-3 my-auto">
       <div class="flex items-center justify-between gap-1.5">
@@ -509,13 +599,11 @@
         </div>
       </div>
 
-      <!-- Pilihan Ukuran Papan -->
       <div>
         <label class="text-xs font-bold block mb-1.5">Ukuran Papan (Posisi Ular & Tangga Selalu Acak):</label>
         <div id="setup-board-buttons" class="grid grid-cols-3 gap-1.5"></div>
       </div>
 
-      <!-- Pilih Jumlah Pemain Kustom (2 s/d 16) -->
       <div>
         <div class="flex items-center justify-between mb-1.5">
           <label class="text-xs font-bold">Jumlah Pemain (2–16):</label>
@@ -534,7 +622,6 @@
         </div>
       </div>
 
-      <!-- Daftar Slot Pemain (Nama Kustom + Human/Bot) -->
       <div class="clean-scroll flex flex-col gap-1.5 max-h-[165px] overflow-y-auto pr-1" id="setup-slots-list"></div>
 
       <div class="flex flex-col gap-2">
@@ -548,7 +635,6 @@
         </button>
       </div>
 
-      <!-- Footer Copyright di Layar Setup -->
       <div class="text-center border-t border-slate-500/25 pt-2">
         <p class="theme-muted text-[11px] font-semibold">
           © 2026 <span class="text-amber-500 font-bold">Rexterco</span>. All rights reserved.
@@ -557,13 +643,13 @@
     </div>
   </div>
 
-  <!-- MODAL PEMBERITAHUAN KONFIRMASI KELUAR APLIKASI DI LOBBY -->
+  <!-- MODAL KONFIRMASI KELUAR APLIKASI -->
   <div id="modal-exit-app" onclick="if(event.target === this) closeExitAppModal()" style="display: none; z-index: 65;" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm items-center justify-center p-4">
     <div class="theme-modal border-2 border-rose-500/80 rounded-3xl p-5 max-w-xs w-full text-center shadow-2xl flex flex-col gap-3">
       <div class="text-4xl">🚪</div>
       <h3 class="font-game text-lg font-bold text-rose-400">Keluar Aplikasi?</h3>
       <p id="exit-app-message" class="theme-muted text-xs leading-relaxed">
-        Apakah kamu yakin ingin keluar dari aplikasi <strong>Ular Tangga 2D - Chaos Edition</strong>?
+        Apakah kamu yakin ingin keluar dari <strong>Ular Tangga 2D - Chaos Edition</strong>?
       </p>
       <div class="flex gap-2 mt-1">
         <button type="button" onclick="confirmExitApplication()" class="flex-1 min-h-[44px] py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-game text-xs font-bold shadow transition cursor-pointer">
@@ -576,7 +662,7 @@
     </div>
   </div>
 
-  <!-- MODAL COPET SKILL MANUAL (HANYA BISA DILIHAT SAAT PUNYA KARTU COPET) -->
+  <!-- MODAL COPET SKILL MANUAL -->
   <div id="modal-steal" style="display: none; z-index: 50;" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm items-center justify-center p-4">
     <div class="theme-modal border-2 border-pink-400/80 rounded-3xl p-5 max-w-sm w-full text-center shadow-2xl flex flex-col gap-3">
       <div>
@@ -593,12 +679,12 @@
     </div>
   </div>
 
-  <!-- MODAL PEMILIHAN TARGET PEMAIN -->
+  <!-- MODAL PEMILIHAN TARGET PEMAIN (TERMASUK DIRI SENDIRI UNTUK PORTAL WARP) -->
   <div id="modal-target" style="display: none; z-index: 50;" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4">
     <div class="theme-modal border-2 border-amber-400/80 rounded-3xl p-5 max-w-xs w-full text-center shadow-2xl">
-      <div id="target-modal-icon" class="text-3xl mb-1">🪝</div>
+      <div id="target-modal-icon" class="text-3xl mb-1">🌀</div>
       <h3 id="target-modal-title" class="font-game text-lg font-bold text-amber-400">Pilih Target Pemain</h3>
-      <p id="target-modal-desc" class="theme-muted text-xs mt-1 mb-3">Pilih lawan yang akan dikenai efek skill ini:</p>
+      <p id="target-modal-desc" class="theme-muted text-xs mt-1 mb-3">Pilih target yang akan dikenai efek skill ini:</p>
       <div id="target-players-list" class="clean-scroll flex flex-col gap-2 max-h-[240px] overflow-y-auto mb-3"></div>
       <button type="button" onclick="cancelTargetSelection()" class="theme-btn-neutral w-full min-h-[44px] py-2 rounded-xl text-xs font-bold border transition cursor-pointer">
         Batal
@@ -606,45 +692,22 @@
     </div>
   </div>
 
-  <!-- MODAL PILIH PETAK (SELF TELEPORT MANUAL & RANDOM / BLACK HOLE) -->
+  <!-- MODAL PILIH PETAK (BLACK HOLE: START 1 & ACAK + INPUT MANUAL) -->
   <div id="modal-tile-picker" style="display: none; z-index: 50;" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4">
     <div class="theme-modal border-2 border-cyan-400/80 rounded-3xl p-5 max-w-xs w-full text-center shadow-2xl">
-      <div id="tile-picker-icon" class="text-3xl mb-1">🌀✨</div>
-      <h3 id="tile-picker-title" class="font-game text-lg font-bold text-cyan-400">Pilih Petak Tujuan</h3>
-      <p id="tile-picker-desc" class="theme-muted text-xs mt-1 mb-3">Masukkan nomor petak tujuan:</p>
+      <div id="tile-picker-icon" class="text-3xl mb-1">🕳️🌌</div>
+      <h3 id="tile-picker-title" class="font-game text-lg font-bold text-cyan-400">Pasang Black Hole</h3>
+      <p id="tile-picker-desc" class="theme-muted text-xs mt-1 mb-3">Pilih Start 1, Acak, atau ketik nomor petak manual:</p>
       <div id="tile-picker-quick-picks" class="flex flex-wrap justify-center gap-1.5 mb-3"></div>
       <div class="flex items-center gap-2 mb-3">
         <input id="tile-picker-input" type="number" min="1" max="99" placeholder="Nomor petak..." class="theme-input w-full min-h-[44px] px-3 py-2 rounded-xl border text-center font-game text-base font-bold focus:outline-none focus:border-cyan-400" />
         <button type="button" id="tile-picker-confirm-btn" onclick="confirmTilePickerInput()" class="min-h-[44px] px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-game text-sm font-bold shrink-0 cursor-pointer">
-          Aktifkan
+          Pasang 🕳️
         </button>
       </div>
       <button type="button" onclick="cancelTargetSelection()" class="theme-btn-neutral w-full min-h-[44px] py-2 rounded-xl text-xs font-bold border transition cursor-pointer">
         Batal
       </button>
-    </div>
-  </div>
-
-  <!-- MODAL PEMILIHAN ANGKA DADU SAKTI (1 SAMPAI 12) -->
-  <div id="modal-loaded-dice" style="display: none; z-index: 50;" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4">
-    <div class="theme-modal border-2 border-amber-400/80 rounded-3xl p-5 max-w-xs w-full text-center shadow-2xl">
-      <div class="text-3xl mb-1">🎲✨</div>
-      <h3 class="font-game text-xl font-bold text-amber-400">Dadu Sakti Aktif!</h3>
-      <p class="theme-muted text-xs mt-1 mb-3">Pilih angka langkah yang kamu inginkan (1–12):</p>
-      <div class="grid grid-cols-4 gap-2">
-        <button type="button" onclick="selectLoadedDice(1)" class="theme-btn-neutral min-h-[44px] py-2.5 rounded-xl hover:bg-amber-500 hover:text-slate-950 border font-game text-base font-bold transition cursor-pointer">1</button>
-        <button type="button" onclick="selectLoadedDice(2)" class="theme-btn-neutral min-h-[44px] py-2.5 rounded-xl hover:bg-amber-500 hover:text-slate-950 border font-game text-base font-bold transition cursor-pointer">2</button>
-        <button type="button" onclick="selectLoadedDice(3)" class="theme-btn-neutral min-h-[44px] py-2.5 rounded-xl hover:bg-amber-500 hover:text-slate-950 border font-game text-base font-bold transition cursor-pointer">3</button>
-        <button type="button" onclick="selectLoadedDice(4)" class="theme-btn-neutral min-h-[44px] py-2.5 rounded-xl hover:bg-amber-500 hover:text-slate-950 border font-game text-base font-bold transition cursor-pointer">4</button>
-        <button type="button" onclick="selectLoadedDice(5)" class="theme-btn-neutral min-h-[44px] py-2.5 rounded-xl hover:bg-amber-500 hover:text-slate-950 border font-game text-base font-bold transition cursor-pointer">5</button>
-        <button type="button" onclick="selectLoadedDice(6)" class="theme-btn-neutral min-h-[44px] py-2.5 rounded-xl hover:bg-amber-500 hover:text-slate-950 border font-game text-base font-bold transition cursor-pointer">6</button>
-        <button type="button" onclick="selectLoadedDice(7)" class="theme-btn-neutral min-h-[44px] py-2.5 rounded-xl hover:bg-amber-500 hover:text-slate-950 border font-game text-base font-bold transition cursor-pointer">7</button>
-        <button type="button" onclick="selectLoadedDice(8)" class="theme-btn-neutral min-h-[44px] py-2.5 rounded-xl hover:bg-amber-500 hover:text-slate-950 border font-game text-base font-bold transition cursor-pointer">8</button>
-        <button type="button" onclick="selectLoadedDice(9)" class="theme-btn-neutral min-h-[44px] py-2.5 rounded-xl hover:bg-amber-500 hover:text-slate-950 border font-game text-base font-bold transition cursor-pointer">9</button>
-        <button type="button" onclick="selectLoadedDice(10)" class="theme-btn-neutral min-h-[44px] py-2.5 rounded-xl hover:bg-amber-500 hover:text-slate-950 border font-game text-base font-bold transition cursor-pointer">10</button>
-        <button type="button" onclick="selectLoadedDice(11)" class="theme-btn-neutral min-h-[44px] py-2.5 rounded-xl hover:bg-amber-500 hover:text-slate-950 border font-game text-base font-bold transition cursor-pointer">11</button>
-        <button type="button" onclick="selectLoadedDice(12)" class="theme-btn-neutral min-h-[44px] py-2.5 rounded-xl hover:bg-amber-500 hover:text-slate-950 border font-game text-base font-bold transition cursor-pointer">12</button>
-      </div>
     </div>
   </div>
 
@@ -670,7 +733,7 @@
     </div>
   </div>
 
-  <!-- MODAL BUKU PANDUAN '📖 INFO SKILL' (DENGAN KATEGORI & LABEL TIER) -->
+  <!-- MODAL BUKU PANDUAN '📖 INFO SKILL' -->
   <div id="skill-guide-overlay" onclick="if(event.target === this) window.closeSkillGuide()" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 14px;">
     <div style="width: 100%; max-width: 440px; max-height: 88vh; display: flex; flex-direction: column;" class="theme-modal border-2 border-amber-400 rounded-3xl p-4 shadow-2xl gap-2.5">
       <div class="flex items-center justify-between border-b border-slate-500/25 pb-2">
@@ -686,16 +749,12 @@
         </button>
       </div>
 
-      <div class="flex flex-col gap-1.5">
-        <div id="skill-filter-tabs" class="grid grid-cols-5 gap-1">
-          <button type="button" data-filter="all" onclick="window.setSkillFilter('all')" class="skill-tab-btn min-h-[36px] py-1 px-1 rounded-xl text-[9.5px] font-bold border bg-amber-400 text-slate-950 border-amber-300 cursor-pointer">Semua</button>
-          <button type="button" data-filter="COMMON" onclick="window.setSkillFilter('COMMON')" class="skill-tab-btn min-h-[36px] py-1 px-1 rounded-xl text-[9.5px] font-bold border bg-slate-800 text-slate-300 border-slate-700 cursor-pointer">Common</button>
-          <button type="button" data-filter="RARE" onclick="window.setSkillFilter('RARE')" class="skill-tab-btn min-h-[36px] py-1 px-1 rounded-xl text-[9.5px] font-bold border bg-slate-800 text-slate-300 border-slate-700 cursor-pointer">Rare</button>
-          <button type="button" data-filter="EPIC" onclick="window.setSkillFilter('EPIC')" class="skill-tab-btn min-h-[36px] py-1 px-1 rounded-xl text-[9.5px] font-bold border bg-slate-800 text-slate-300 border-slate-700 cursor-pointer">Epic</button>
-          <button type="button" data-filter="MYTHIC" onclick="window.setSkillFilter('MYTHIC')" class="skill-tab-btn min-h-[36px] py-1 px-1 rounded-xl text-[9.5px] font-bold border bg-slate-800 text-slate-300 border-slate-700 cursor-pointer">Mythic</button>
-        </div>
-
-        <input id="skill-search-input" type="text" oninput="window.renderSkillGuideList()" placeholder="🔍 Cari nama, tier, atau efek skill..." class="theme-input w-full min-h-[40px] px-3 py-1.5 rounded-xl border text-xs focus:outline-none focus:border-amber-400" />
+      <div id="skill-filter-tabs" class="grid grid-cols-5 gap-1">
+        <button type="button" data-filter="all" onclick="window.setSkillFilter('all')" class="skill-tab-btn min-h-[36px] py-1 px-1 rounded-xl text-[9.5px] font-bold border bg-amber-400 text-slate-950 border-amber-300 cursor-pointer">Semua</button>
+        <button type="button" data-filter="COMMON" onclick="window.setSkillFilter('COMMON')" class="skill-tab-btn min-h-[36px] py-1 px-1 rounded-xl text-[9.5px] font-bold border bg-slate-800 text-slate-300 border-slate-700 cursor-pointer">Common</button>
+        <button type="button" data-filter="RARE" onclick="window.setSkillFilter('RARE')" class="skill-tab-btn min-h-[36px] py-1 px-1 rounded-xl text-[9.5px] font-bold border bg-slate-800 text-slate-300 border-slate-700 cursor-pointer">Rare</button>
+        <button type="button" data-filter="EPIC" onclick="window.setSkillFilter('EPIC')" class="skill-tab-btn min-h-[36px] py-1 px-1 rounded-xl text-[9.5px] font-bold border bg-slate-800 text-slate-300 border-slate-700 cursor-pointer">Epic</button>
+        <button type="button" data-filter="MYTHIC" onclick="window.setSkillFilter('MYTHIC')" class="skill-tab-btn min-h-[36px] py-1 px-1 rounded-xl text-[9.5px] font-bold border bg-slate-800 text-slate-300 border-slate-700 cursor-pointer">Mythic</button>
       </div>
 
       <div id="skill-guide-list" style="overflow-y: auto; flex: 1;" class="clean-scroll flex flex-col gap-2 pr-1"></div>
@@ -710,31 +769,115 @@
   </div>
 
   <script>
-    /**
-- =========================================================================
-- KONSTANTA KECEPATAN ANIMASI (DIPERLAMBAT AGAR NYAMAN DIIKUTI)
-- =========================================================================
-     */
-    const STEP_DELAY_MS = 430;          // Jeda tiap petak pion melangkah
-    const DICE_SPIN_FRAMES = 10;        // Jumlah putaran angka dadu
-    const DICE_FRAME_MS = 90;           // Jeda tiap frame kocok dadu (~900ms total)
-    const DICE_READ_PAUSE_MS = 380;     // Jeda baca angka dadu sebelum pion jalan
-    const ENTITY_TRIGGER_PAUSE_MS = 560;// Jeda sebelum naik tangga / turun ular
+    const STEP_DELAY_MS = 430;
+    const DICE_SPIN_FRAMES = 11;
+    const DICE_FRAME_MS = 85;
+    const DICE_READ_PAUSE_MS = 380;
+    const ENTITY_TRIGGER_PAUSE_MS = 560;
 
-    /**
-- =========================================================================
-- PERSISTENSI PENGATURAN LOKAL (localStorage) & TEMA TERANG / GELAP
-- =========================================================================
-     */
-    const STORAGE_KEY = 'rexterco_ulartangga_chaos_v6';
+    const STORAGE_KEY = 'rexterco_ulartangga_chaos_v12';
     const MAX_PLAYERS = 16;
 
-    let uiTheme = 'dark'; // 'dark' | 'light'
+    window.CUSTOM_AUDIO_CONFIG = {
+      tierSfx: {
+        COMMON: './audio/tier-common.mp3',
+        RARE:   './audio/tier-rare.mp3',
+        EPIC:   './audio/tier-epic.mp3',
+        MYTHIC: './audio/tier-mythic.mp3'
+      }
+    };
+
+    const DICE_PIP_LAYOUTS = {
+      1: [false, false, false, false, true,  false, false, false, false],
+      2: [true,  false, false, false, false, false, false, false, true ],
+      3: [true,  false, false, false, true,  false, false, false, true ],
+      4: [true,  false, true,  false, false, false, true,  false, true ],
+      5: [true,  false, true,  false, true,  false, true,  false, true ],
+      6: [true,  false, true,  true,  false, true,  true,  false, true ]
+    };
+
+    function renderDiceFace(value, isTurbo = false) {
+      const diceBox = document.getElementById('dice-box');
+      if (!diceBox) return;
+
+      const num = Number(value);
+      if (isTurbo && num >= 1 && num <= 6) {
+        diceBox.innerHTML = `<span class="font-game text-xs font-black text-amber-600 leading-none">${num}x5</span>`;
+        return;
+      }
+
+      if (num >= 1 && num <= 6 && DICE_PIP_LAYOUTS[num]) {
+        const layout = DICE_PIP_LAYOUTS[num];
+        const pipsHtml = layout.map((active, idx) => {
+          if (!active) return `<span></span>`;
+          const extraClass = num === 1 ? 'pip-one' : '';
+          return `<span class="dice-pip ${extraClass}" data-pip="${idx}"></span>`;
+        }).join('');
+        diceBox.innerHTML = `<div class="dice-pips-grid">${pipsHtml}</div>`;
+      } else {
+        diceBox.innerHTML = `<span class="font-game text-base font-extrabold text-slate-900 leading-none">${value}</span>`;
+      }
+    }
+
+    function triggerDiceLandPop() {
+      const diceBox = document.getElementById('dice-box');
+      if (!diceBox) return;
+      diceBox.classList.remove('dice-land-pop');
+      void diceBox.offsetWidth;
+      diceBox.classList.add('dice-land-pop');
+    }
+
+    const customSfxCache = {};
+
+    function getCustomAudioElement(url) {
+      if (!url) return null;
+      if (!customSfxCache[url]) {
+        const el = new Audio(url);
+        el.preload = 'auto';
+        el.volume = 0.85;
+        el.addEventListener('error', () => {
+          el.dataset.failed = 'true';
+        });
+        customSfxCache[url] = el;
+      }
+      const cached = customSfxCache[url];
+      if (cached.dataset.failed === 'true') return null;
+      return cached;
+    }
+
+    function tryPlayCustomSfx(url, volume = 0.85) {
+      if (audioPrefs.sfxMuted || isAppBackgrounded || isScreenCurrentlyHidden()) return true;
+      const base = getCustomAudioElement(url);
+      if (!base) return false;
+      try {
+        const clone = base.cloneNode(true);
+        clone.volume = volume;
+        clone.muted = false;
+        const p = clone.play();
+        if (p && typeof p.catch === 'function') {
+          p.catch(() => {});
+        }
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    let uiTheme = 'dark';
 
     let audioPrefs = {
       sfxMuted: false,
       bgmMuted: false
     };
+
+    let isAppBackgrounded = false;
+    let screenStateWatchdogId = null;
+
+    function isScreenCurrentlyHidden() {
+      if (document.hidden || document.webkitHidden) return true;
+      if (typeof document.hasFocus === 'function' && !document.hasFocus()) return true;
+      return false;
+    }
 
     function applyThemeMode(mode) {
       uiTheme = mode === 'light' ? 'light' : 'dark';
@@ -790,15 +933,6 @@
       } catch (e) {}
     }
 
-    /**
-- =========================================================================
-- AUDIO ENGINE:
-- 1. Amplified Web Audio API SFX (Master Gain 2.4 + DynamicsCompressorNode)
-- 2. Button click SFX via event delegation (confirm / back / click)
-- 3. Dual BGM Loader ('./audio/bgm-lobby.mp3' & './audio/bgm-game.mp3')
--    dengan fallback otomatis ke Web Audio API synth loop
-- =========================================================================
-     */
     let audioCtx = null;
     let sfxMasterGain = null;
     let bgmMasterGain = null;
@@ -830,7 +964,7 @@
 
           audio.addEventListener('error', () => {
             bgmMp3Status[mode] = 'failed';
-            if (currentBgmMode === mode && !audioPrefs.bgmMuted) {
+            if (currentBgmMode === mode && !audioPrefs.bgmMuted && !isAppBackgrounded && !isScreenCurrentlyHidden()) {
               startSynthBgmLoop(mode);
             }
           });
@@ -843,6 +977,10 @@
     }
 
     function getAudioChain() {
+      if (isAppBackgrounded || isScreenCurrentlyHidden()) {
+        silenceAudioOnLeaveApp();
+        return null;
+      }
       try {
         if (!audioCtx) {
           const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -877,17 +1015,23 @@
     }
 
     function syncAudioGainStates() {
+      const effectiveSfxMuted = audioPrefs.sfxMuted || isAppBackgrounded || isScreenCurrentlyHidden();
+      const effectiveBgmMuted = audioPrefs.bgmMuted || isAppBackgrounded || isScreenCurrentlyHidden();
+
       if (audioCtx && sfxMasterGain && bgmMasterGain) {
         const now = audioCtx.currentTime;
-        sfxMasterGain.gain.setTargetAtTime(audioPrefs.sfxMuted ? 0.0001 : 2.4, now, 0.02);
-        bgmMasterGain.gain.setTargetAtTime(audioPrefs.bgmMuted ? 0.0001 : 0.22, now, 0.02);
+        sfxMasterGain.gain.setTargetAtTime(effectiveSfxMuted ? 0.0001 : 2.4, now, 0.015);
+        bgmMasterGain.gain.setTargetAtTime(effectiveBgmMuted ? 0.0001 : 0.22, now, 0.015);
       }
 
       ['lobby', 'game'].forEach((mode) => {
         const track = bgmTracks[mode];
         if (track) {
-          track.muted = audioPrefs.bgmMuted;
+          track.muted = effectiveBgmMuted;
           track.volume = 0.22;
+          if (effectiveBgmMuted) {
+            try { track.pause(); } catch (e) {}
+          }
         }
       });
 
@@ -902,6 +1046,89 @@
       if (setupBtnBgm) setupBtnBgm.textContent = audioPrefs.bgmMuted ? '🔇' : '🎵';
     }
 
+    function silenceAudioOnLeaveApp() {
+      isAppBackgrounded = true;
+      stopAllBgmPlayback();
+      if (audioCtx && sfxMasterGain && bgmMasterGain) {
+        try {
+          const now = audioCtx.currentTime;
+          sfxMasterGain.gain.setValueAtTime(0.0001, now);
+          bgmMasterGain.gain.setValueAtTime(0.0001, now);
+        } catch (e) {}
+      }
+      syncAudioGainStates();
+      if (audioCtx && audioCtx.state === 'running') {
+        audioCtx.suspend().catch(() => {});
+      }
+    }
+
+    function resumeAudioOnReturnApp() {
+      if (isScreenCurrentlyHidden()) {
+        silenceAudioOnLeaveApp();
+        return;
+      }
+      isAppBackgrounded = false;
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume().catch(() => {});
+      }
+      syncAudioGainStates();
+      if (!audioPrefs.bgmMuted) {
+        startBgmLoop(currentBgmMode);
+      }
+    }
+
+    function registerAppLifecycleAudioListeners() {
+      const handleHiddenEvent = () => silenceAudioOnLeaveApp();
+      const handleVisibleEvent = () => resumeAudioOnReturnApp();
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden || document.webkitHidden) {
+          handleHiddenEvent();
+        } else {
+          handleVisibleEvent();
+        }
+      });
+      document.addEventListener('webkitvisibilitychange', () => {
+        if (document.hidden || document.webkitHidden) {
+          handleHiddenEvent();
+        } else {
+          handleVisibleEvent();
+        }
+      });
+
+      window.addEventListener('pagehide', handleHiddenEvent);
+      window.addEventListener('pageshow', handleVisibleEvent);
+      window.addEventListener('blur', handleHiddenEvent);
+      window.addEventListener('focus', handleVisibleEvent);
+      window.addEventListener('freeze', handleHiddenEvent);
+      window.addEventListener('resume', handleVisibleEvent);
+      document.addEventListener('pause', handleHiddenEvent);
+      document.addEventListener('resume', handleVisibleEvent);
+
+      if (screenStateWatchdogId === null) {
+        screenStateWatchdogId = setInterval(() => {
+          if (isScreenCurrentlyHidden() && !isAppBackgrounded) {
+            silenceAudioOnLeaveApp();
+          } else if (isAppBackgrounded && !isScreenCurrentlyHidden() && document.hasFocus()) {
+            resumeAudioOnReturnApp();
+          }
+        }, 400);
+      }
+
+      const capApp = window.Capacitor?.Plugins?.App;
+      if (capApp && typeof capApp.addListener === 'function') {
+        capApp.addListener('appStateChange', ({ isActive }) => {
+          if (isActive && !document.hidden) {
+            handleVisibleEvent();
+          } else {
+            handleHiddenEvent();
+          }
+        });
+        capApp.addListener('pause', handleHiddenEvent);
+        capApp.addListener('resume', handleVisibleEvent);
+      }
+    }
+
     function toggleSfxMute() {
       audioPrefs.sfxMuted = !audioPrefs.sfxMuted;
       getAudioChain();
@@ -914,7 +1141,7 @@
       getAudioChain();
       syncAudioGainStates();
       savePersistedPrefs();
-      if (audioPrefs.bgmMuted) {
+      if (audioPrefs.bgmMuted || isAppBackgrounded || isScreenCurrentlyHidden()) {
         stopAllBgmPlayback();
       } else {
         startBgmLoop(currentBgmMode);
@@ -922,7 +1149,7 @@
     }
 
     function playTone(freq, type = 'triangle', duration = 0.16, vol = 0.72, delay = 0, endFreq = null) {
-      if (audioPrefs.sfxMuted) return;
+      if (audioPrefs.sfxMuted || isAppBackgrounded || isScreenCurrentlyHidden()) return;
       const chain = getAudioChain();
       if (!chain) return;
       const { ctx, sfxOut } = chain;
@@ -951,7 +1178,7 @@
     }
 
     function playButtonClickSfx(variant = 'click') {
-      if (audioPrefs.sfxMuted) return;
+      if (audioPrefs.sfxMuted || isAppBackgrounded || isScreenCurrentlyHidden()) return;
       if (variant === 'back') {
         playTone(540, 'triangle', 0.065, 0.58, 0, 320);
       } else if (variant === 'confirm') {
@@ -961,9 +1188,39 @@
       }
     }
 
-    /* Efek suara unik tiap skill */
+    function playGachaTickSfx(stepIndex = 0) {
+      if (audioPrefs.sfxMuted || isAppBackgrounded || isScreenCurrentlyHidden()) return;
+      const pitch = 440 + (stepIndex % 6) * 70;
+      playTone(pitch, 'triangle', 0.045, 0.52, 0, pitch * 1.12);
+    }
+
+    function playSkillTierGainSfx(tier) {
+      if (audioPrefs.sfxMuted || isAppBackgrounded || isScreenCurrentlyHidden()) return;
+      const upper = (tier || 'COMMON').toUpperCase();
+      const customUrl = window.CUSTOM_AUDIO_CONFIG?.tierSfx?.[upper];
+
+      if (tryPlayCustomSfx(customUrl, 0.9)) return;
+
+      if (upper === 'MYTHIC') {
+        playTone(130.81, 'sawtooth', 0.36, 0.55, 0, 130.81);
+        playTone(523.25, 'triangle', 0.11, 0.78, 0, 587.33);
+        playTone(659.25, 'triangle', 0.11, 0.82, 0.08, 783.99);
+        playTone(783.99, 'triangle', 0.12, 0.86, 0.16, 1046.50);
+        playTone(1046.50, 'sine', 0.34, 0.9, 0.24, 1567.98);
+      } else if (upper === 'EPIC') {
+        playTone(440.00, 'triangle', 0.11, 0.76, 0, 554.37);
+        playTone(554.37, 'triangle', 0.11, 0.8, 0.085, 659.25);
+        playTone(880.00, 'sine', 0.24, 0.84, 0.17, 1174.66);
+      } else if (upper === 'RARE') {
+        playTone(493.88, 'triangle', 0.1, 0.72, 0, 659.25);
+        playTone(739.99, 'sine', 0.16, 0.76, 0.08, 987.77);
+      } else {
+        playTone(587.33, 'sine', 0.13, 0.68, 0, 783.99);
+      }
+    }
+
     function playSkillSfx(skillId) {
-      if (audioPrefs.sfxMuted) return;
+      if (audioPrefs.sfxMuted || isAppBackgrounded || isScreenCurrentlyHidden()) return;
       switch (skillId) {
         case 'ladder_boost':
           playTone(440, 'triangle', 0.1, 0.75, 0, 587);
@@ -974,7 +1231,7 @@
           playTone(180, 'sawtooth', 0.28, 0.8, 0, 1480);
           playTone(360, 'triangle', 0.25, 0.78, 0.06, 1760);
           break;
-        case 'self_teleport':
+        case 'portal_warp':
           playTone(340, 'triangle', 0.14, 0.76, 0, 1180);
           playTone(980, 'sine', 0.18, 0.75, 0.11, 1480);
           break;
@@ -995,10 +1252,6 @@
           playTone(1568, 'triangle', 0.18, 0.68, 0.07, 1175);
           playTone(1046, 'triangle', 0.22, 0.72, 0.14, 660);
           break;
-        case 'teleport_target':
-          playTone(260, 'triangle', 0.14, 0.78, 0, 1120);
-          playTone(1120, 'sawtooth', 0.16, 0.72, 0.13, 320);
-          break;
         case 'chaos_shuffle':
           [380, 620, 290, 790, 460].forEach((f, idx) => {
             playTone(f, idx % 2 === 0 ? 'square' : 'sawtooth', 0.075, 0.56, idx * 0.06);
@@ -1007,6 +1260,10 @@
         case 'snake_curse':
           playTone(720, 'sawtooth', 0.14, 0.72, 0, 420);
           playTone(420, 'sawtooth', 0.2, 0.76, 0.12, 165);
+          break;
+        case 'loaded':
+          playTone(523, 'triangle', 0.1, 0.74, 0, 784);
+          playTone(784, 'triangle', 0.12, 0.78, 0.08, 1046);
           break;
         case 'turbo':
           playTone(330, 'triangle', 0.1, 0.75, 0, 660);
@@ -1033,19 +1290,15 @@
           playTone(554, 'triangle', 0.18, 0.72, 0.07);
           playTone(659, 'triangle', 0.24, 0.75, 0.14);
           break;
-        case 'loaded':
-          playTone(587, 'triangle', 0.1, 0.75, 0);
-          playTone(880, 'triangle', 0.14, 0.75, 0.08);
-          break;
         default:
           playTone(523, 'triangle', 0.14, 0.72, 0);
       }
     }
 
     function playSfx(event) {
-      if (audioPrefs.sfxMuted) return;
+      if (audioPrefs.sfxMuted || isAppBackgrounded || isScreenCurrentlyHidden()) return;
       if (event === 'step') playTone(440, 'triangle', 0.08, 0.64);
-      else if (event === 'dice') playTone(320 + Math.random() * 240, 'square', 0.06, 0.54);
+      else if (event === 'dice') playTone(340 + Math.random() * 220, 'triangle', 0.055, 0.56);
       else if (event === 'ladder') {
         playTone(440, 'triangle', 0.12, 0.75, 0);
         playTone(587, 'triangle', 0.12, 0.75, 0.09);
@@ -1062,7 +1315,6 @@
       }
     }
 
-    /* Fallback Web Audio API Synth Loop jika MP3 belum ada */
     const BGM_PATTERNS = {
       lobby: {
         tempoMs: 260,
@@ -1075,7 +1327,10 @@
     };
 
     function playBgmStep() {
-      if (audioPrefs.bgmMuted) return;
+      if (audioPrefs.bgmMuted || isAppBackgrounded || isScreenCurrentlyHidden()) {
+        silenceAudioOnLeaveApp();
+        return;
+      }
       const chain = getAudioChain();
       if (!chain) return;
       const { ctx, bgmOut } = chain;
@@ -1116,7 +1371,7 @@
 
     function startSynthBgmLoop(mode) {
       stopSynthBgmLoop();
-      if (audioPrefs.bgmMuted) return;
+      if (audioPrefs.bgmMuted || isAppBackgrounded || isScreenCurrentlyHidden()) return;
       const pattern = BGM_PATTERNS[mode] || BGM_PATTERNS.lobby;
       bgmSynthTimerId = setInterval(playBgmStep, pattern.tempoMs);
     }
@@ -1139,7 +1394,7 @@
       initMp3Tracks();
       stopAllBgmPlayback();
 
-      if (audioPrefs.bgmMuted) return;
+      if (audioPrefs.bgmMuted || isAppBackgrounded || isScreenCurrentlyHidden()) return;
 
       const activeTrack = bgmTracks[targetMode];
       if (activeTrack && bgmMp3Status[targetMode] !== 'failed') {
@@ -1152,6 +1407,10 @@
         if (playPromise && typeof playPromise.then === 'function') {
           playPromise
             .then(() => {
+              if (isAppBackgrounded || isScreenCurrentlyHidden() || audioPrefs.bgmMuted) {
+                try { activeTrack.pause(); } catch (e) {}
+                return;
+              }
               bgmMp3Status[targetMode] = 'ready';
               stopSynthBgmLoop();
             })
@@ -1169,6 +1428,8 @@
       const btn = e.target.closest('button');
       if (!btn || btn.disabled) return;
 
+      if (isScreenCurrentlyHidden()) return;
+      isAppBackgrounded = false;
       getAudioChain();
       if (!audioPrefs.bgmMuted) {
         const activeTrack = bgmTracks[currentBgmMode];
@@ -1190,11 +1451,6 @@
       }
     }, true);
 
-    /**
-- =========================================================================
-- CANCELLABLE TIMERS / ANIMATION LOCK MANAGER (AMAN SAAT RESTART & BACK)
-- =========================================================================
-     */
     let activeTimers = new Set();
     let matchSessionId = 0;
 
@@ -1217,20 +1473,17 @@
       const diceBox = document.getElementById('dice-box');
       const fxSvg = document.getElementById('fx-svg');
       const tokensLayer = document.getElementById('tokens-layer');
+      const gachaOverlay = document.getElementById('gacha-roulette-overlay');
 
       if (appEl) appEl.classList.remove('shake-effect');
-      if (diceBox) diceBox.classList.remove('dice-rolling');
+      if (diceBox) diceBox.classList.remove('dice-rolling', 'dice-land-pop');
       if (fxSvg) fxSvg.innerHTML = '';
+      if (gachaOverlay) gachaOverlay.style.display = 'none';
       if (tokensLayer) {
         tokensLayer.querySelectorAll('.boom-effect, .blackhole-vortex').forEach((el) => el.remove());
       }
     }
 
-    /**
-- =========================================================================
-- GENERATOR VARIASI MAP DINAMIS (ULAR, TANGGA, & PETAK MISTERI ACAK TIAP MAIN)
-- =========================================================================
-     */
     const BOARD_PRESETS = {
       10: { size: 10, maxTile: 100, label: '10x10', subLabel: '100 Petak', ladderCount: 7, snakeCount: 8, mysteryCount: 16 },
       12: { size: 12, maxTile: 144, label: '12x12', subLabel: '144 Petak', ladderCount: 10, snakeCount: 10, mysteryCount: 22 },
@@ -1246,7 +1499,6 @@
 
       const isTileFree = (t) => !usedTiles.has(t);
 
-      // 1. Generate Tangga dengan panjang bervariasi
       let attempts = 0;
       while (Object.keys(ladders).length < preset.ladderCount && attempts < 800) {
         attempts++;
@@ -1265,7 +1517,6 @@
         usedTiles.add(end);
       }
 
-      // 2. Generate Ular dengan panjang bervariasi
       attempts = 0;
       while (Object.keys(snakes).length < preset.snakeCount && attempts < 800) {
         attempts++;
@@ -1284,7 +1535,6 @@
         usedTiles.add(tail);
       }
 
-      // 3. Generate Petak Misteri (?) tersebar merata
       const mysteryTiles = [];
       const zoneSize = Math.floor((maxTile - 4) / preset.mysteryCount);
       for (let i = 0; i < preset.mysteryCount; i++) {
@@ -1302,13 +1552,8 @@
       return { ladders, snakes, mysteryTiles };
     }
 
-    /**
-- =========================================================================
-- PALET WARNA 16 PEMAIN
-- =========================================================================
-     */
     const PLAYER_THEMES = [
-      { code: 'P1', tokenBg: 'from-rose-400 to-red-600 text-white', borderActive: 'border-rose-500 bg-rose-500/20', textAccent: 'text-rose-500', dot: 'bg-rose-500' },
+      { code: 'P1', tokenBg: 'from-rose-300 to-red-500 text-slate-950', borderActive: 'border-rose-500 bg-rose-500/20', textAccent: 'text-rose-500', dot: 'bg-rose-500' },
       { code: 'P2', tokenBg: 'from-cyan-300 to-blue-600 text-slate-950', borderActive: 'border-cyan-400 bg-cyan-500/20', textAccent: 'text-cyan-500', dot: 'bg-cyan-400' },
       { code: 'P3', tokenBg: 'from-emerald-300 to-green-600 text-slate-950', borderActive: 'border-emerald-400 bg-emerald-500/20', textAccent: 'text-emerald-500', dot: 'bg-emerald-400' },
       { code: 'P4', tokenBg: 'from-amber-300 to-orange-600 text-slate-950', borderActive: 'border-amber-400 bg-amber-500/20', textAccent: 'text-amber-500', dot: 'bg-amber-400' },
@@ -1326,11 +1571,6 @@
       { code: 'P16', tokenBg: 'from-indigo-300 to-cyan-600 text-slate-950', borderActive: 'border-indigo-400 bg-indigo-500/20', textAccent: 'text-indigo-500', dot: 'bg-indigo-400' }
     ];
 
-    /**
-- =========================================================================
-- SISTEM TIER SKILL & KATALOG 17 SKILL (SESUAI UPDATE USER)
-- =========================================================================
-     */
     const TIER_META = {
       COMMON: { label: 'Common', badgeClass: 'bg-slate-900/80 text-slate-200 border-slate-400/50' },
       RARE:   { label: 'Rare',   badgeClass: 'bg-sky-950/85 text-sky-200 border-sky-300/60' },
@@ -1339,159 +1579,147 @@
     };
 
     const SKILL_CATALOG = {
-      ladder_boost: {
-        id: 'ladder_boost',
-        name: 'Tangga Darurat',
-        icon: '🪜',
-        tier: 'MYTHIC',
-        filterGroup: 'buff',
-        category: 'Buff Tinggi',
-        badgeColor: 'bg-amber-950/75 text-amber-200 border-amber-300/40',
-        desc: 'Panjat tangga besar sampai baris atas!',
-        fullDesc: 'Memunculkan tangga darurat raksasa yang menaikkan posisimu setinggi 4–5 baris (10x10), 5–6 baris (12x12), atau 7–8 baris (15x15) hingga baris paling atas papan (berhenti aman sebelum finish).',
-        mode: 'instant',
-        color: 'from-amber-500 to-yellow-800 border-amber-300 text-white'
-      },
-      rocket_col: {
-        id: 'rocket_col',
-        name: 'Roket Lurus',
-        icon: '🚀',
-        tier: 'MYTHIC',
-        filterGroup: 'buff',
-        category: 'Vertikal 5–10',
-        badgeColor: 'bg-orange-950/75 text-orange-200 border-orange-300/40',
-        desc: 'Melesat 5–10 baris sampai baris atas!',
-        fullDesc: 'Menyalakan roket vertikal di kolom tempatmu berdiri dan melesat lurus ke atas sejauh 5–6 baris (10x10), 7–8 baris (12x12), atau 9–10 baris (15x15) sampai ke baris teratas papan (aman sebelum finish).',
-        mode: 'instant',
-        color: 'from-orange-500 to-red-800 border-orange-300 text-white'
-      },
-      self_teleport: {
-        id: 'self_teleport',
-        name: 'Self Teleport',
-        icon: '🌀',
-        tier: 'MYTHIC',
-        filterGroup: 'buff',
-        category: 'Buff Taktik',
-        badgeColor: 'bg-teal-950/75 text-teal-200 border-teal-300/40',
-        desc: 'Pindah manual / acak (bukan finish)',
-        fullDesc: 'Memindahkan dirimu sendiri ke petak mana saja di seluruh papan tanpa batas jarak—bisa diisi manual maupun pilih acak, kecuali langsung ke petak finish.',
-        mode: 'self_teleport',
-        color: 'from-teal-500 to-emerald-900 border-teal-300 text-white'
-      },
       black_hole: {
         id: 'black_hole',
         name: 'Black Hole',
         icon: '🕳️',
         tier: 'MYTHIC',
-        filterGroup: 'chaos',
-        category: 'Gravitasi Area',
+        category: 'Global Chaos',
         badgeColor: 'bg-fuchsia-950/80 text-fuchsia-200 border-fuchsia-300/40',
-        desc: 'Sedot SEMUA lawan ke petak pilihan!',
-        fullDesc: 'Menaruh pusaran Black Hole di salah satu petak pilihanmu yang menarik SELURUH pemain lain ke petak tersebut, sementara kamu sendiri tidak ikut tertarik!',
+        desc: 'Sedot semua lawan ke petak pilihan',
+        fullDesc: 'Memunculkan pusaran Black Hole (opsi Start 1, Acak, atau ketik nomor petak manual) yang menyedot seluruh lawan ke petak tersebut sementara kamu sendiri tidak ikut tertarik.',
         mode: 'black_hole',
         color: 'from-violet-600 to-slate-950 border-fuchsia-400 text-white'
       },
-      steal: {
-        id: 'steal',
-        name: 'Copet Skill',
-        icon: '🤏',
-        tier: 'RARE',
-        filterGroup: 'chaos',
-        category: 'Manual Steal',
-        badgeColor: 'bg-pink-950/80 text-pink-200 border-pink-300/40',
-        desc: 'Intip & curi kartu milik lawan',
-        fullDesc: 'Hanya pemilik kartu Copet Skill yang dapat mengintip kartu tangan lawan, lalu memilih langsung pemain dan kartu spesifik yang ingin dicuri (dapat ditahan Tameng).',
-        mode: 'manual_steal',
-        color: 'from-pink-500 to-rose-900 border-pink-300 text-white'
+      chaos_shuffle: {
+        id: 'chaos_shuffle',
+        name: 'Chaos Shuffle',
+        icon: '🌪️',
+        tier: 'MYTHIC',
+        category: 'Global Chaos',
+        badgeColor: 'bg-fuchsia-950/80 text-fuchsia-200 border-fuchsia-300/40',
+        desc: 'Acak posisi semua pemain!',
+        fullDesc: 'Mengacak ulang posisi seluruh pemain aktif di papan secara serentak sehingga arah pertandingan bisa berubah drastis dalam sekejap.',
+        mode: 'instant',
+        color: 'from-fuchsia-500 to-violet-950 border-fuchsia-300 text-white'
       },
       magnet: {
         id: 'magnet',
         name: 'Magnet Raksasa',
         icon: '🧲',
-        tier: 'EPIC',
-        filterGroup: 'chaos',
-        category: 'Area Chaos',
+        tier: 'MYTHIC',
+        category: 'Global Chaos',
         badgeColor: 'bg-red-950/80 text-red-200 border-red-300/40',
         desc: 'Tarik semua pemain ke petakmu',
-        fullDesc: 'Memancarkan gelombang magnet raksasa yang menarik seluruh pemain aktif dari posisi mana pun di papan langsung ke petak tempatmu berdiri (kecuali yang memakai Tameng).',
+        fullDesc: 'Menarik seluruh pemain lain dari mana pun di papan langsung ke petak tempatmu berdiri (kecuali pemain yang dilindungi Tameng).',
         mode: 'instant',
         color: 'from-red-500 to-amber-900 border-red-300 text-white'
+      },
+      portal_warp: {
+        id: 'portal_warp',
+        name: 'Portal Warp',
+        icon: '🌀',
+        tier: 'MYTHIC',
+        category: 'Random Warp',
+        badgeColor: 'bg-teal-950/80 text-teal-200 border-teal-300/40',
+        desc: 'Warp acak ke diri sendiri / lawan',
+        fullDesc: 'Mengirim dirimu sendiri atau 1 pemain target pilihan ke petak acak bebas di papan. Efek ke lawan dapat ditahan oleh Tameng.',
+        mode: 'portal_warp',
+        color: 'from-teal-500 to-indigo-900 border-teal-300 text-white'
       },
       global_freeze: {
         id: 'global_freeze',
         name: 'Badai Beku',
         icon: '❄️',
         tier: 'EPIC',
-        filterGroup: 'chaos',
         category: 'Area Control',
         badgeColor: 'bg-cyan-950/80 text-cyan-200 border-cyan-300/40',
         desc: 'Bekukan semua lawan 1 giliran',
-        fullDesc: 'Membekukan seluruh pemain aktif sekaligus selama 1 giliran sehingga mereka melewati giliran kocok dadu berikutnya (kecuali yang memakai Tameng).',
+        fullDesc: 'Membekukan seluruh pemain lawan dengan efek es biru selama 1 giliran sehingga mereka melewati giliran kocok dadu berikutnya (kecuali yang memakai Tameng).',
         mode: 'instant',
         color: 'from-sky-500 to-cyan-900 border-cyan-300 text-white'
       },
-      teleport_target: {
-        id: 'teleport_target',
-        name: 'Portal Lawan',
-        icon: '🌌',
-        filterGroup: 'target',
+      rocket_col: {
+        id: 'rocket_col',
+        name: 'Roket Lurus',
+        icon: '🚀',
         tier: 'EPIC',
-        category: 'Portal Acak',
-        badgeColor: 'bg-indigo-950/80 text-indigo-200 border-indigo-300/40',
-        desc: 'Lempar 1 lawan ke petak acak bebas',
-        fullDesc: 'Pilih 1 pemain target lalu kirim langsung ke petak acak mana saja di seluruh papan tanpa batasan jarak, kecuali langsung ke petak finish.',
-        mode: 'target_player',
-        color: 'from-indigo-500 to-blue-950 border-indigo-300 text-white'
-      },
-      chaos_shuffle: {
-        id: 'chaos_shuffle',
-        name: 'Chaos Shuffle',
-        icon: '🌪️',
-        tier: 'EPIC',
-        filterGroup: 'chaos',
-        category: 'Acak Papan',
-        badgeColor: 'bg-fuchsia-950/80 text-fuchsia-200 border-fuchsia-300/40',
-        desc: 'Acak posisi semua pemain!',
-        fullDesc: 'Mengacak ulang posisi seluruh pemain aktif di papan secara serentak. Yang di depan bisa melorot, yang di belakang bisa langsung melesat!',
+        category: 'Lonjakan Tinggi',
+        badgeColor: 'bg-orange-950/75 text-orange-200 border-orange-300/40',
+        desc: 'Melesat lurus ke baris atas',
+        fullDesc: 'Melesat vertikal ke atas sejauh 5–6 baris (10x10), 7–8 baris (12x12), atau 9–10 baris (15x15) hingga baris teratas papan.',
         mode: 'instant',
-        color: 'from-fuchsia-500 to-violet-950 border-fuchsia-300 text-white'
+        color: 'from-orange-500 to-red-800 border-orange-300 text-white'
       },
-      snake_curse: {
-        id: 'snake_curse',
-        name: 'Kutukan Ular',
-        icon: '🐍',
-        tier: 'RARE',
-        filterGroup: 'target',
-        category: 'Target Ular',
-        badgeColor: 'bg-lime-950/80 text-lime-200 border-lime-300/40',
-        desc: 'Seret target ke kepala ular',
-        fullDesc: 'Menyeret target pilihanmu ke mulut ular terdekat di belakangnya sehingga langsung meluncur turun (atau mundur 8 langkah jika tak ada ular di belakang).',
-        mode: 'target_player',
-        color: 'from-lime-600 to-emerald-950 border-lime-300 text-white'
+      ladder_boost: {
+        id: 'ladder_boost',
+        name: 'Tangga Darurat',
+        icon: '🪜',
+        tier: 'EPIC',
+        category: 'Lonjakan Tinggi',
+        badgeColor: 'bg-amber-950/75 text-amber-200 border-amber-300/40',
+        desc: 'Panjat tangga besar ke atas!',
+        fullDesc: 'Menaikkan posisimu setinggi beberapa baris ke atas atau memanfaatkan tangga di depan untuk mendaki jauh lebih cepat.',
+        mode: 'instant',
+        color: 'from-amber-500 to-yellow-800 border-amber-300 text-white'
+      },
+      loaded: {
+        id: 'loaded',
+        name: 'Dadu Sakti',
+        icon: '🎯',
+        tier: 'EPIC',
+        category: 'Buff Dadu',
+        badgeColor: 'bg-emerald-950/80 text-emerald-200 border-emerald-300/40',
+        desc: 'Dadu giliran ini pasti 4–6!',
+        fullDesc: 'Mengatur kocokan dadu pada giliran ini agar selalu keluar angka tinggi (4, 5, atau 6) untuk mempercepat langkahmu.',
+        mode: 'instant',
+        color: 'from-emerald-500 to-teal-900 border-emerald-300 text-white'
       },
       turbo: {
         id: 'turbo',
         name: 'Turbo x5',
         icon: '⚡',
         tier: 'EPIC',
-        filterGroup: 'buff',
-        category: 'Buff Diri',
+        category: 'Buff Dadu',
         badgeColor: 'bg-yellow-950/80 text-yellow-200 border-yellow-300/40',
         desc: 'Gandakan angka dadu 5x!',
-        fullDesc: 'Menggandakan hasil kocokan dadu pada giliran ini menjadi 5x lipat (bisa melaju hingga 30 langkah dalam sekali tarikan!).',
+        fullDesc: 'Menggandakan hasil kocokan dadu pada giliran ini menjadi 5x lipat untuk melaju jauh dalam satu giliran.',
         mode: 'instant',
         color: 'from-yellow-500 to-amber-800 border-yellow-200 text-white'
+      },
+      freeze: {
+        id: 'freeze',
+        name: 'Lumpuh',
+        icon: '☠️',
+        tier: 'EPIC',
+        category: 'Disrupt Target',
+        badgeColor: 'bg-emerald-950/85 text-lime-200 border-lime-300/50',
+        desc: 'Stop 1 ronde + hapus semua skill',
+        fullDesc: 'Membuat 1 target pilihan lumpuh selama 1 ronde (melewati gilirannya) sekaligus menghapus seluruh kartu skill yang sedang dipegangnya.',
+        mode: 'target_player',
+        color: 'from-lime-600 to-green-950 border-lime-300 text-white'
+      },
+      steal: {
+        id: 'steal',
+        name: 'Copet Skill',
+        icon: '🤏',
+        tier: 'RARE',
+        category: 'Steal Skill',
+        badgeColor: 'bg-pink-950/80 text-pink-200 border-pink-300/40',
+        desc: 'Intip & curi kartu milik lawan',
+        fullDesc: 'Mengintip kartu tangan lawan lalu mencuri 1 kartu pilihan secara langsung (dapat ditahan oleh Tameng).',
+        mode: 'manual_steal',
+        color: 'from-pink-500 to-rose-900 border-pink-300 text-white'
       },
       swap: {
         id: 'swap',
         name: 'Swap Posisi',
         icon: '🔄',
         tier: 'RARE',
-        filterGroup: 'target',
-        category: 'Tukar Tempat',
+        category: 'Tukar Posisi',
         badgeColor: 'bg-purple-950/80 text-purple-200 border-purple-300/40',
         desc: 'Tukar tempat dengan target',
-        fullDesc: 'Menukar posisi petakmu secara instan dengan 1 pemain target pilihanmu di papan.',
+        fullDesc: 'Menukar posisi petakmu secara langsung dengan 1 pemain target pilihanmu di papan.',
         mode: 'target_player',
         color: 'from-purple-500 to-indigo-900 border-purple-300 text-white'
       },
@@ -1500,37 +1728,34 @@
         name: 'Hook Penarik',
         icon: '🪝',
         tier: 'RARE',
-        filterGroup: 'target',
         category: 'Tarik Lawan',
         badgeColor: 'bg-amber-950/80 text-amber-200 border-amber-300/40',
         desc: 'Tarik 1 lawan ke petakmu',
-        fullDesc: 'Menembakkan tali kait emas ke 1 pemain target di depan dan menariknya mundur sejajar ke petak tempatmu berdiri.',
+        fullDesc: 'Menarik 1 pemain target yang berada di depan agar mundur sejajar ke petak tempatmu berdiri.',
         mode: 'target_player',
         color: 'from-amber-600 to-orange-950 border-amber-300 text-white'
       },
-      freeze: {
-        id: 'freeze',
-        name: 'Lumpuh',
-        icon: '☠️',
-        tier: 'EPIC',
-        filterGroup: 'target',
-        category: 'Racun Total',
-        badgeColor: 'bg-emerald-950/85 text-lime-200 border-lime-300/50',
-        desc: 'Stop 1 ronde + hapus semua skill',
-        fullDesc: 'Meracuni 1 target pilihan hingga lumpuh selama 1 ronde penuh (melewati gilirannya) sekaligus menghapus seluruh kartu skill yang dimilikinya.',
+      snake_curse: {
+        id: 'snake_curse',
+        name: 'Kutukan Ular',
+        icon: '🐍',
+        tier: 'RARE',
+        category: 'Target Ular',
+        badgeColor: 'bg-lime-950/80 text-lime-200 border-lime-300/40',
+        desc: 'Seret target ke kepala ular',
+        fullDesc: 'Menyeret target pilihanmu ke kepala ular terdekat di belakangnya (atau mundur 8 langkah jika tidak ada ular di belakang).',
         mode: 'target_player',
-        color: 'from-lime-600 to-green-950 border-lime-300 text-white'
+        color: 'from-lime-600 to-emerald-950 border-lime-300 text-white'
       },
       bomb: {
         id: 'bomb',
         name: 'Bom Mundur',
         icon: '💣',
         tier: 'COMMON',
-        filterGroup: 'target',
-        category: 'Ledakan -10',
+        category: 'Mundur -10',
         badgeColor: 'bg-rose-950/80 text-rose-200 border-rose-300/40',
         desc: 'Target mundur 10 langkah',
-        fullDesc: 'Meledakkan 1 pemain target pilihanmu dengan bom kartun hingga terpental mundur 10 langkah (jika mendarat di ular/tangga akan langsung terpicu).',
+        fullDesc: 'Meledakkan 1 pemain target pilihanmu sehingga terpental mundur 10 langkah.',
         mode: 'target_player',
         color: 'from-rose-500 to-red-900 border-rose-300 text-white'
       },
@@ -1539,49 +1764,26 @@
         name: 'Tameng',
         icon: '🛡️',
         tier: 'COMMON',
-        filterGroup: 'buff',
         category: 'Pertahanan',
         badgeColor: 'bg-sky-950/80 text-sky-200 border-sky-300/40',
         desc: 'Kebal ular, black hole & lawan',
-        fullDesc: 'Melindungi dirimu selama 1 putaran penuh: kebal dari gigitan ular, Black Hole, racun lumpuh, badai beku, magnet, dan serangan/tarikan skill lawan.',
+        fullDesc: 'Melindungi dirimu dari gigitan ular, Black Hole, efek beku/lumpuh, serta serangan atau tarikan skill lawan.',
         mode: 'instant',
         color: 'from-sky-500 to-blue-900 border-sky-300 text-white'
-      },
-      loaded: {
-        id: 'loaded',
-        name: 'Dadu Sakti',
-        icon: '🎲',
-        tier: 'RARE',
-        filterGroup: 'buff',
-        category: 'Pilih 1–12',
-        badgeColor: 'bg-emerald-950/80 text-emerald-200 border-emerald-300/40',
-        desc: 'Pilih angka langkah 1–12',
-        fullDesc: 'Memilih angka langkah pasti dari 1 sampai 12 sebelum melempar dadu agar mudah mendarat di kaki tangga atau menghindari ular.',
-        mode: 'loaded_dice',
-        color: 'from-emerald-500 to-green-900 border-emerald-300 text-white'
       }
     };
 
     const TOTAL_SKILL_COUNT = Object.keys(SKILL_CATALOG).length;
 
-    /**
-- =========================================================================
-- MODAL BUKU PANDUAN '📖 INFO SKILL' (FILTER TIER & LABEL TIER)
-- =========================================================================
-     */
     let currentSkillFilter = 'all';
 
     window.openSkillGuide = function (highlightSkillId = null) {
       const overlay = document.getElementById('skill-guide-overlay');
-      const searchInput = document.getElementById('skill-search-input');
       if (!overlay) return;
 
-      currentSkillFilter = 'all';
-      if (searchInput) {
-        searchInput.value = (highlightSkillId && SKILL_CATALOG[highlightSkillId])
-          ? SKILL_CATALOG[highlightSkillId].name
-          : '';
-      }
+      currentSkillFilter = highlightSkillId && SKILL_CATALOG[highlightSkillId]
+        ? SKILL_CATALOG[highlightSkillId].tier
+        : 'all';
 
       window.updateSkillFilterButtons();
       window.renderSkillGuideList(highlightSkillId);
@@ -1595,8 +1797,6 @@
 
     window.setSkillFilter = function (filterKey) {
       currentSkillFilter = filterKey;
-      const searchInput = document.getElementById('skill-search-input');
-      if (searchInput) searchInput.value = '';
       window.updateSkillFilterButtons();
       window.renderSkillGuideList();
     };
@@ -1616,28 +1816,11 @@
       const listEl = document.getElementById('skill-guide-list');
       if (!listEl) return;
 
-      const query = (document.getElementById('skill-search-input')?.value || '').trim().toLowerCase();
       listEl.innerHTML = '';
 
       const filtered = Object.values(SKILL_CATALOG).filter((skill) => {
-        const matchTier = currentSkillFilter === 'all' || skill.tier === currentSkillFilter;
-        const tierLabel = (TIER_META[skill.tier]?.label || '').toLowerCase();
-        const matchQuery = !query ||
-          skill.name.toLowerCase().includes(query) ||
-          tierLabel.includes(query) ||
-          skill.category.toLowerCase().includes(query) ||
-          skill.fullDesc.toLowerCase().includes(query);
-        return matchTier && matchQuery;
+        return currentSkillFilter === 'all' || skill.tier === currentSkillFilter;
       });
-
-      if (filtered.length === 0) {
-        listEl.innerHTML = `
-          <div class="theme-muted text-center py-8 text-xs">
-            Skill tidak ditemukan untuk kata kunci "<span class="text-amber-500 font-bold">${query}</span>".
-          </div>
-        `;
-        return;
-      }
 
       filtered.forEach((skill) => {
         const isHighlighted = highlightSkillId === skill.id;
@@ -1669,11 +1852,6 @@
       });
     };
 
-    /**
-- =========================================================================
-- KONFIGURASI SETUP (2–16 PEMAIN + NAMA KUSTOM) & STATE GAME
-- =========================================================================
-     */
     let setupConfig = {
       boardSize: 10,
       count: 4,
@@ -1691,10 +1869,9 @@
       turnIndex: 0,
       isBusy: false,
       gameOver: false,
-      loadedDiceValue: null,
+      loadedActive: false,
       turboActive: false,
       pendingSkill: null,
-      pendingTeleportTargetIndex: null,
       tilePickerMode: null,
       players: []
     };
@@ -1707,37 +1884,56 @@
       document.getElementById('modal-exit-app').style.display = 'none';
     }
 
+    function renderWebClosedFallback() {
+      document.body.innerHTML = `
+        <div style="min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px;background:#090d16;color:#f8fafc;font-family:'Plus Jakarta Sans',sans-serif;text-align:center;">
+          <div style="max-width:340px;width:100%;background:#0f172a;border:2px solid #475569;border-radius:24px;padding:24px;box-shadow:0 20px 40px rgba(0,0,0,0.6);">
+            <div style="font-size:42px;margin-bottom:8px;">🚪</div>
+            <h2 style="font-family:'Fredoka',sans-serif;font-size:20px;margin:0 0 8px 0;color:#fbbf24;">Aplikasi Ditutup</h2>
+            <p style="font-size:12px;color:#94a3b8;line-height:1.5;margin:0 0 18px 0;">
+              Sesi <strong>Ular Tangga 2D - Chaos Edition</strong> telah dihentikan dan suara dimatikan.
+            </p>
+            <button type="button" onclick="window.location.reload()" style="width:100%;min-height:44px;border-radius:12px;border:none;background:linear-gradient(90deg,#10b981,#14b8a6);color:#020617;font-family:'Fredoka',sans-serif;font-weight:700;font-size:14px;cursor:pointer;">
+              🔄 Buka Kembali Aplikasi
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
     async function confirmExitApplication() {
-      // 1. Cek jembatan Capacitor App Plugin (Capacitor v3 - v6+)
-      try {
-        const capApp = window.Capacitor?.Plugins?.App;
-        if (capApp && typeof capApp.exitApp === 'function') {
+      clearAllMatchTimers();
+      silenceAudioOnLeaveApp();
+
+      const capApp = window.Capacitor?.Plugins?.App;
+      if (capApp && typeof capApp.exitApp === 'function') {
+        try {
           await capApp.exitApp();
           return;
-        }
-      } catch (e) {}
+        } catch (e) {}
+      }
 
-      // 2. Fallback jembatan Cordova / WebView lama
-      try {
-        if (navigator.app && typeof navigator.app.exitApp === 'function') {
+      if (navigator.app && typeof navigator.app.exitApp === 'function') {
+        try {
           navigator.app.exitApp();
           return;
-        }
-      } catch (e) {}
+        } catch (e) {}
+      }
 
-      // 3. Fallback jika dibuka di browser biasa
       try {
         window.open('', '_self');
         window.close();
       } catch (e) {}
 
-      const msgEl = document.getElementById('exit-app-message');
-      if (msgEl) {
-        msgEl.innerHTML = 'Jika berjalan di browser, silakan tutup tab ini secara manual. Untuk APK Android, pastikan <strong>@capacitor/app</strong> sudah terinstal dan di-sync.';
-      }
+      try {
+        window.location.replace('about:blank');
+      } catch (e) {}
+
+      setTimeout(() => {
+        renderWebClosedFallback();
+      }, 120);
     }
 
-    // Tangani tombol Back fisik / gesture di HP Android
     function registerAndroidBackButton() {
       const capApp = window.Capacitor?.Plugins?.App;
       if (!capApp || typeof capApp.addListener !== 'function') return;
@@ -1750,9 +1946,7 @@
         const stealModal = document.getElementById('modal-steal');
         const targetModal = document.getElementById('modal-target');
         const pickerModal = document.getElementById('modal-tile-picker');
-        const loadedModal = document.getElementById('modal-loaded-dice');
 
-        // Tutup modal yang sedang terbuka lebih dulu
         if (guideModal && guideModal.style.display === 'flex') {
           window.closeSkillGuide();
         } else if (exitModal && exitModal.style.display === 'flex') {
@@ -1760,17 +1954,14 @@
         } else if (
           (stealModal && stealModal.style.display === 'flex') ||
           (targetModal && targetModal.style.display === 'flex') ||
-          (pickerModal && pickerModal.style.display === 'flex') ||
-          (loadedModal && loadedModal.style.display === 'flex')
+          (pickerModal && pickerModal.style.display === 'flex')
         ) {
           cancelTargetSelection();
         } else if (gameMenu && gameMenu.style.display === 'flex') {
           closeGameMenuModal();
         } else if (setupModal && setupModal.style.display === 'flex') {
-          // Jika sudah di Lobby, munculkan konfirmasi keluar aplikasi
           openExitAppModal();
         } else {
-          // Jika sedang di dalam pertandingan, buka menu game
           openGameMenuModal();
         }
       });
@@ -1935,10 +2126,9 @@
       gameState.turnIndex = 0;
       gameState.isBusy = false;
       gameState.gameOver = false;
-      gameState.loadedDiceValue = null;
+      gameState.loadedActive = false;
       gameState.turboActive = false;
       gameState.pendingSkill = null;
-      gameState.pendingTeleportTargetIndex = null;
       gameState.tilePickerMode = null;
       gameState.players = [];
 
@@ -1957,12 +2147,13 @@
           pos: 1,
           shield: false,
           frozen: false,
+          paralyzed: false,
           skills: []
         });
       }
 
       document.getElementById('header-subtitle').textContent = `${preset.label} • ${setupConfig.count} Pemain`;
-      document.getElementById('dice-box').textContent = '🎲';
+      renderDiceFace(6, false);
       document.getElementById('dice-status').textContent = 'Siap';
 
       const guideTitle = document.querySelector('#skill-guide-overlay h2');
@@ -1974,11 +2165,6 @@
       announceTurnStart();
     }
 
-    /**
-- =========================================================================
-- RENDER PAPAN ZIG-ZAG & SVG ULAR TANGGA
-- =========================================================================
-     */
     function buildBoard() {
       const size = gameState.boardSize;
       const maxTile = gameState.maxTile;
@@ -2233,10 +2419,10 @@
             : 'theme-subcard opacity-85'
         }`;
 
-        // Hanya tampilkan status pelindung / lumpuh (tanpa membocorkan kartu lawan di strip)
         let statusBadges = '';
         if (p.shield) statusBadges += `<span title="Tameng Aktif">🛡️</span>`;
-        if (p.frozen) statusBadges += `<span title="Lumpuh (Skip 1 Ronde)">☠️</span>`;
+        if (p.frozen) statusBadges += `<span title="Beku Es (Skip 1 Giliran)">❄️</span>`;
+        if (p.paralyzed) statusBadges += `<span title="Lumpuh (Skip 1 Ronde)">☠️</span>`;
 
         chip.innerHTML = `
           <div class="flex items-center justify-between gap-1">
@@ -2265,15 +2451,21 @@
           token.style.zIndex = isCurrent ? '25' : '20';
 
           token.classList.toggle('shield-aura', p.shield);
-          token.classList.toggle('poison-aura', p.frozen);
+          token.classList.toggle('freeze-aura', p.frozen);
+          token.classList.toggle('poison-aura', p.paralyzed);
         }
       });
 
+      const loadedEl = document.getElementById('loaded-indicator');
+      if (loadedEl) {
+        if (gameState.loadedActive) loadedEl.classList.remove('hidden');
+        else loadedEl.classList.add('hidden');
+      }
+
       const turboEl = document.getElementById('turbo-indicator');
-      if (gameState.turboActive) {
-        turboEl.classList.remove('hidden');
-      } else {
-        turboEl.classList.add('hidden');
+      if (turboEl) {
+        if (gameState.turboActive) turboEl.classList.remove('hidden');
+        else turboEl.classList.add('hidden');
       }
 
       renderSkillCards();
@@ -2284,11 +2476,6 @@
       btnRoll.disabled = gameState.isBusy || gameState.gameOver || (activePlayer && activePlayer.isBot);
     }
 
-    /**
-- =========================================================================
-- RENDER 3 SLOT KARTU SKILL PEMAIN AKTIF (DENGAN LABEL TIER)
-- =========================================================================
-     */
     function renderSkillCards() {
       const activePlayer = gameState.players[gameState.turnIndex];
       if (!activePlayer) return;
@@ -2372,16 +2559,9 @@
       document.getElementById('action-log').textContent = message;
     }
 
-    /**
-- =========================================================================
-- RESOLUSI ULAR & TANGGA UNIVERSAL (BERLAKU SETELAH DADU, BOM, BLACK HOLE,
-- MAGNET, SWAP, TELEPORT, ROKET, & TANGGA DARURAT)
-- =========================================================================
-     */
     async function resolveTileBoardEffects(player, sid, sourceLabel = '') {
       if (!player || sid !== matchSessionId) return false;
 
-      // 1. Cek Tangga di petak tujuan
       if (gameState.ladders[player.pos]) {
         const ladderDest = gameState.ladders[player.pos];
         playSfx('ladder');
@@ -2394,7 +2574,6 @@
         return true;
       }
 
-      // 2. Cek Ular di petak tujuan
       if (gameState.snakes[player.pos]) {
         const snakeDest = gameState.snakes[player.pos];
         if (player.shield) {
@@ -2419,30 +2598,21 @@
       return false;
     }
 
-    /**
-- =========================================================================
-- PERHITUNGAN SKALA ROKET LURUS (5-10 BARIS SAMPAI BARIS ATAS)
-- & TANGGA DARURAT BESAR (SAMPAI BARIS ATAS)
-- =========================================================================
-     */
     function calculateRocketVerticalDestination(currentTile) {
       const size = gameState.boardSize;
       const coord = getTileCoordinates(currentTile);
-      const currentRow = coord.rowFromBottom; // 0 .. size-1
-      const currentCol = coord.col;           // 0 .. size-1
+      const currentRow = coord.rowFromBottom;
+      const currentCol = coord.col;
 
-      // Skala kenaikan vertikal 5-10 baris tergantung besar map:
-      // 10x10 -> 5-6 baris | 12x12 -> 7-8 baris | 15x15 -> 9-10 baris
       let rowBoost = 5;
       if (size === 10) {
-        rowBoost = 5 + Math.floor(Math.random() * 2); // 5 atau 6 baris
+        rowBoost = 5 + Math.floor(Math.random() * 2);
       } else if (size === 12) {
-        rowBoost = 7 + Math.floor(Math.random() * 2); // 7 atau 8 baris
+        rowBoost = 7 + Math.floor(Math.random() * 2);
       } else {
-        rowBoost = 9 + Math.floor(Math.random() * 2); // 9 atau 10 baris
+        rowBoost = 9 + Math.floor(Math.random() * 2);
       }
 
-      // Kini bisa naik sampai baris paling atas (size - 1), berhenti aman maksimal di maxTile - 1
       const targetRow = Math.min(size - 1, currentRow + rowBoost);
       const colInRow = (targetRow % 2 === 0) ? currentCol : ((size - 1) - currentCol);
       let destTile = (targetRow * size) + colInRow + 1;
@@ -2458,12 +2628,9 @@
 
     function calculateEmergencyLadderDestination(currentTile) {
       const size = gameState.boardSize;
-      // Skala lonjakan tangga darurat besar: 4-5 baris (10x10), 5-6 baris (12x12), 7-8 baris (15x15)
-      // Bisa mencapai baris paling atas (maksimal maxTile - 1 agar tidak langsung auto-finish)
       const rowScale = size === 10 ? 5 : (size === 12 ? 6 : 8);
       const directClimbTile = Math.min(gameState.maxTile - 1, Math.max(currentTile + 1, currentTile + size * rowScale));
 
-      // Cek apakah ada tangga alami di depan yang puncaknya lebih tinggi atau sejajar
       const ladderStarts = Object.keys(gameState.ladders)
         .map(Number)
         .filter(s => s > currentTile && gameState.ladders[s] < gameState.maxTile)
@@ -2480,11 +2647,6 @@
       return { viaBase: null, destTile: directClimbTile };
     }
 
-    /**
-- =========================================================================
-- EKSEKUSI SKILL
-- =========================================================================
-     */
     function initiateSkill(skillIndex) {
       if (gameState.isBusy || gameState.gameOver) return;
       const user = gameState.players[gameState.turnIndex];
@@ -2499,18 +2661,10 @@
       } else if (skill.mode === 'instant') {
         user.skills.splice(skillIndex, 1);
         executeInstantSkill(skillKey, user);
-      } else if (skill.mode === 'loaded_dice') {
-        user.skills.splice(skillIndex, 1);
-        playSkillSfx('loaded');
-        updateUI();
-        document.getElementById('modal-loaded-dice').style.display = 'flex';
-      } else if (skill.mode === 'self_teleport') {
-        gameState.pendingSkill = { skillKey, skillIndex };
-        openTilePickerModal('self_teleport', user);
       } else if (skill.mode === 'black_hole') {
         gameState.pendingSkill = { skillKey, skillIndex };
-        openTilePickerModal('black_hole', user);
-      } else if (skill.mode === 'target_player') {
+        openTilePickerModal('black_hole');
+      } else if (skill.mode === 'portal_warp' || skill.mode === 'target_player') {
         gameState.pendingSkill = { skillKey, skillIndex };
         openTargetModal(skill);
       }
@@ -2619,7 +2773,14 @@
       playSkillSfx(skillKey);
       updateUI();
 
-      if (skillKey === 'ladder_boost') {
+      if (skillKey === 'loaded') {
+        gameState.loadedActive = true;
+        triggerExplosionVisual(user.pos, '🎯');
+        setLog(`🎯 DADU SAKTI! Kocokan dadu ${user.name} giliran ini dipastikan keluar angka 4–6!`);
+        updateUI();
+        if (!(await trackedSleep(800, sid))) return;
+      }
+      else if (skillKey === 'ladder_boost') {
         const climbInfo = calculateEmergencyLadderDestination(user.pos);
         if (climbInfo.viaBase) {
           triggerExplosionVisual(user.pos, '🪜');
@@ -2660,14 +2821,13 @@
         triggerExplosionVisual(destTile, '🚀');
         if (!(await trackedSleep(750, sid))) return;
 
-        // Jika di petak pendaratan roket ada tangga atau ular, langsung terpicu!
         await resolveTileBoardEffects(user, sid, 'Roket Lurus');
         if (sid !== matchSessionId) return;
       }
       else if (skillKey === 'shield') {
         user.shield = true;
         triggerExplosionVisual(user.pos, '🛡️');
-        setLog(`🛡️ ${user.name} mengaktifkan Tameng! Kebal ular, Black Hole, racun lumpuh & serangan lawan.`);
+        setLog(`🛡️ ${user.name} mengaktifkan Tameng! Kebal ular, Black Hole, beku/lumpuh & serangan lawan.`);
         updateUI();
         if (!(await trackedSleep(800, sid))) return;
       }
@@ -2726,7 +2886,7 @@
           }
         });
 
-        setLog(`❄️ BADAI BEKU! ${user.name} membekukan ${frozenCount} lawan sekaligus${blockedCount > 0 ? ` (${blockedCount} ditahan Tameng)` : ''}!`);
+        setLog(`❄️ BADAI BEKU! ${user.name} membekukan ${frozenCount} lawan dengan es biru${blockedCount > 0 ? ` (${blockedCount} ditahan Tameng)` : ''}!`);
         updateUI();
         if (!(await trackedSleep(950, sid))) return;
       }
@@ -2765,23 +2925,30 @@
 
     function openTargetModal(skill) {
       const user = gameState.players[gameState.turnIndex];
+      const allowSelf = skill.mode === 'portal_warp';
+
       document.getElementById('target-modal-icon').textContent = skill.icon;
       document.getElementById('target-modal-title').textContent = `${skill.name}: Pilih Target`;
-      document.getElementById('target-modal-desc').textContent = skill.desc;
+      document.getElementById('target-modal-desc').textContent = allowSelf
+        ? 'Pilih diri sendiri atau pemain lawan untuk di-warp ke petak acak:'
+        : skill.desc;
 
       const listEl = document.getElementById('target-players-list');
       listEl.innerHTML = '';
 
       gameState.players.forEach((candidate) => {
-        if (candidate.index === user.index) return;
+        if (!allowSelf && candidate.index === user.index) return;
 
+        const isSelf = candidate.index === user.index;
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'theme-subcard w-full min-h-[46px] flex items-center justify-between px-3 py-2.5 rounded-xl border transition cursor-pointer';
 
         let statusTag = '';
+        if (isSelf) statusTag += '<span class="text-[10px] bg-teal-500/20 text-teal-400 border border-teal-400/50 px-1.5 rounded ml-1.5">Diri Sendiri</span>';
         if (candidate.shield) statusTag += '<span class="text-xs ml-1">🛡️</span>';
-        if (candidate.frozen) statusTag += '<span class="text-xs ml-1">☠️</span>';
+        if (candidate.frozen) statusTag += '<span class="text-xs ml-1">❄️</span>';
+        if (candidate.paralyzed) statusTag += '<span class="text-xs ml-1">☠️</span>';
 
         btn.innerHTML = `
           <div class="flex items-center gap-2">
@@ -2811,7 +2978,7 @@
       document.getElementById('modal-target').style.display = 'flex';
     }
 
-    function openTilePickerModal(mode, subjectPlayer) {
+    function openTilePickerModal(mode) {
       gameState.tilePickerMode = mode;
       const iconEl = document.getElementById('tile-picker-icon');
       const titleEl = document.getElementById('tile-picker-title');
@@ -2823,71 +2990,36 @@
       quickEl.innerHTML = '';
       inputEl.value = '';
 
-      if (mode === 'self_teleport') {
-        const maxSelfDest = gameState.maxTile - 1;
-        iconEl.textContent = '🌀✨';
-        titleEl.textContent = 'Self Teleport (Manual / Acak)';
-        descEl.textContent = `Isi nomor petak tujuan (1 – ${maxSelfDest}) atau pilih acak bebas (tidak bisa langsung finish):`;
+      if (mode === 'black_hole') {
+        const maxBhTile = gameState.maxTile - 1;
+        iconEl.textContent = '🕳️🌌';
+        titleEl.textContent = 'Pasang Black Hole';
+        descEl.textContent = `Pilih Start 1, Acak (1–${maxBhTile}), atau ketik nomor petak manual. Semua lawan tersedot, kamu aman!`;
         inputEl.min = 1;
-        inputEl.max = maxSelfDest;
-        inputEl.placeholder = `1 - ${maxSelfDest}`;
-        confirmBtn.textContent = 'Teleport';
-
-        const ladderStarts = Object.keys(gameState.ladders)
-          .map(Number)
-          .filter(s => s <= maxSelfDest)
-          .sort((a, b) => b - a);
-        const bestLadder = ladderStarts[0] || Math.floor(maxSelfDest * 0.7);
+        inputEl.max = maxBhTile;
+        inputEl.placeholder = `Ketik 1 - ${maxBhTile}...`;
+        confirmBtn.textContent = 'Pasang 🕳️';
 
         const presets = [
-          { label: '🎲 Acak (Random)', isRandom: true },
-          { label: `🔥 Sebelum Finish (${maxSelfDest})`, tile: maxSelfDest },
-          { label: `🪜 Kaki Tangga (${bestLadder})`, tile: bestLadder }
+          { label: '🏁 Start 1', tile: 1, isRandom: false },
+          { label: '🎲 Acak', tile: null, isRandom: true }
         ];
 
         presets.forEach((p) => {
           const btn = document.createElement('button');
           btn.type = 'button';
           btn.className = p.isRandom
-            ? 'min-h-[38px] px-3 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/35 border border-emerald-400/70 text-[10px] font-extrabold text-emerald-400 transition cursor-pointer'
-            : 'min-h-[38px] px-2.5 py-1 rounded-lg bg-teal-600/20 hover:bg-teal-600/35 border border-teal-500/60 text-[10px] font-bold text-teal-400 transition cursor-pointer';
+            ? 'min-h-[38px] px-3.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/35 border border-emerald-400/70 text-[10.5px] font-extrabold text-emerald-400 transition cursor-pointer'
+            : 'min-h-[38px] px-3.5 py-1 rounded-lg bg-fuchsia-600/20 hover:bg-fuchsia-600/35 border border-fuchsia-500/60 text-[10.5px] font-bold text-fuchsia-400 transition cursor-pointer';
           btn.textContent = p.label;
           btn.onclick = () => {
             if (p.isRandom) {
-              const randTile = Math.floor(Math.random() * maxSelfDest) + 1;
-              executeSelfTeleportToTile(randTile, true);
+              const randTile = Math.floor(Math.random() * maxBhTile) + 1;
+              executeBlackHoleAtTile(randTile, true);
             } else {
-              executeSelfTeleportToTile(p.tile, false);
+              executeBlackHoleAtTile(p.tile, false);
             }
           };
-          quickEl.appendChild(btn);
-        });
-      }
-      else if (mode === 'black_hole') {
-        const maxBhTile = gameState.maxTile - 1;
-        iconEl.textContent = '🕳️🌌';
-        titleEl.textContent = 'Pasang Black Hole';
-        descEl.textContent = `Taruh Black Hole di petak (1 – ${maxBhTile}). Semua lawan tersedot ke sana, kamu tetap aman!`;
-        inputEl.min = 1;
-        inputEl.max = maxBhTile;
-        inputEl.placeholder = `1 - ${maxBhTile}`;
-        confirmBtn.textContent = 'Pasang 🕳️';
-
-        const snakeHeads = Object.keys(gameState.snakes).map(Number).sort((a, b) => b - a);
-        const bigSnake = snakeHeads[0] || Math.floor(gameState.maxTile * 0.6);
-
-        const presets = [
-          { label: '🏁 Petak 1 (Start)', tile: 1 },
-          { label: `🐍 Kepala Ular (${bigSnake})`, tile: bigSnake },
-          { label: `📍 Petak ${Math.floor(gameState.maxTile * 0.25)}`, tile: Math.floor(gameState.maxTile * 0.25) }
-        ];
-
-        presets.forEach((p) => {
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'min-h-[38px] px-2.5 py-1 rounded-lg bg-fuchsia-600/20 hover:bg-fuchsia-600/35 border border-fuchsia-500/60 text-[10px] font-bold text-fuchsia-400 transition cursor-pointer';
-          btn.textContent = p.label;
-          btn.onclick = () => executeBlackHoleAtTile(p.tile);
           quickEl.appendChild(btn);
         });
       }
@@ -2899,49 +3031,14 @@
       const val = parseInt(document.getElementById('tile-picker-input').value, 10);
       const mode = gameState.tilePickerMode;
 
-      if (mode === 'self_teleport') {
-        const maxSelf = gameState.maxTile - 1;
-        if (isNaN(val) || val < 1 || val > maxSelf) {
-          setLog(`⚠️ Self Teleport bisa dipilih antara petak 1 hingga ${maxSelf} (tidak bisa langsung finish)!`);
-          return;
-        }
-        executeSelfTeleportToTile(val, false);
-      } else if (mode === 'black_hole') {
+      if (mode === 'black_hole') {
         const maxBh = gameState.maxTile - 1;
         if (isNaN(val) || val < 1 || val > maxBh) {
-          setLog(`⚠️ Pilih petak Black Hole antara 1 hingga ${maxBh}.`);
+          setLog(`⚠️ Masukkan nomor petak Black Hole antara 1 hingga ${maxBh}.`);
           return;
         }
-        executeBlackHoleAtTile(val);
+        executeBlackHoleAtTile(val, false);
       }
-    }
-
-    async function executeSelfTeleportToTile(destTile, isRandom = false) {
-      const sid = matchSessionId;
-      const user = gameState.players[gameState.turnIndex];
-      const pending = gameState.pendingSkill;
-      closeAllSkillModals();
-
-      if (!pending || !user) return;
-      user.skills.splice(pending.skillIndex, 1);
-
-      gameState.isBusy = true;
-      playSkillSfx('self_teleport');
-      triggerExplosionVisual(user.pos, '🌀');
-      setLog(`🌀 SELF TELEPORT${isRandom ? ' (ACAK)' : ''}! ${user.name} berpindah ke petak ${destTile}!`);
-      updateUI();
-
-      if (!(await trackedSleep(480, sid))) return;
-      user.pos = destTile;
-      updateUI();
-      triggerExplosionVisual(destTile, '✨');
-      if (!(await trackedSleep(650, sid))) return;
-
-      await resolveTileBoardEffects(user, sid, 'Self Teleport');
-      if (sid !== matchSessionId) return;
-
-      gameState.isBusy = false;
-      updateUI();
     }
 
     function showBlackHoleVortex(tilePos) {
@@ -2956,7 +3053,7 @@
       setTimeout(() => vortex.remove(), 2200);
     }
 
-    async function executeBlackHoleAtTile(holeTile) {
+    async function executeBlackHoleAtTile(holeTile, isRandom = false) {
       const sid = matchSessionId;
       const user = gameState.players[gameState.turnIndex];
       const pending = gameState.pendingSkill;
@@ -2971,7 +3068,7 @@
       document.getElementById('app-container').classList.add('shake-effect');
       setTimeout(() => document.getElementById('app-container')?.classList.remove('shake-effect'), 500);
 
-      setLog(`🕳️ BLACK HOLE muncul di petak ${holeTile}! Menyedot semua lawan (kecuali ${user.name})...`);
+      setLog(`🕳️ BLACK HOLE${isRandom ? ' (ACAK)' : ''} muncul di petak ${holeTile}! Menyedot semua lawan (kecuali ${user.name})...`);
       updateUI();
       if (!(await trackedSleep(650, sid))) return;
 
@@ -2980,7 +3077,7 @@
       const suckedPlayers = [];
 
       gameState.players.forEach((p) => {
-        if (p.index === user.index) return; // Pemakai Black Hole TIDAK ikut tersedot
+        if (p.index === user.index) return;
         if (p.shield) {
           p.shield = false;
           blockedCount++;
@@ -2996,7 +3093,6 @@
       updateUI();
       if (!(await trackedSleep(900, sid))) return;
 
-      // Jika petak Black Hole memiliki ular atau tangga, semua lawan yang tersedot langsung mengalaminya!
       if (suckedPlayers.length > 0 && (gameState.snakes[holeTile] || gameState.ladders[holeTile])) {
         if (gameState.snakes[holeTile]) {
           const tail = gameState.snakes[holeTile];
@@ -3023,13 +3119,12 @@
 
     function cancelTargetSelection() {
       gameState.pendingSkill = null;
-      gameState.pendingTeleportTargetIndex = null;
       gameState.tilePickerMode = null;
       closeAllSkillModals();
     }
 
     function closeAllSkillModals() {
-      ['modal-steal', 'modal-target', 'modal-tile-picker', 'modal-loaded-dice'].forEach((id) => {
+      ['modal-steal', 'modal-target', 'modal-tile-picker'].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
       });
@@ -3040,7 +3135,9 @@
       gameState.isBusy = true;
       updateUI();
 
-      if (target.shield) {
+      const isSelfTarget = target.index === user.index;
+
+      if (!isSelfTarget && target.shield) {
         target.shield = false;
         playSkillSfx('shield');
         triggerExplosionVisual(target.pos, '🛡️');
@@ -3054,17 +3151,17 @@
 
       playSkillSfx(skillKey);
 
-      if (skillKey === 'teleport_target') {
+      if (skillKey === 'portal_warp') {
         const maxDest = gameState.maxTile - 1;
         const destTile = Math.floor(Math.random() * maxDest) + 1;
-        triggerExplosionVisual(target.pos, '🌌');
-        setLog(`🌌 PORTAL LAWAN! ${user.name} melempar ${target.name} ke petak acak ${destTile}!`);
+        triggerExplosionVisual(target.pos, '🌀');
+        setLog(`🌀 PORTAL WARP! ${user.name} mengirim ${isSelfTarget ? 'dirinya sendiri' : target.name} ke petak acak ${destTile}!`);
         target.pos = destTile;
         updateUI();
         triggerExplosionVisual(destTile, '✨');
         if (!(await trackedSleep(750, sid))) return;
 
-        await resolveTileBoardEffects(target, sid, 'Portal Lawan');
+        await resolveTileBoardEffects(target, sid, 'Portal Warp');
         if (sid !== matchSessionId) return;
       }
       else if (skillKey === 'swap') {
@@ -3078,7 +3175,6 @@
         updateUI();
         if (!(await trackedSleep(850, sid))) return;
 
-        // Resolusi ular/tangga untuk kedua pemain yang bertukar posisi
         await resolveTileBoardEffects(user, sid, 'Swap');
         if (sid !== matchSessionId) return;
         await resolveTileBoardEffects(target, sid, 'Swap');
@@ -3087,9 +3183,9 @@
       else if (skillKey === 'freeze') {
         const wipedCount = target.skills.length;
         target.skills = [];
-        target.frozen = true;
+        target.paralyzed = true;
         triggerExplosionVisual(target.pos, '☠️');
-        setLog(`☠️ LUMPUH! ${user.name} meracuni ${target.name} (stop 1 ronde & ${wipedCount} kartu skill musnah)!`);
+        setLog(`☠️ LUMPUH! ${user.name} melumpuhkan ${target.name} (stop 1 ronde & ${wipedCount} kartu skill musnah)!`);
         updateUI();
         if (!(await trackedSleep(950, sid))) return;
       }
@@ -3120,7 +3216,6 @@
         setLog(`💣 BOOM! ${user.name} meledakkan ${target.name} mundur 10 langkah ke petak ${destPos}!`);
         if (!(await movePlayerStepByStep(target.index, destPos, sid))) return;
 
-        // Wajib cek ular/tangga di petak hasil ledakan bom!
         await resolveTileBoardEffects(target, sid, 'Ledakan Bom');
         if (sid !== matchSessionId) return;
       }
@@ -3181,14 +3276,6 @@
       return ok;
     }
 
-    function selectLoadedDice(num) {
-      gameState.loadedDiceValue = num;
-      closeAllSkillModals();
-      document.getElementById('dice-box').textContent = num;
-      document.getElementById('dice-status').textContent = `Sakti (${num})`;
-      setLog(`🎲 Dadu Sakti siap! Tekan Kocok Dadu untuk maju ${num} langkah.`);
-    }
-
     function triggerExplosionVisual(tilePos, emoji = '💥') {
       const coord = getTileCoordinates(tilePos);
       const layer = document.getElementById('tokens-layer');
@@ -3201,11 +3288,73 @@
       setTimeout(() => boom.remove(), 800);
     }
 
-    /**
-- =========================================================================
-- KOCOK DADU & PERGERAKAN LANGKAH DEMI LANGKAH
-- =========================================================================
-     */
+    async function runGachaRouletteAnimation(player, winningSkill, sid) {
+      const overlay = document.getElementById('gacha-roulette-overlay');
+      const playerLabel = document.getElementById('gacha-player-label');
+      const statusBadge = document.getElementById('gacha-status-badge');
+      const slotCard = document.getElementById('gacha-slot-card');
+      const slotTier = document.getElementById('gacha-slot-tier');
+      const slotIcon = document.getElementById('gacha-slot-icon');
+      const slotName = document.getElementById('gacha-slot-name');
+      const slotDesc = document.getElementById('gacha-slot-desc');
+
+      if (!overlay || !slotCard) return true;
+
+      const allSkills = Object.values(SKILL_CATALOG);
+      playerLabel.textContent = `🎰 ${player.name}`;
+      statusBadge.textContent = 'GACHA ROLL';
+      statusBadge.className = 'px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/50 animate-pulse';
+      overlay.style.display = 'flex';
+
+      const totalTicks = 15;
+      for (let i = 0; i < totalTicks; i++) {
+        if (sid !== matchSessionId) {
+          overlay.style.display = 'none';
+          return false;
+        }
+
+        const candidate = (i === totalTicks - 1)
+          ? winningSkill
+          : allSkills[Math.floor(Math.random() * allSkills.length)];
+        const tierObj = TIER_META[candidate.tier] || TIER_META.COMMON;
+
+        slotCard.className = `w-full rounded-2xl border-2 p-3 bg-gradient-to-b ${candidate.color} text-white flex flex-col items-center justify-center min-h-[118px] shadow-inner gacha-tick-pop`;
+        slotTier.textContent = `★ ${tierObj.label}`;
+        slotTier.className = `text-[8.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${tierObj.badgeClass} mb-1.5`;
+        slotIcon.textContent = candidate.icon;
+        slotName.textContent = candidate.name;
+        slotDesc.textContent = candidate.desc;
+
+        playGachaTickSfx(i);
+
+        const delay = i < 7 ? 65 : (i < 12 ? 115 : 185);
+        if (!(await trackedSleep(delay, sid))) {
+          overlay.style.display = 'none';
+          return false;
+        }
+      }
+
+      const finalTierObj = TIER_META[winningSkill.tier] || TIER_META.COMMON;
+      statusBadge.textContent = 'LOCKED!';
+      statusBadge.className = 'px-2 py-0.5 rounded-full bg-emerald-500/25 text-emerald-300 border border-emerald-400/60';
+      slotCard.className = `w-full rounded-2xl border-2 p-3 bg-gradient-to-b ${winningSkill.color} text-white flex flex-col items-center justify-center min-h-[118px] shadow-xl ring-2 ring-amber-300 gacha-lock-impact`;
+      slotTier.textContent = `★ ${finalTierObj.label}`;
+      slotTier.className = `text-[8.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${finalTierObj.badgeClass} mb-1.5`;
+      slotIcon.textContent = winningSkill.icon;
+      slotName.textContent = winningSkill.name;
+      slotDesc.textContent = winningSkill.desc;
+
+      playSkillTierGainSfx(winningSkill.tier);
+
+      if (!(await trackedSleep(680, sid))) {
+        overlay.style.display = 'none';
+        return false;
+      }
+
+      overlay.style.display = 'none';
+      return sid === matchSessionId;
+    }
+
     async function handleRollDice() {
       if (gameState.isBusy || gameState.gameOver) return;
       const sid = matchSessionId;
@@ -3218,29 +3367,33 @@
       const diceStatus = document.getElementById('dice-status');
       const maxTile = gameState.maxTile;
 
+      diceBox.classList.remove('dice-land-pop');
       diceBox.classList.add('dice-rolling');
       diceStatus.textContent = 'Mengocok...';
 
       for (let i = 0; i < DICE_SPIN_FRAMES; i++) {
-        diceBox.textContent = Math.floor(Math.random() * 6) + 1;
+        renderDiceFace(Math.floor(Math.random() * 6) + 1, false);
         playSfx('dice');
         if (!(await trackedSleep(DICE_FRAME_MS, sid))) return;
       }
 
       diceBox.classList.remove('dice-rolling');
 
-      const baseRoll = gameState.loadedDiceValue !== null
-        ? gameState.loadedDiceValue
+      const isLoaded = gameState.loadedActive;
+      const baseRoll = isLoaded
+        ? (4 + Math.floor(Math.random() * 3))
         : (Math.floor(Math.random() * 6) + 1);
-
       const isTurbo = gameState.turboActive;
       const finalSteps = isTurbo ? baseRoll * 5 : baseRoll;
 
-      gameState.loadedDiceValue = null;
+      gameState.loadedActive = false;
       gameState.turboActive = false;
 
-      diceBox.textContent = isTurbo ? `${baseRoll}x5` : baseRoll;
-      diceStatus.textContent = isTurbo ? `Turbo ${finalSteps}!` : `Angka ${baseRoll}`;
+      renderDiceFace(baseRoll, isTurbo);
+      triggerDiceLandPop();
+      diceStatus.textContent = isTurbo
+        ? `Turbo ${finalSteps}!`
+        : (isLoaded ? `Sakti ${baseRoll}!` : `Angka ${baseRoll}`);
 
       const startPos = player.pos;
       let nextPos = player.pos + finalSteps;
@@ -3252,7 +3405,8 @@
         bounced = true;
         setLog(`🎲 ${player.name} dapat ${finalSteps} — kelebihan! Memantul ke petak ${nextPos}.`);
       } else {
-        setLog(`🎲 ${player.name} dapat ${finalSteps}${isTurbo ? ' (Turbo x5!)' : ''}, bersiap maju ke petak ${nextPos}...`);
+        const buffLabel = isTurbo ? ' (Turbo x5!)' : (isLoaded ? ' (Dadu Sakti!)' : '');
+        setLog(`🎲 ${player.name} dapat ${finalSteps}${buffLabel}, bersiap maju ke petak ${nextPos}...`);
       }
 
       if (!(await trackedSleep(DICE_READ_PAUSE_MS, sid))) return;
@@ -3272,14 +3426,12 @@
         for (let t = maxTile - 1; t >= nextPos; t--) passedTiles.push(t);
       }
 
-      // 1. Cek Petak Misteri (?)
       const hitMystery = passedTiles.some(t => gameState.mysteryTiles.includes(t));
       if (hitMystery) {
-        grantRandomSkill(player);
-        if (!(await trackedSleep(800, sid))) return;
+        const ok = await grantRandomSkillWithGacha(player, sid);
+        if (!ok) return;
       }
 
-      // 2. Cek Tangga & Ular di petak pendaratan dadu
       await resolveTileBoardEffects(player, sid, '');
       if (sid !== matchSessionId) return;
 
@@ -3304,21 +3456,26 @@
       return sid === matchSessionId;
     }
 
-    function grantRandomSkill(player) {
+    async function grantRandomSkillWithGacha(player, sid = matchSessionId) {
       const keys = Object.keys(SKILL_CATALOG);
       const randomKey = keys[Math.floor(Math.random() * keys.length)];
       const skill = SKILL_CATALOG[randomKey];
+      const tierLabel = (TIER_META[skill.tier]?.label || skill.tier).toUpperCase();
 
-      playSfx('skill');
+      setLog(`🎰 ${player.name} menginjak petak ? — Gacha skill dimulai...`);
+      const ok = await runGachaRouletteAnimation(player, skill, sid);
+      if (!ok) return false;
+
       if (player.skills.length < 3) {
         player.skills.push(randomKey);
-        setLog(`🎁 Petak Misteri! ${player.name} dapat ${skill.icon} ${skill.name}!`);
+        setLog(`🎁 [${tierLabel}] ${player.name} dapat ${skill.icon} ${skill.name}!`);
       } else {
         player.skills.shift();
         player.skills.push(randomKey);
-        setLog(`🎁 Kartu penuh! ${player.name} menukar dengan ${skill.icon} ${skill.name}!`);
+        setLog(`🎁 [${tierLabel}] Kartu penuh! ${player.name} menukar dengan ${skill.icon} ${skill.name}!`);
       }
       updateUI();
+      return true;
     }
 
     async function advanceToNextTurn() {
@@ -3339,6 +3496,16 @@
         currentPlayer.frozen = false;
         gameState.isBusy = true;
         updateUI();
+        setLog(`❄️ ${currentPlayer.name} sedang BEKU ES (Badai Beku)! Giliran dilewati.`);
+        if (!(await trackedSleep(1300, sid))) return;
+        await advanceToNextTurn();
+        return;
+      }
+
+      if (currentPlayer.paralyzed) {
+        currentPlayer.paralyzed = false;
+        gameState.isBusy = true;
+        updateUI();
         setLog(`☠️ ${currentPlayer.name} sedang LUMPUH (Stop 1 ronde)! Giliran dilewati.`);
         if (!(await trackedSleep(1300, sid))) return;
         await advanceToNextTurn();
@@ -3355,11 +3522,6 @@
       }
     }
 
-    /**
-- =========================================================================
-- AI BOT CERDAS UNTUK SEMUA SKILL
-- =========================================================================
-     */
     async function runBotTurn(bot, sid) {
       gameState.isBusy = true;
       updateUI();
@@ -3381,7 +3543,6 @@
           if (skillKey === 'hook' && leader && leader.pos <= bot.pos + 2) shouldUse = false;
           if (skillKey === 'chaos_shuffle' && leader && bot.pos >= leader.pos) shouldUse = false;
           if (skillKey === 'magnet' && leader && bot.pos >= leader.pos) shouldUse = false;
-          if (skillKey === 'self_teleport' && bot.pos >= gameState.maxTile - 2) shouldUse = false;
 
           if (shouldUse) {
             bot.skills.splice(skillIndex, 1);
@@ -3405,32 +3566,19 @@
                 updateUI();
                 if (!(await trackedSleep(850, sid))) return;
               }
-            } else if (skill.mode === 'self_teleport') {
-              const destSelf = gameState.maxTile - 1;
-              playSkillSfx('self_teleport');
-              triggerExplosionVisual(bot.pos, '🌀');
-              setLog(`🌀 ${bot.name} memakai Self Teleport ke petak ${destSelf}!`);
-              bot.pos = destSelf;
-              updateUI();
-              if (!(await trackedSleep(750, sid))) return;
-              await resolveTileBoardEffects(bot, sid, 'Self Teleport');
+            } else if (skill.mode === 'portal_warp') {
+              const warpTarget = (bot.pos < gameState.maxTile * 0.35) ? bot : (leader || bot);
+              await executeTargetedSkill('portal_warp', bot, warpTarget);
               if (sid !== matchSessionId) return;
             } else if (skill.mode === 'black_hole') {
-              const snakeHeads = Object.keys(gameState.snakes).map(Number).sort((a, b) => b - a);
-              const holeDest = snakeHeads[0] || 1;
+              const holeDest = Math.random() < 0.5 ? 1 : (Math.floor(Math.random() * (gameState.maxTile - 1)) + 1);
               gameState.pendingSkill = { skillKey: 'black_hole', skillIndex: 0 };
               bot.skills.unshift('black_hole');
-              await executeBlackHoleAtTile(holeDest);
+              await executeBlackHoleAtTile(holeDest, true);
               if (sid !== matchSessionId) return;
             } else if (skill.mode === 'instant') {
               await executeInstantSkill(skillKey, bot);
               if (sid !== matchSessionId) return;
-            } else if (skill.mode === 'loaded_dice') {
-              gameState.loadedDiceValue = 12;
-              playSkillSfx('loaded');
-              setLog(`🎲 ${bot.name} memakai Dadu Sakti (Angka 12)!`);
-              updateUI();
-              if (!(await trackedSleep(700, sid))) return;
             } else if (skill.mode === 'target_player' && leader) {
               await executeTargetedSkill(skillKey, bot, leader);
               if (sid !== matchSessionId) return;
@@ -3483,6 +3631,7 @@
 
       applyThemeMode(uiTheme);
       initMp3Tracks();
+      registerAppLifecycleAudioListeners();
       registerAndroidBackButton();
       startNewGameWithCurrentSettings();
       openSetupModal();
