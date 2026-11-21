@@ -1298,7 +1298,11 @@
     function playSfx(event) {
       if (audioPrefs.sfxMuted || isAppBackgrounded || isScreenCurrentlyHidden()) return;
       if (event === 'step') playTone(440, 'triangle', 0.08, 0.64);
-      else if (event === 'dice') playTone(340 + Math.random() * 220, 'triangle', 0.055, 0.56);
+      else if (event === 'dice') {
+        const baseFreq = 260 + Math.random() * 190;
+        playTone(baseFreq, 'square', 0.075, 0.85, 0, baseFreq * 0.72);
+        playTone(baseFreq * 1.45, 'triangle', 0.085, 0.95, 0.012, baseFreq * 0.85);
+      }
       else if (event === 'ladder') {
         playTone(440, 'triangle', 0.12, 0.75, 0);
         playTone(587, 'triangle', 0.12, 0.75, 0.09);
