@@ -796,7 +796,7 @@
     const DICE_READ_PAUSE_MS = 380;
     const ENTITY_TRIGGER_PAUSE_MS = 560;
 
-    const STORAGE_KEY = 'rexterco_ulartangga_chaos_v14';
+    const STORAGE_KEY = 'rexterco_ulartangga_chaos_v15';
     const MAX_PLAYERS = 16;
 
     window.CUSTOM_AUDIO_CONFIG = {
@@ -1660,10 +1660,10 @@
         name: 'Jimat Pantul',
         icon: '🧿',
         tier: 'MYTHIC',
-        category: 'Pantul & Kebal Chaos',
+        category: 'Pantul 1 Ronde',
         badgeColor: 'bg-amber-950/85 text-amber-200 border-amber-300/60',
-        desc: 'Pantulkan skill target & kebal chaos',
-        fullDesc: 'Memantulkan seluruh skill target kembali ke penyerang dan membuatmu kebal dari skill chaos/area (kecuali Copet Skill).',
+        desc: 'Pantul & kebal chaos (1 ronde)',
+        fullDesc: 'Aktif selama 1 ronde penuh: memantulkan seluruh skill target ke penyerang & kebal skill chaos/area (kecuali Copet Skill).',
         mode: 'instant',
         color: 'from-amber-500 via-yellow-600 to-slate-950 border-amber-300 text-white'
       },
@@ -2249,6 +2249,7 @@
           pos: 1,
           shield: false,
           charmActive: false,
+          charmRoundsLeft: 0,
           frozen: false,
           paralyzed: false,
           skills: []
@@ -2523,7 +2524,7 @@
         }`;
 
         let statusBadges = '';
-        if (p.charmActive) statusBadges += `<span title="Jimat Pantul Aktif">🧿</span>`;
+        if (p.charmActive) statusBadges += `<span title="Jimat Pantul Aktif (1 Ronde)">🧿</span>`;
         if (p.shield) statusBadges += `<span title="Tameng Aktif">🛡️</span>`;
         if (p.frozen) statusBadges += `<span title="Beku Es (Skip 1 Giliran)">❄️</span>`;
         if (p.paralyzed) statusBadges += `<span title="Lumpuh (Skip 1 Ronde)">☠️</span>`;
@@ -3005,8 +3006,9 @@
 
       if (skillKey === 'charm_reflect') {
         user.charmActive = true;
+        user.charmRoundsLeft = 1;
         triggerExplosionVisual(user.pos, '🧿');
-        setLog(`🧿 JIMAT PANTUL AKTIF! ${user.name} memantulkan skill target & kebal skill chaos (kecuali Copet)!`);
+        setLog(`🧿 JIMAT PANTUL AKTIF (1 RONDE)! ${user.name} memantulkan skill target & kebal skill chaos (kecuali Copet)!`);
         updateUI();
         if (!(await trackedSleep(850, sid))) return;
       }
@@ -3214,7 +3216,7 @@
 
         let statusTag = '';
         if (isSelf) statusTag += '<span class="text-[10px] bg-teal-500/20 text-teal-400 border border-teal-400/50 px-1.5 rounded ml-1.5">Diri Sendiri</span>';
-        if (candidate.charmActive) statusTag += '<span class="text-xs ml-1" title="Jimat Pantul">🧿</span>';
+        if (candidate.charmActive) statusTag += '<span class="text-xs ml-1" title="Jimat Pantul Aktif">🧿</span>';
         if (candidate.shield) statusTag += '<span class="text-xs ml-1" title="Tameng">🛡️</span>';
         if (candidate.frozen) statusTag += '<span class="text-xs ml-1">❄️</span>';
         if (candidate.paralyzed) statusTag += '<span class="text-xs ml-1">☠️</span>';
@@ -3699,6 +3701,15 @@
       if (gameState.gameOver) return;
       const sid = matchSessionId;
       const currentPlayer = gameState.players[gameState.turnIndex];
+
+      if (currentPlayer.charmActive) {
+        if (currentPlayer.charmRoundsLeft > 1) {
+          currentPlayer.charmRoundsLeft -= 1;
+        } else {
+          currentPlayer.charmActive = false;
+          currentPlayer.charmRoundsLeft = 0;
+        }
+      }
 
       if (currentPlayer.shield) {
         currentPlayer.shield = false;
