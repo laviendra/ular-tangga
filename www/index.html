@@ -264,7 +264,6 @@
       text-align: center;
     }
 
-    /* Animasi Dadu 3D-feel & Pip Dots */
     .dice-cube {
       position: relative;
       width: 44px;
@@ -371,8 +370,14 @@
     }
 
     .player-token {
-      transition: left 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.4s cubic-bezier(0.22, 1, 0.36, 1), transform 0.35s ease;
-      will-change: left, top;
+      transition: left 0.4s cubic-bezier(0.22, 1, 0.36, 1), top 0.4s cubic-bezier(0.22, 1, 0.36, 1), transform 0.35s ease, opacity 0.25s ease;
+      will-change: left, top, opacity;
+    }
+
+    .token-vanished {
+      opacity: 0 !important;
+      pointer-events: none !important;
+      transform: translate(-50%, -50%) scale(0.5) !important;
     }
 
     @keyframes shieldPulse {
@@ -502,7 +507,10 @@
               🎲 DADU SAKTI
             </span>
             <span id="turbo-indicator" class="hidden text-[9.5px] font-extrabold text-amber-400 bg-amber-500/20 border border-amber-400/60 px-2 py-0.5 rounded-full animate-pulse">
-              ⚡ TURBO x5
+              ⚡ TURBO x3
+            </span>
+            <span id="flight-indicator" class="hidden text-[9.5px] font-extrabold text-fuchsia-300 bg-fuchsia-500/20 border border-fuchsia-400/60 px-2 py-0.5 rounded-full animate-pulse">
+              🪽 SAYAP TERBANG
             </span>
             <button type="button" onclick="window.openSkillGuide()" id="mystery-hint" class="min-h-[30px] px-2 py-0.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-[10px] font-bold text-amber-500 transition cursor-pointer">
               📖 Info Skill
@@ -670,33 +678,26 @@
     </div>
   </div>
 
-  <!-- MODAL COPET SKILL MANUAL -->
+  <!-- MODAL COPET SKILL MANUAL (TIDAK BISA DIBATALKAN SETELAH DIPILIH) -->
   <div id="modal-steal" style="display: none; z-index: 50;" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm items-center justify-center p-4">
     <div class="theme-modal border-2 border-pink-400/80 rounded-3xl p-5 max-w-sm w-full text-center shadow-2xl flex flex-col gap-3">
       <div>
         <div class="text-3xl mb-0.5">🤏</div>
         <h3 class="font-game text-lg font-bold text-pink-400">Copet Skill: Intip & Curi Kartu Lawan</h3>
-        <p class="theme-muted text-xs mt-0.5">Kartu lawan terbuka khusus untukmu! Ketuk kartu yang ingin dicuri:</p>
+        <p class="theme-muted text-xs mt-0.5">Skill sudah dipilih dan tidak bisa dibatalkan. Ketuk kartu yang ingin dicuri:</p>
       </div>
 
       <div id="steal-targets-list" class="clean-scroll flex flex-col gap-2 max-h-[260px] overflow-y-auto pr-1 text-left"></div>
-
-      <button type="button" onclick="cancelTargetSelection()" class="theme-btn-neutral w-full min-h-[44px] py-2 rounded-xl text-xs font-bold border transition cursor-pointer">
-        Batal
-      </button>
     </div>
   </div>
 
-  <!-- MODAL PEMILIHAN TARGET PEMAIN (TERMASUK DIRI SENDIRI UNTUK PORTAL WARP) -->
+  <!-- MODAL PEMILIHAN TARGET PEMAIN (TIDAK BISA DIBATALKAN SETELAH DIPILIH) -->
   <div id="modal-target" style="display: none; z-index: 50;" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4">
     <div class="theme-modal border-2 border-amber-400/80 rounded-3xl p-5 max-w-xs w-full text-center shadow-2xl">
       <div id="target-modal-icon" class="text-3xl mb-1">🌀</div>
       <h3 id="target-modal-title" class="font-game text-lg font-bold text-amber-400">Pilih Target Pemain</h3>
-      <p id="target-modal-desc" class="theme-muted text-xs mt-1 mb-3">Pilih target yang akan dikenai efek skill ini:</p>
-      <div id="target-players-list" class="clean-scroll flex flex-col gap-2 max-h-[240px] overflow-y-auto mb-3"></div>
-      <button type="button" onclick="cancelTargetSelection()" class="theme-btn-neutral w-full min-h-[44px] py-2 rounded-xl text-xs font-bold border transition cursor-pointer">
-        Batal
-      </button>
+      <p id="target-modal-desc" class="theme-muted text-xs mt-1 mb-3">Skill sudah dipilih dan wajib digunakan ke target:</p>
+      <div id="target-players-list" class="clean-scroll flex flex-col gap-2 max-h-[240px] overflow-y-auto"></div>
     </div>
   </div>
 
@@ -706,10 +707,7 @@
       <div class="text-3xl mb-1">🎲</div>
       <h3 class="font-game text-lg font-bold text-sky-400">Dadu Sakti: Pilih Angka (1–12)</h3>
       <p class="theme-muted text-xs mt-1 mb-3">Tentukan angka langkah dadu untuk giliran ini:</p>
-      <div id="loaded-dice-grid" class="grid grid-cols-4 gap-2 mb-3"></div>
-      <button type="button" onclick="cancelTargetSelection()" class="theme-btn-neutral w-full min-h-[44px] py-2 rounded-xl text-xs font-bold border transition cursor-pointer">
-        Batal
-      </button>
+      <div id="loaded-dice-grid" class="grid grid-cols-4 gap-2"></div>
     </div>
   </div>
 
@@ -720,15 +718,12 @@
       <h3 id="tile-picker-title" class="font-game text-lg font-bold text-cyan-400">Pasang Black Hole</h3>
       <p id="tile-picker-desc" class="theme-muted text-xs mt-1 mb-3">Pilih Start 1, Acak, atau ketik nomor petak manual:</p>
       <div id="tile-picker-quick-picks" class="flex flex-wrap justify-center gap-1.5 mb-3"></div>
-      <div class="flex items-center gap-2 mb-3">
+      <div class="flex items-center gap-2">
         <input id="tile-picker-input" type="number" min="1" max="99" placeholder="Nomor petak..." class="theme-input w-full min-h-[44px] px-3 py-2 rounded-xl border text-center font-game text-base font-bold focus:outline-none focus:border-cyan-400" />
         <button type="button" id="tile-picker-confirm-btn" onclick="confirmTilePickerInput()" class="min-h-[44px] px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-game text-sm font-bold shrink-0 cursor-pointer">
           Pasang 🕳️
         </button>
       </div>
-      <button type="button" onclick="cancelTargetSelection()" class="theme-btn-neutral w-full min-h-[44px] py-2 rounded-xl text-xs font-bold border transition cursor-pointer">
-        Batal
-      </button>
     </div>
   </div>
 
@@ -762,7 +757,7 @@
           <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/60 flex items-center justify-center text-xl">📖</div>
           <div>
             <h2 class="font-game text-base sm:text-lg font-bold text-amber-500 leading-tight">Buku Panduan Skill</h2>
-            <p class="theme-muted text-[10.5px]">Lewati/berhenti di petak <span class="text-amber-500 font-bold">?</span> untuk dapat kartu acak</p>
+            <p class="theme-muted text-[10.5px]">Drop: Common 35% • Rare 30% • Epic 20% • Mythic 15%</p>
           </div>
         </div>
         <button type="button" onclick="window.closeSkillGuide()" aria-label="Tutup" class="theme-btn-neutral w-10 h-10 rounded-full hover:bg-rose-600 hover:text-white font-bold flex items-center justify-center border transition cursor-pointer">
@@ -796,7 +791,7 @@
     const DICE_READ_PAUSE_MS = 380;
     const ENTITY_TRIGGER_PAUSE_MS = 560;
 
-    const STORAGE_KEY = 'rexterco_ulartangga_chaos_v15';
+    const STORAGE_KEY = 'rexterco_ulartangga_chaos_v19';
     const MAX_PLAYERS = 16;
 
     window.CUSTOM_AUDIO_CONFIG = {
@@ -823,7 +818,7 @@
 
       const num = Number(value);
       if (isTurbo && num >= 1 && num <= 12) {
-        diceBox.innerHTML = `<span class="font-game text-xs font-black text-amber-600 leading-none">${num}x5</span>`;
+        diceBox.innerHTML = `<span class="font-game text-xs font-black text-amber-600 leading-none">${num}x3</span>`;
         return;
       }
 
@@ -1290,6 +1285,14 @@
           playTone(640, 'triangle', 0.08, 0.75, 0.07, 980);
           playTone(860, 'sine', 0.12, 0.78, 0.14, 1240);
           break;
+        case 'stealth_vanish':
+          playTone(580, 'sine', 0.14, 0.65, 0, 320);
+          playTone(420, 'triangle', 0.16, 0.55, 0.08, 760);
+          break;
+        case 'wing_flight':
+          playTone(390, 'triangle', 0.12, 0.75, 0, 880);
+          playTone(660, 'sine', 0.18, 0.8, 0.09, 1320);
+          break;
         case 'charm_reflect':
           playTone(659.25, 'sine', 0.16, 0.78, 0, 880);
           playTone(880, 'triangle', 0.18, 0.82, 0.09, 1318.5);
@@ -1648,22 +1651,225 @@
     ];
 
     const TIER_META = {
-      COMMON: { label: 'Common', badgeClass: 'bg-slate-900/80 text-slate-200 border-slate-400/50' },
-      RARE:   { label: 'Rare',   badgeClass: 'bg-sky-950/85 text-sky-200 border-sky-300/60' },
-      EPIC:   { label: 'Epic',   badgeClass: 'bg-purple-950/85 text-purple-200 border-purple-300/60' },
-      MYTHIC: { label: 'Mythic', badgeClass: 'bg-amber-950/85 text-amber-200 border-amber-300/70' }
+      COMMON: { label: 'Common', weight: 35, badgeClass: 'bg-slate-900/80 text-slate-200 border-slate-400/50' },
+      RARE:   { label: 'Rare',   weight: 30, badgeClass: 'bg-sky-950/85 text-sky-200 border-sky-300/60' },
+      EPIC:   { label: 'Epic',   weight: 20, badgeClass: 'bg-purple-950/85 text-purple-200 border-purple-300/60' },
+      MYTHIC: { label: 'Mythic', weight: 15, badgeClass: 'bg-amber-950/85 text-amber-200 border-amber-300/70' }
     };
 
     const SKILL_CATALOG = {
+      // === COMMON (5 SKILL — 35%) ===
+      sprint_dash: {
+        id: 'sprint_dash',
+        name: 'Lari Cepat',
+        icon: '🏃',
+        tier: 'COMMON',
+        kind: 'GERAK',
+        category: 'GERAK',
+        badgeColor: 'bg-emerald-950/80 text-emerald-200 border-emerald-300/40',
+        desc: 'Maju +8 langkah',
+        fullDesc: 'Berlari maju 8 langkah secara berurutan di papan untuk mengejar ketertinggalan atau mengambil petak misteri di depan.',
+        mode: 'instant',
+        color: 'from-emerald-500 to-cyan-800 border-emerald-300 text-white'
+      },
+      bomb: {
+        id: 'bomb',
+        name: 'Bom Mundur',
+        icon: '💣',
+        tier: 'COMMON',
+        kind: 'SERANGAN',
+        category: 'SERANGAN',
+        badgeColor: 'bg-rose-950/80 text-rose-200 border-rose-300/40',
+        desc: 'Mundur -8 langkah (1 target)',
+        fullDesc: 'Meledakkan 1 pemain target pilihanmu sehingga terpental mundur 8 langkah di jalur papan.',
+        mode: 'target_player',
+        color: 'from-rose-500 to-red-900 border-rose-300 text-white'
+      },
+      shield: {
+        id: 'shield',
+        name: 'Tameng',
+        icon: '🛡️',
+        tier: 'COMMON',
+        kind: 'PERTAHANAN',
+        category: 'PERTAHANAN',
+        badgeColor: 'bg-sky-950/80 text-sky-200 border-sky-300/40',
+        desc: 'Blokir 1 serangan/efek buruk',
+        fullDesc: 'Melindungi dirimu dari gigitan ular, Black Hole, efek beku/lumpuh, serta serangan atau tarikan skill lawan.',
+        mode: 'instant',
+        color: 'from-sky-500 to-blue-900 border-sky-300 text-white'
+      },
+      freeze: {
+        id: 'freeze',
+        name: 'Lumpuh',
+        icon: '☠️',
+        tier: 'COMMON',
+        kind: 'SERANGAN',
+        category: 'SERANGAN',
+        badgeColor: 'bg-emerald-950/85 text-lime-200 border-lime-300/50',
+        desc: 'Skip 1 ronde & hapus skill (1 target)',
+        fullDesc: 'Membuat 1 target pilihan lumpuh selama 1 ronde (melewati gilirannya) sekaligus menghapus seluruh kartu skill yang sedang dipegangnya.',
+        mode: 'target_player',
+        color: 'from-lime-600 to-green-950 border-lime-300 text-white'
+      },
+      stealth_vanish: {
+        id: 'stealth_vanish',
+        name: 'Menghilang',
+        icon: '👻',
+        tier: 'COMMON',
+        kind: 'PERTAHANAN',
+        category: 'PERTAHANAN',
+        badgeColor: 'bg-indigo-950/85 text-indigo-200 border-indigo-300/50',
+        desc: 'Pion tak terlihat & kebal target (1 putaran)',
+        fullDesc: 'Menyembunyikan pion dari papan selama 1 putaran penuh sekaligus kebal dari penargetan skill single-target.',
+        mode: 'instant',
+        color: 'from-indigo-500 to-slate-900 border-indigo-300 text-white'
+      },
+
+      // === RARE (5 SKILL — 30%) ===
+      loaded: {
+        id: 'loaded',
+        name: 'Dadu Sakti',
+        icon: '🎲',
+        tier: 'RARE',
+        kind: 'GERAK',
+        category: 'GERAK',
+        badgeColor: 'bg-emerald-950/80 text-emerald-200 border-emerald-300/40',
+        desc: 'Pilih angka dadu 1–12',
+        fullDesc: 'Memilih sendiri angka dadu antara 1 hingga 12 untuk giliran ini agar langkahmu mendarat tepat di petak yang diinginkan.',
+        mode: 'loaded_dice',
+        color: 'from-emerald-500 to-teal-900 border-emerald-300 text-white'
+      },
+      ladder_boost: {
+        id: 'ladder_boost',
+        name: 'Tangga Darurat',
+        icon: '🪜',
+        tier: 'RARE',
+        kind: 'GERAK',
+        category: 'GERAK',
+        badgeColor: 'bg-amber-950/75 text-amber-200 border-amber-300/40',
+        desc: 'Naik tangga terdekat / +8 petak',
+        fullDesc: 'Menuju kaki tangga terdekat di depanmu lalu memanjatnya. Jika tidak ada tangga di depan, langsung maju naik 8 langkah.',
+        mode: 'instant',
+        color: 'from-amber-500 to-yellow-800 border-amber-300 text-white'
+      },
+      global_freeze: {
+        id: 'global_freeze',
+        name: 'Badai Beku',
+        icon: '❄️',
+        tier: 'RARE',
+        kind: 'CHAOS',
+        category: 'CHAOS',
+        badgeColor: 'bg-cyan-950/80 text-cyan-200 border-cyan-300/40',
+        desc: 'Bekukan semua lawan 1 giliran',
+        fullDesc: 'Membekukan seluruh pemain lawan dengan efek es biru selama 1 giliran sehingga melewati giliran kocok dadu berikutnya (kecuali Tameng atau Jimat).',
+        mode: 'instant',
+        color: 'from-sky-500 to-cyan-900 border-sky-300 text-white'
+      },
+      snake_curse: {
+        id: 'snake_curse',
+        name: 'Kutukan Ular',
+        icon: '🐍',
+        tier: 'RARE',
+        kind: 'SERANGAN',
+        category: 'SERANGAN',
+        badgeColor: 'bg-lime-950/80 text-lime-200 border-lime-300/40',
+        desc: 'Seret target ke kepala ular',
+        fullDesc: 'Menyeret target pilihanmu ke kepala ular terdekat di belakangnya (atau mundur 8 langkah jika tidak ada ular di belakang).',
+        mode: 'target_player',
+        color: 'from-lime-600 to-emerald-950 border-lime-300 text-white'
+      },
+      turbo: {
+        id: 'turbo',
+        name: 'Turbo x3',
+        icon: '⚡',
+        tier: 'RARE',
+        kind: 'GERAK',
+        category: 'GERAK',
+        badgeColor: 'bg-yellow-950/80 text-yellow-200 border-yellow-300/40',
+        desc: 'Gandakan angka dadu 3x',
+        fullDesc: 'Menggandakan hasil kocokan dadu pada giliran ini menjadi 3x lipat untuk melaju jauh dalam satu giliran.',
+        mode: 'instant',
+        color: 'from-yellow-500 to-amber-800 border-yellow-200 text-white'
+      },
+
+      // === EPIC (5 SKILL — 20%) ===
+      wing_flight: {
+        id: 'wing_flight',
+        name: 'Sayap Terbang',
+        icon: '🪽',
+        tier: 'EPIC',
+        kind: 'GERAK',
+        category: 'GERAK',
+        badgeColor: 'bg-purple-950/85 text-fuchsia-200 border-fuchsia-300/50',
+        desc: 'Terbang lurus ke atas = dadu baris',
+        fullDesc: 'Terbang lurus vertikal ke atas sebanyak jumlah baris sesuai angka dadu yang keluar.',
+        mode: 'instant',
+        color: 'from-purple-500 to-indigo-900 border-fuchsia-300 text-white'
+      },
+      rocket_col: {
+        id: 'rocket_col',
+        name: 'Roket Lurus',
+        icon: '🚀',
+        tier: 'EPIC',
+        kind: 'GERAK',
+        category: 'GERAK',
+        badgeColor: 'bg-orange-950/75 text-orange-200 border-orange-300/40',
+        desc: 'Melesat lurus ke baris atas',
+        fullDesc: 'Melesat vertikal ke atas sejauh 5–6 baris (10x10), 7–8 baris (12x12), atau 9–10 baris (15x15) hingga baris teratas papan.',
+        mode: 'instant',
+        color: 'from-orange-500 to-red-800 border-orange-300 text-white'
+      },
+      swap: {
+        id: 'swap',
+        name: 'Swap Posisi',
+        icon: '🔄',
+        tier: 'EPIC',
+        kind: 'SERANGAN',
+        category: 'SERANGAN',
+        badgeColor: 'bg-purple-950/80 text-purple-200 border-purple-300/40',
+        desc: 'Tukar tempat dengan 1 lawan',
+        fullDesc: 'Menukar posisi petakmu secara langsung dengan 1 pemain target pilihanmu di papan.',
+        mode: 'target_player',
+        color: 'from-purple-500 to-indigo-900 border-purple-300 text-white'
+      },
+      hook: {
+        id: 'hook',
+        name: 'Hook Penarik',
+        icon: '🪝',
+        tier: 'EPIC',
+        kind: 'SERANGAN',
+        category: 'SERANGAN',
+        badgeColor: 'bg-amber-950/80 text-amber-200 border-amber-300/40',
+        desc: 'Tarik 1 lawan ke petakmu',
+        fullDesc: 'Menarik 1 pemain target yang berada di depan agar mundur sejajar ke petak tempatmu berdiri.',
+        mode: 'target_player',
+        color: 'from-amber-600 to-orange-950 border-amber-300 text-white'
+      },
+      portal_warp: {
+        id: 'portal_warp',
+        name: 'Portal Warp',
+        icon: '🌀',
+        tier: 'EPIC',
+        kind: 'SERANGAN',
+        category: 'SERANGAN',
+        badgeColor: 'bg-teal-950/80 text-teal-200 border-teal-300/40',
+        desc: 'Warp acak ke diri sendiri / lawan',
+        fullDesc: 'Mengirim dirimu sendiri atau 1 pemain target pilihan ke petak acak bebas di papan. Efek ke lawan dapat dipantulkan oleh Jimat atau ditahan Tameng.',
+        mode: 'portal_warp',
+        color: 'from-teal-500 to-indigo-900 border-teal-300 text-white'
+      },
+
+      // === MYTHIC (5 SKILL — 15%) ===
       charm_reflect: {
         id: 'charm_reflect',
         name: 'Jimat Pantul',
         icon: '🧿',
         tier: 'MYTHIC',
-        category: 'Pantul 1 Ronde',
+        kind: 'PERTAHANAN',
+        category: 'PERTAHANAN',
         badgeColor: 'bg-amber-950/85 text-amber-200 border-amber-300/60',
-        desc: 'Pantul & kebal chaos (1 ronde)',
-        fullDesc: 'Aktif selama 1 ronde penuh: memantulkan seluruh skill target ke penyerang & kebal skill chaos/area (kecuali Copet Skill).',
+        desc: 'Pantul & kebal chaos (1 putaran)',
+        fullDesc: 'Aktif selama 1 putaran penuh: memantulkan seluruh skill target ke penyerang & kebal skill chaos/area (kecuali Copet Skill).',
         mode: 'instant',
         color: 'from-amber-500 via-yellow-600 to-slate-950 border-amber-300 text-white'
       },
@@ -1672,7 +1878,8 @@
         name: 'Black Hole',
         icon: '🕳️',
         tier: 'MYTHIC',
-        category: 'Global Chaos',
+        kind: 'CHAOS',
+        category: 'CHAOS',
         badgeColor: 'bg-fuchsia-950/80 text-fuchsia-200 border-fuchsia-300/40',
         desc: 'Sedot semua lawan ke petak pilihan',
         fullDesc: 'Memunculkan pusaran Black Hole (opsi Start 1, Acak, atau ketik nomor petak manual) yang menyedot seluruh lawan ke petak tersebut sementara kamu sendiri tidak ikut tertarik.',
@@ -1684,7 +1891,8 @@
         name: 'Chaos Shuffle',
         icon: '🌪️',
         tier: 'MYTHIC',
-        category: 'Global Chaos',
+        kind: 'CHAOS',
+        category: 'CHAOS',
         badgeColor: 'bg-fuchsia-950/80 text-fuchsia-200 border-fuchsia-300/40',
         desc: 'Acak posisi semua pemain!',
         fullDesc: 'Mengacak ulang posisi seluruh pemain aktif di papan secara serentak sehingga arah pertandingan bisa berubah drastis dalam sekejap.',
@@ -1696,7 +1904,8 @@
         name: 'Magnet Raksasa',
         icon: '🧲',
         tier: 'MYTHIC',
-        category: 'Global Chaos',
+        kind: 'CHAOS',
+        category: 'CHAOS',
         badgeColor: 'bg-red-950/80 text-red-200 border-red-300/40',
         desc: 'Tarik semua pemain ke petakmu',
         fullDesc: 'Menarik seluruh pemain lain dari mana pun di papan langsung ke petak tempatmu berdiri (kecuali pemain yang dilindungi Tameng atau Jimat).',
@@ -1708,170 +1917,29 @@
         name: 'Copet Skill',
         icon: '🤏',
         tier: 'MYTHIC',
-        category: 'Steal Skill',
+        kind: 'SERANGAN',
+        category: 'SERANGAN',
         badgeColor: 'bg-pink-950/80 text-pink-200 border-pink-300/40',
-        desc: 'Intip & curi kartu milik lawan',
+        desc: 'Intip & curi 1 kartu milik lawan',
         fullDesc: 'Mengintip kartu tangan lawan lalu mencuri 1 kartu pilihan secara langsung (menembus Jimat, namun dapat ditahan oleh Tameng).',
         mode: 'manual_steal',
         color: 'from-pink-500 to-rose-900 border-pink-300 text-white'
-      },
-      portal_warp: {
-        id: 'portal_warp',
-        name: 'Portal Warp',
-        icon: '🌀',
-        tier: 'EPIC',
-        category: 'Random Warp',
-        badgeColor: 'bg-teal-950/80 text-teal-200 border-teal-300/40',
-        desc: 'Warp acak ke diri sendiri / lawan',
-        fullDesc: 'Mengirim dirimu sendiri atau 1 pemain target pilihan ke petak acak bebas di papan. Efek ke lawan dapat dipantulkan oleh Jimat atau ditahan Tameng.',
-        mode: 'portal_warp',
-        color: 'from-teal-500 to-indigo-900 border-teal-300 text-white'
-      },
-      rocket_col: {
-        id: 'rocket_col',
-        name: 'Roket Lurus',
-        icon: '🚀',
-        tier: 'EPIC',
-        category: 'Lonjakan Tinggi',
-        badgeColor: 'bg-orange-950/75 text-orange-200 border-orange-300/40',
-        desc: 'Melesat lurus ke baris atas',
-        fullDesc: 'Melesat vertikal ke atas sejauh 5–6 baris (10x10), 7–8 baris (12x12), atau 9–10 baris (15x15) hingga baris teratas papan.',
-        mode: 'instant',
-        color: 'from-orange-500 to-red-800 border-orange-300 text-white'
-      },
-      turbo: {
-        id: 'turbo',
-        name: 'Turbo x5',
-        icon: '⚡',
-        tier: 'EPIC',
-        category: 'Buff Dadu',
-        badgeColor: 'bg-yellow-950/80 text-yellow-200 border-yellow-300/40',
-        desc: 'Gandakan angka dadu 5x!',
-        fullDesc: 'Menggandakan hasil kocokan dadu pada giliran ini menjadi 5x lipat untuk melaju jauh dalam satu giliran.',
-        mode: 'instant',
-        color: 'from-yellow-500 to-amber-800 border-yellow-200 text-white'
-      },
-      swap: {
-        id: 'swap',
-        name: 'Swap Posisi',
-        icon: '🔄',
-        tier: 'EPIC',
-        category: 'Tukar Posisi',
-        badgeColor: 'bg-purple-950/80 text-purple-200 border-purple-300/40',
-        desc: 'Tukar tempat dengan target',
-        fullDesc: 'Menukar posisi petakmu secara langsung dengan 1 pemain target pilihanmu di papan.',
-        mode: 'target_player',
-        color: 'from-purple-500 to-indigo-900 border-purple-300 text-white'
-      },
-      hook: {
-        id: 'hook',
-        name: 'Hook Penarik',
-        icon: '🪝',
-        tier: 'EPIC',
-        category: 'Tarik Lawan',
-        badgeColor: 'bg-amber-950/80 text-amber-200 border-amber-300/40',
-        desc: 'Tarik 1 lawan ke petakmu',
-        fullDesc: 'Menarik 1 pemain target yang berada di depan agar mundur sejajar ke petak tempatmu berdiri.',
-        mode: 'target_player',
-        color: 'from-amber-600 to-orange-950 border-amber-300 text-white'
-      },
-      loaded: {
-        id: 'loaded',
-        name: 'Dadu Sakti',
-        icon: '🎲',
-        tier: 'RARE',
-        category: 'Buff Dadu',
-        badgeColor: 'bg-emerald-950/80 text-emerald-200 border-emerald-300/40',
-        desc: 'Pilih angka dadu 1–12!',
-        fullDesc: 'Memilih sendiri angka dadu antara 1 hingga 12 untuk giliran ini agar langkahmu mendarat tepat di petak yang diinginkan.',
-        mode: 'loaded_dice',
-        color: 'from-emerald-500 to-teal-900 border-emerald-300 text-white'
-      },
-      ladder_boost: {
-        id: 'ladder_boost',
-        name: 'Tangga Darurat',
-        icon: '🪜',
-        tier: 'RARE',
-        category: 'Panjat Tangga',
-        badgeColor: 'bg-amber-950/75 text-amber-200 border-amber-300/40',
-        desc: 'Naik tangga terdekat / +8 petak',
-        fullDesc: 'Menuju kaki tangga terdekat di depanmu lalu memanjatnya. Jika tidak ada tangga di depan, langsung maju naik 8 langkah.',
-        mode: 'instant',
-        color: 'from-amber-500 to-yellow-800 border-amber-300 text-white'
-      },
-      freeze: {
-        id: 'freeze',
-        name: 'Lumpuh',
-        icon: '☠️',
-        tier: 'RARE',
-        category: 'Disrupt Target',
-        badgeColor: 'bg-emerald-950/85 text-lime-200 border-lime-300/50',
-        desc: 'Stop 1 ronde + hapus semua skill',
-        fullDesc: 'Membuat 1 target pilihan lumpuh selama 1 ronde (melewati gilirannya) sekaligus menghapus seluruh kartu skill yang sedang dipegangnya.',
-        mode: 'target_player',
-        color: 'from-lime-600 to-green-950 border-lime-300 text-white'
-      },
-      snake_curse: {
-        id: 'snake_curse',
-        name: 'Kutukan Ular',
-        icon: '🐍',
-        tier: 'RARE',
-        category: 'Target Ular',
-        badgeColor: 'bg-lime-950/80 text-lime-200 border-lime-300/40',
-        desc: 'Seret target ke kepala ular',
-        fullDesc: 'Menyeret target pilihanmu ke kepala ular terdekat di belakangnya (atau mundur 8 langkah jika tidak ada ular di belakang).',
-        mode: 'target_player',
-        color: 'from-lime-600 to-emerald-950 border-lime-300 text-white'
-      },
-      sprint_dash: {
-        id: 'sprint_dash',
-        name: 'Lari Cepat',
-        icon: '🏃',
-        tier: 'COMMON',
-        category: 'Gerak +10',
-        badgeColor: 'bg-emerald-950/80 text-emerald-200 border-emerald-300/40',
-        desc: 'Lari maju 10 langkah!',
-        fullDesc: 'Berlari maju 10 langkah secara berurutan di papan untuk mengejar ketertinggalan atau mengambil petak misteri di depan.',
-        mode: 'instant',
-        color: 'from-emerald-500 to-cyan-800 border-emerald-300 text-white'
-      },
-      global_freeze: {
-        id: 'global_freeze',
-        name: 'Badai Beku',
-        icon: '❄️',
-        tier: 'COMMON',
-        category: 'Area Control',
-        badgeColor: 'bg-cyan-950/80 text-cyan-200 border-cyan-300/40',
-        desc: 'Bekukan semua lawan 1 giliran',
-        fullDesc: 'Membekukan seluruh pemain lawan dengan efek es biru selama 1 giliran sehingga mereka melewati giliran kocok dadu berikutnya (kecuali yang memakai Tameng atau Jimat).',
-        mode: 'instant',
-        color: 'from-sky-500 to-cyan-900 border-cyan-300 text-white'
-      },
-      bomb: {
-        id: 'bomb',
-        name: 'Bom Mundur',
-        icon: '💣',
-        tier: 'COMMON',
-        category: 'Mundur -10',
-        badgeColor: 'bg-rose-950/80 text-rose-200 border-rose-300/40',
-        desc: 'Target mundur 10 langkah',
-        fullDesc: 'Meledakkan 1 pemain target pilihanmu sehingga terpental mundur 10 langkah.',
-        mode: 'target_player',
-        color: 'from-rose-500 to-red-900 border-rose-300 text-white'
-      },
-      shield: {
-        id: 'shield',
-        name: 'Tameng',
-        icon: '🛡️',
-        tier: 'COMMON',
-        category: 'Pertahanan',
-        badgeColor: 'bg-sky-950/80 text-sky-200 border-sky-300/40',
-        desc: 'Kebal ular, black hole & lawan',
-        fullDesc: 'Melindungi dirimu dari gigitan ular, Black Hole, efek beku/lumpuh, serta serangan atau tarikan skill lawan.',
-        mode: 'instant',
-        color: 'from-sky-500 to-blue-900 border-sky-300 text-white'
       }
     };
+
+    const SINGLE_TARGET_SKILL_IDS = new Set(['bomb', 'freeze', 'snake_curse', 'swap', 'hook', 'portal_warp', 'steal']);
+
+    function rollWeightedSkillKey() {
+      const r = Math.random() * 100;
+      let targetTier = 'COMMON';
+      if (r < 35) targetTier = 'COMMON';
+      else if (r < 65) targetTier = 'RARE';
+      else if (r < 85) targetTier = 'EPIC';
+      else targetTier = 'MYTHIC';
+
+      const pool = Object.keys(SKILL_CATALOG).filter((k) => SKILL_CATALOG[k].tier === targetTier);
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
 
     const TOTAL_SKILL_COUNT = Object.keys(SKILL_CATALOG).length;
 
@@ -1925,6 +1993,7 @@
       filtered.forEach((skill) => {
         const isHighlighted = highlightSkillId === skill.id;
         const tierObj = TIER_META[skill.tier] || TIER_META.COMMON;
+        const kindLabel = skill.kind || skill.category || 'GERAK';
         const card = document.createElement('div');
         card.className = `rounded-2xl p-2.5 border bg-gradient-to-r ${skill.color} flex items-start gap-2.5 shadow-sm ${
           isHighlighted ? 'ring-2 ring-amber-300' : ''
@@ -1941,7 +2010,7 @@
                   ★ ${tierObj.label}
                 </span>
                 <span class="text-[8.5px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded-md border ${skill.badgeColor}">
-                  ${skill.category}
+                  ${kindLabel}
                 </span>
               </div>
             </div>
@@ -1971,6 +2040,7 @@
       gameOver: false,
       loadedValue: null,
       turboActive: false,
+      wingFlightActive: false,
       pendingSkill: null,
       tilePickerMode: null,
       players: []
@@ -2058,7 +2128,7 @@
           (loadedDiceModal && loadedDiceModal.style.display === 'flex') ||
           (pickerModal && pickerModal.style.display === 'flex')
         ) {
-          cancelTargetSelection();
+          return;
         } else if (gameMenu && gameMenu.style.display === 'flex') {
           closeGameMenuModal();
         } else if (setupModal && setupModal.style.display === 'flex') {
@@ -2230,6 +2300,7 @@
       gameState.gameOver = false;
       gameState.loadedValue = null;
       gameState.turboActive = false;
+      gameState.wingFlightActive = false;
       gameState.pendingSkill = null;
       gameState.tilePickerMode = null;
       gameState.players = [];
@@ -2250,6 +2321,8 @@
           shield: false,
           charmActive: false,
           charmRoundsLeft: 0,
+          vanishActive: false,
+          vanishRoundsLeft: 0,
           frozen: false,
           paralyzed: false,
           skills: []
@@ -2524,10 +2597,11 @@
         }`;
 
         let statusBadges = '';
-        if (p.charmActive) statusBadges += `<span title="Jimat Pantul Aktif (1 Ronde)">🧿</span>`;
+        if (p.charmActive) statusBadges += `<span title="Jimat Pantul Aktif">🧿</span>`;
+        if (p.vanishActive) statusBadges += `<span title="Menghilang">👻</span>`;
         if (p.shield) statusBadges += `<span title="Tameng Aktif">🛡️</span>`;
-        if (p.frozen) statusBadges += `<span title="Beku Es (Skip 1 Giliran)">❄️</span>`;
-        if (p.paralyzed) statusBadges += `<span title="Lumpuh (Skip 1 Ronde)">☠️</span>`;
+        if (p.frozen) statusBadges += `<span title="Beku Es">❄️</span>`;
+        if (p.paralyzed) statusBadges += `<span title="Lumpuh">☠️</span>`;
 
         chip.innerHTML = `
           <div class="flex items-center justify-between gap-1">
@@ -2555,10 +2629,11 @@
           token.style.top = `${baseCoord.y + offset.dy}%`;
           token.style.zIndex = isCurrent ? '25' : '20';
 
-          token.classList.toggle('charm-aura', p.charmActive);
-          token.classList.toggle('shield-aura', p.shield && !p.charmActive);
-          token.classList.toggle('freeze-aura', p.frozen);
-          token.classList.toggle('poison-aura', p.paralyzed);
+          token.classList.toggle('token-vanished', Boolean(p.vanishActive));
+          token.classList.toggle('charm-aura', p.charmActive && !p.vanishActive);
+          token.classList.toggle('shield-aura', p.shield && !p.charmActive && !p.vanishActive);
+          token.classList.toggle('freeze-aura', p.frozen && !p.vanishActive);
+          token.classList.toggle('poison-aura', p.paralyzed && !p.vanishActive);
         }
       });
 
@@ -2576,6 +2651,12 @@
       if (turboEl) {
         if (gameState.turboActive) turboEl.classList.remove('hidden');
         else turboEl.classList.add('hidden');
+      }
+
+      const flightEl = document.getElementById('flight-indicator');
+      if (flightEl) {
+        if (gameState.wingFlightActive) flightEl.classList.remove('hidden');
+        else flightEl.classList.add('hidden');
       }
 
       renderSkillCards();
@@ -2605,6 +2686,7 @@
         if (skillKey && SKILL_CATALOG[skillKey]) {
           const skill = SKILL_CATALOG[skillKey];
           const tierObj = TIER_META[skill.tier] || TIER_META.COMMON;
+          const kindLabel = skill.kind || skill.category || 'GERAK';
           const wrapper = document.createElement('div');
           wrapper.className = 'skill-card-slot relative';
 
@@ -2618,6 +2700,9 @@
             <div class="w-full flex items-center justify-start gap-1 pr-5">
               <span class="text-[7.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border ${tierObj.badgeClass} shrink-0">
                 ★ ${tierObj.label}
+              </span>
+              <span class="text-[7px] font-extrabold uppercase tracking-wider px-1 py-0.5 rounded bg-slate-950/55 text-slate-100 border border-white/20 shrink-0">
+                ${kindLabel}
               </span>
             </div>
 
@@ -2706,6 +2791,16 @@
       }
 
       return false;
+    }
+
+    function calculateWingFlightDestination(currentTile, diceRows) {
+      const size = gameState.boardSize;
+      const coord = getTileCoordinates(currentTile);
+      const targetRow = Math.min(size - 1, coord.rowFromBottom + Math.max(1, diceRows));
+      const colInRow = (targetRow % 2 === 0) ? coord.col : ((size - 1) - coord.col);
+      let destTile = (targetRow * size) + colInRow + 1;
+      if (destTile > gameState.maxTile) destTile = gameState.maxTile;
+      return { destTile, actualRows: Math.max(1, targetRow - coord.rowFromBottom) };
     }
 
     function calculateRocketVerticalDestination(currentTile) {
@@ -2834,14 +2929,13 @@
           const box = document.createElement('div');
           box.className = 'theme-subcard rounded-2xl border p-2.5 flex flex-col gap-1.5';
 
+          // Sembunyikan badge Shield (🛡️) & Jimat (🧿) pada daftar target single-target
           const headerRow = document.createElement('div');
           headerRow.className = 'flex items-center justify-between';
           headerRow.innerHTML = `
             <div class="flex items-center gap-1.5">
               <span class="w-2.5 h-2.5 rounded-full ${victim.theme.dot}"></span>
               <span class="text-xs font-extrabold">${victim.name}</span>
-              ${victim.charmActive ? '<span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-400/50 px-1.5 rounded">🧿 Jimat</span>' : ''}
-              ${victim.shield ? '<span class="text-[10px] bg-sky-500/20 text-sky-400 border border-sky-400/50 px-1.5 rounded">🛡️ Tameng</span>' : ''}
             </div>
             <span class="theme-muted text-[10px]">Petak ${victim.pos}</span>
           `;
@@ -2886,8 +2980,20 @@
       user.skills.splice(pending.skillIndex, 1);
 
       gameState.isBusy = true;
-      playSkillSfx('steal');
       updateUI();
+
+      if (victim.vanishActive) {
+        playSkillSfx('stealth_vanish');
+        triggerExplosionVisual(victim.pos, '👻');
+        setLog(`👻 GAGAL TARGET! ${victim.name} sedang Menghilang — Copet Skill dari ${user.name} tidak mengenai target!`);
+        updateUI();
+        if (!(await trackedSleep(900, sid))) return;
+        gameState.isBusy = false;
+        updateUI();
+        return;
+      }
+
+      playSkillSfx('steal');
 
       if (victim.shield) {
         victim.shield = false;
@@ -2943,7 +3049,7 @@
         victim.skills = [];
         victim.paralyzed = true;
         triggerExplosionVisual(victim.pos, '☠️');
-        setLog(`☠️ LUMPUH! ${victim.name} lumpuh (stop 1 ronde & ${wipedCount} kartu skill musnah)!`);
+        setLog(`☠️ LUMPUH! ${victim.name} lumpuh (skip 1 ronde & ${wipedCount} kartu skill musnah)!`);
         updateUI();
         if (!(await trackedSleep(900, sid))) return;
       } else if (skillKey === 'hook') {
@@ -2967,8 +3073,8 @@
         document.getElementById('app-container').classList.add('shake-effect');
         setTimeout(() => document.getElementById('app-container')?.classList.remove('shake-effect'), 500);
 
-        const destPos = Math.max(1, victim.pos - 10);
-        setLog(`💣 BOOM! ${victim.name} terpental mundur 10 langkah ke petak ${destPos}!`);
+        const destPos = Math.max(1, victim.pos - 8);
+        setLog(`💣 BOOM! ${victim.name} terpental mundur 8 langkah ke petak ${destPos}!`);
         if (!(await movePlayerStepByStep(victim.index, destPos, sid))) return;
 
         await resolveTileBoardEffects(victim, sid, 'Ledakan Bom');
@@ -3008,15 +3114,30 @@
         user.charmActive = true;
         user.charmRoundsLeft = 1;
         triggerExplosionVisual(user.pos, '🧿');
-        setLog(`🧿 JIMAT PANTUL AKTIF (1 RONDE)! ${user.name} memantulkan skill target & kebal skill chaos (kecuali Copet)!`);
+        setLog(`🧿 JIMAT PANTUL AKTIF! ${user.name} memantulkan skill target & kebal skill chaos (kecuali Copet)!`);
         updateUI();
         if (!(await trackedSleep(850, sid))) return;
       }
+      else if (skillKey === 'stealth_vanish') {
+        user.vanishActive = true;
+        user.vanishRoundsLeft = 1;
+        triggerExplosionVisual(user.pos, '👻');
+        setLog(`👻 MENGHILANG AKTIF! Pion ${user.name} tak terlihat & kebal skill single-target selama 1 putaran!`);
+        updateUI();
+        if (!(await trackedSleep(850, sid))) return;
+      }
+      else if (skillKey === 'wing_flight') {
+        gameState.wingFlightActive = true;
+        triggerExplosionVisual(user.pos, '🪽');
+        setLog(`🪽 SAYAP TERBANG AKTIF! Kocok dadu untuk terbang lurus vertikal ke atas sesuai angka dadu!`);
+        updateUI();
+        if (!(await trackedSleep(800, sid))) return;
+      }
       else if (skillKey === 'sprint_dash') {
-        const destPos = Math.min(gameState.maxTile, user.pos + 10);
+        const destPos = Math.min(gameState.maxTile, user.pos + 8);
         const startPos = user.pos;
         triggerExplosionVisual(user.pos, '🏃');
-        setLog(`🏃 LARI CEPAT! ${user.name} berlari maju 10 langkah ke petak ${destPos}...`);
+        setLog(`🏃 LARI CEPAT! ${user.name} berlari maju 8 langkah ke petak ${destPos}...`);
         if (!(await movePlayerStepByStep(user.index, destPos, sid))) return;
 
         if (user.pos === gameState.maxTile) {
@@ -3049,20 +3170,36 @@
       else if (skillKey === 'ladder_boost') {
         const climbInfo = calculateEmergencyLadderDestination(user.pos);
         if (climbInfo.viaBase) {
+          const startPos = user.pos;
           triggerExplosionVisual(user.pos, '🪜');
           setLog(`🪜 TANGGA DARURAT! ${user.name} menuju tangga terdekat di petak ${climbInfo.viaBase} dan memanjat ke petak ${climbInfo.destTile}!`);
-          user.pos = climbInfo.viaBase;
-          updateUI();
-          if (!(await trackedSleep(560, sid))) return;
+          if (!(await movePlayerStepByStep(user.index, climbInfo.viaBase, sid))) return;
+
+          const passedTiles = [];
+          for (let t = startPos + 1; t <= climbInfo.viaBase; t++) passedTiles.push(t);
+          if (passedTiles.some(t => gameState.mysteryTiles.includes(t))) {
+            const ok = await grantRandomSkillWithGacha(user, sid);
+            if (!ok) return;
+          }
+
           playSfx('ladder');
           user.pos = climbInfo.destTile;
           updateUI();
           triggerExplosionVisual(climbInfo.destTile, '✨');
           if (!(await trackedSleep(750, sid))) return;
         } else {
+          const startPos = user.pos;
           triggerExplosionVisual(user.pos, '🪜');
           setLog(`🪜 TANGGA DARURAT! Tak ada tangga di depan, ${user.name} naik 8 langkah dari petak ${user.pos} ke petak ${climbInfo.destTile}!`);
           if (!(await movePlayerStepByStep(user.index, climbInfo.destTile, sid))) return;
+
+          const passedTiles = [];
+          for (let t = startPos + 1; t <= climbInfo.destTile; t++) passedTiles.push(t);
+          if (passedTiles.some(t => gameState.mysteryTiles.includes(t))) {
+            const ok = await grantRandomSkillWithGacha(user, sid);
+            if (!ok) return;
+          }
+
           await resolveTileBoardEffects(user, sid, 'Tangga Darurat');
           if (sid !== matchSessionId) return;
         }
@@ -3094,7 +3231,7 @@
       else if (skillKey === 'turbo') {
         gameState.turboActive = true;
         triggerExplosionVisual(user.pos, '⚡');
-        setLog(`⚡ TURBO x5! Langkah dadu ${user.name} giliran ini digandakan 5x lipat!`);
+        setLog(`⚡ TURBO x3! Langkah dadu ${user.name} giliran ini digandakan 3x lipat!`);
         updateUI();
         if (!(await trackedSleep(800, sid))) return;
       }
@@ -3200,8 +3337,8 @@
       document.getElementById('target-modal-icon').textContent = skill.icon;
       document.getElementById('target-modal-title').textContent = `${skill.name}: Pilih Target`;
       document.getElementById('target-modal-desc').textContent = allowSelf
-        ? 'Pilih diri sendiri atau pemain lawan untuk di-warp ke petak acak:'
-        : skill.desc;
+        ? 'Pilih diri sendiri atau pemain lawan (skill tidak bisa dibatalkan):'
+        : `${skill.desc} — Pilih target (tidak bisa dibatalkan):`;
 
       const listEl = document.getElementById('target-players-list');
       listEl.innerHTML = '';
@@ -3214,12 +3351,9 @@
         btn.type = 'button';
         btn.className = 'theme-subcard w-full min-h-[46px] flex items-center justify-between px-3 py-2.5 rounded-xl border transition cursor-pointer';
 
+        // Sembunyikan badge Shield (🛡️) & Jimat (🧿) saat memilih target single-target
         let statusTag = '';
         if (isSelf) statusTag += '<span class="text-[10px] bg-teal-500/20 text-teal-400 border border-teal-400/50 px-1.5 rounded ml-1.5">Diri Sendiri</span>';
-        if (candidate.charmActive) statusTag += '<span class="text-xs ml-1" title="Jimat Pantul Aktif">🧿</span>';
-        if (candidate.shield) statusTag += '<span class="text-xs ml-1" title="Tameng">🛡️</span>';
-        if (candidate.frozen) statusTag += '<span class="text-xs ml-1">❄️</span>';
-        if (candidate.paralyzed) statusTag += '<span class="text-xs ml-1">☠️</span>';
 
         btn.innerHTML = `
           <div class="flex items-center gap-2">
@@ -3265,7 +3399,7 @@
         const maxBhTile = gameState.maxTile - 1;
         iconEl.textContent = '🕳️🌌';
         titleEl.textContent = 'Pasang Black Hole';
-        descEl.textContent = `Pilih Start 1, Acak (1–${maxBhTile}), atau ketik nomor petak manual. Semua lawan tersedot, kamu aman!`;
+        descEl.textContent = `Pilih Start 1, Acak (1–${maxBhTile}), atau ketik nomor petak manual (tidak bisa dibatalkan):`;
         inputEl.min = 1;
         inputEl.max = maxBhTile;
         inputEl.placeholder = `Ketik 1 - ${maxBhTile}...`;
@@ -3391,13 +3525,9 @@
       updateUI();
     }
 
-    function cancelTargetSelection() {
+    function closeAllSkillModals() {
       gameState.pendingSkill = null;
       gameState.tilePickerMode = null;
-      closeAllSkillModals();
-    }
-
-    function closeAllSkillModals() {
       ['modal-steal', 'modal-target', 'modal-loaded-dice', 'modal-tile-picker'].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
@@ -3410,8 +3540,20 @@
       updateUI();
 
       const isSelfTarget = target.index === user.index;
+      const isSingleTarget = SINGLE_TARGET_SKILL_IDS.has(skillKey);
 
-      if (!isSelfTarget && target.charmActive) {
+      if (!isSelfTarget && isSingleTarget && target.vanishActive) {
+        playSkillSfx('stealth_vanish');
+        triggerExplosionVisual(target.pos, '👻');
+        setLog(`👻 GAGAL TARGET! ${target.name} sedang Menghilang — ${SKILL_CATALOG[skillKey].name} dari ${user.name} tidak mengenai target!`);
+        updateUI();
+        if (!(await trackedSleep(900, sid))) return;
+        gameState.isBusy = false;
+        updateUI();
+        return;
+      }
+
+      if (!isSelfTarget && isSingleTarget && target.charmActive) {
         playSkillSfx('charm_reflect');
         triggerExplosionVisual(target.pos, '🧿');
         setLog(`🧿 JIMAT PANTUL! ${SKILL_CATALOG[skillKey].name} dari ${user.name} dipantulkan kembali ke ${user.name}!`);
@@ -3598,13 +3740,50 @@
         ? chosenLoaded
         : (Math.floor(Math.random() * 6) + 1);
       const isTurbo = gameState.turboActive;
-      const finalSteps = isTurbo ? baseRoll * 5 : baseRoll;
+      const isFlight = gameState.wingFlightActive;
+      const finalSteps = isTurbo ? baseRoll * 3 : baseRoll;
 
       gameState.loadedValue = null;
       gameState.turboActive = false;
+      gameState.wingFlightActive = false;
 
       renderDiceFace(baseRoll, isTurbo);
       triggerDiceLandPop();
+
+      if (isFlight) {
+        const flightInfo = calculateWingFlightDestination(player.pos, baseRoll);
+        diceStatus.textContent = `Terbang ${flightInfo.actualRows}b!`;
+        setLog(`🪽 SAYAP TERBANG! ${player.name} terbang lurus ${flightInfo.actualRows} baris ke atas (petak ${player.pos} → ${flightInfo.destTile})...`);
+        if (!(await trackedSleep(DICE_READ_PAUSE_MS, sid))) return;
+
+        playSfx('ladder');
+        player.pos = flightInfo.destTile;
+        updateUI();
+        triggerExplosionVisual(flightInfo.destTile, '🪽');
+        if (!(await trackedSleep(520, sid))) return;
+
+        if (player.pos === maxTile) {
+          declareWinner(player);
+          return;
+        }
+
+        if (gameState.mysteryTiles.includes(player.pos)) {
+          const ok = await grantRandomSkillWithGacha(player, sid);
+          if (!ok) return;
+        }
+
+        await resolveTileBoardEffects(player, sid, 'Sayap Terbang');
+        if (sid !== matchSessionId) return;
+
+        if (player.pos === maxTile) {
+          declareWinner(player);
+          return;
+        }
+
+        await advanceToNextTurn();
+        return;
+      }
+
       diceStatus.textContent = isTurbo
         ? `Turbo ${finalSteps}!`
         : (isLoaded ? `Sakti ${baseRoll}!` : `Angka ${baseRoll}`);
@@ -3619,7 +3798,7 @@
         bounced = true;
         setLog(`🎲 ${player.name} dapat ${finalSteps} — kelebihan! Memantul ke petak ${nextPos}.`);
       } else {
-        const buffLabel = isTurbo ? ' (Turbo x5!)' : (isLoaded ? ' (Dadu Sakti!)' : '');
+        const buffLabel = isTurbo ? ' (Turbo x3!)' : (isLoaded ? ' (Dadu Sakti!)' : '');
         setLog(`🎲 ${player.name} dapat ${finalSteps}${buffLabel}, bersiap maju ke petak ${nextPos}...`);
       }
 
@@ -3671,12 +3850,11 @@
     }
 
     async function grantRandomSkillWithGacha(player, sid = matchSessionId) {
-      const keys = Object.keys(SKILL_CATALOG);
-      const randomKey = keys[Math.floor(Math.random() * keys.length)];
+      const randomKey = rollWeightedSkillKey();
       const skill = SKILL_CATALOG[randomKey];
       const tierLabel = (TIER_META[skill.tier]?.label || skill.tier).toUpperCase();
 
-      setLog(`🎰 ${player.name} menginjak petak ? — Gacha skill dimulai...`);
+      setLog(`🎰 ${player.name} melewati petak ? — Gacha skill dimulai...`);
       const ok = await runGachaRouletteAnimation(player, skill, sid);
       if (!ok) return false;
 
@@ -3708,6 +3886,15 @@
         } else {
           currentPlayer.charmActive = false;
           currentPlayer.charmRoundsLeft = 0;
+        }
+      }
+
+      if (currentPlayer.vanishActive) {
+        if (currentPlayer.vanishRoundsLeft > 1) {
+          currentPlayer.vanishRoundsLeft -= 1;
+        } else {
+          currentPlayer.vanishActive = false;
+          currentPlayer.vanishRoundsLeft = 0;
         }
       }
 
@@ -3783,17 +3970,23 @@
               const richVictims = opponents.filter(o => o.skills.length > 0);
               if (richVictims.length > 0) {
                 const victim = richVictims[0];
-                playSkillSfx('steal');
-                if (victim.shield) {
-                  victim.shield = false;
-                  triggerExplosionVisual(victim.pos, '🛡️');
-                  setLog(`🛡️ ${victim.name} memblokir Copet Skill dari ${bot.name}!`);
+                if (victim.vanishActive) {
+                  playSkillSfx('stealth_vanish');
+                  triggerExplosionVisual(victim.pos, '👻');
+                  setLog(`👻 GAGAL TARGET! ${victim.name} sedang Menghilang — Copet Skill ${bot.name} gagal!`);
                 } else {
-                  const stolenKey = victim.skills.shift();
-                  if (stolenKey && SKILL_CATALOG[stolenKey] && bot.skills.length < 3) bot.skills.push(stolenKey);
-                  const stSk = SKILL_CATALOG[stolenKey];
-                  triggerExplosionVisual(victim.pos, '🤏');
-                  setLog(`🤏 COPET! ${bot.name} mencuri ${stSk ? stSk.icon + ' ' + stSk.name : 'kartu'} dari ${victim.name}!`);
+                  playSkillSfx('steal');
+                  if (victim.shield) {
+                    victim.shield = false;
+                    triggerExplosionVisual(victim.pos, '🛡️');
+                    setLog(`🛡️ ${victim.name} memblokir Copet Skill dari ${bot.name}!`);
+                  } else {
+                    const stolenKey = victim.skills.shift();
+                    if (stolenKey && SKILL_CATALOG[stolenKey] && bot.skills.length < 3) bot.skills.push(stolenKey);
+                    const stSk = SKILL_CATALOG[stolenKey];
+                    triggerExplosionVisual(victim.pos, '🤏');
+                    setLog(`🤏 COPET! ${bot.name} mencuri ${stSk ? stSk.icon + ' ' + stSk.name : 'kartu'} dari ${victim.name}!`);
+                  }
                 }
                 updateUI();
                 if (!(await trackedSleep(850, sid))) return;
