@@ -253,8 +253,8 @@
 
     .player-chip {
       flex: 0 0 auto;
-      min-width: 82px;
-      max-width: 126px;
+      min-width: 86px;
+      max-width: 132px;
       touch-action: manipulation;
     }
 
@@ -638,26 +638,106 @@
     </div>
   </div>
 
-  <!-- MODAL MENU IN-GAME -->
-  <div id="modal-game-menu" onclick="if(event.target === this) resumeGameFromMenu()" style="display: none; z-index: 55;" class="fixed inset-0 bg-slate-900/65 backdrop-blur-sm items-center justify-center p-4">
-    <div class="theme-modal border-2 border-amber-400 rounded-3xl p-5 max-w-xs w-full text-center flex flex-col gap-2.5">
-      <div class="text-3xl">☰</div>
-      <h3 class="font-game text-xl font-bold theme-heading">Menu Pertandingan</h3>
-      <p class="theme-muted text-xs mb-1">Pertandingan sedang dijeda. Pilih tindakan yang kamu mau:</p>
+  <!-- MODAL MENU IN-GAME (+ KELOLA PEMAIN TAMBAH / HAPUS) -->
+  <div id="modal-game-menu" onclick="if(event.target === this) resumeGameFromMenu()" style="display: none; z-index: 55;" class="fixed inset-0 bg-slate-900/65 backdrop-blur-sm items-center justify-center p-4 overflow-y-auto">
+    <div class="theme-modal border-2 border-amber-400 rounded-3xl p-4 sm:p-5 max-w-xs w-full text-center flex flex-col gap-2.5 my-auto">
+      <div class="text-2xl leading-none">☰</div>
+      <h3 class="font-game text-lg font-bold theme-heading">Menu Pertandingan</h3>
+      <p class="theme-muted text-[11px]">Pertandingan dijeda. Atur pemain atau lanjutkan main:</p>
 
-      <button type="button" onclick="resumeGameFromMenu()" class="w-full min-h-[44px] py-2.5 rounded-xl bg-gradient-to-b from-emerald-400 to-emerald-600 border-2 border-emerald-200 text-white font-game text-sm font-bold shadow transition cursor-pointer">
+      <button type="button" onclick="resumeGameFromMenu()" class="w-full min-h-[42px] py-2 rounded-xl bg-gradient-to-b from-emerald-400 to-emerald-600 border-2 border-emerald-200 text-white font-game text-sm font-bold shadow transition cursor-pointer">
         ▶️ Lanjutkan Main
       </button>
 
-      <button type="button" onclick="restartFromGameMenu()" class="btn-roll-adventure w-full min-h-[44px] py-2.5 rounded-xl text-amber-950 font-game text-sm font-bold transition cursor-pointer">
+      <!-- Panel Tambah & Hapus Pemain In-Game -->
+      <div class="theme-subcard border rounded-2xl p-2.5 text-left flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-extrabold theme-heading">👥 Pemain In-Game</span>
+          <span id="ingame-player-count-badge" class="theme-pill-emerald text-[10px] font-extrabold border px-2 py-0.2 rounded-full">0 / 16</span>
+        </div>
+
+        <button type="button" id="btn-open-add-player" onclick="openAddInGamePlayerModal()" class="theme-pill-amber w-full min-h-[38px] py-1.5 px-2.5 rounded-xl border text-xs font-extrabold flex items-center justify-center gap-1.5 transition cursor-pointer disabled:opacity-45 disabled:pointer-events-none">
+          <span>➕</span>
+          <span>Tambah Pemain Baru</span>
+        </button>
+
+        <div id="ingame-players-manage-list" class="clean-scroll flex flex-col gap-1.5 max-h-[135px] overflow-y-auto pr-0.5"></div>
+      </div>
+
+      <button type="button" onclick="restartFromGameMenu()" class="btn-roll-adventure w-full min-h-[40px] py-2 rounded-xl text-amber-950 font-game text-xs font-bold transition cursor-pointer">
         🔄 Mulai Ulang (Map Acak Baru)
       </button>
 
-      <button type="button" onclick="backToSetupFromMenu()" class="theme-btn-neutral w-full min-h-[44px] py-2.5 rounded-xl font-game text-sm font-bold border transition cursor-pointer">
+      <button type="button" onclick="backToSetupFromMenu()" class="theme-btn-neutral w-full min-h-[40px] py-2 rounded-xl font-game text-xs font-bold border transition cursor-pointer">
         ⬅️ Back ke Lobby
       </button>
 
-      <p class="theme-muted text-[10px] mt-1">© 2026 Rexterco. All rights reserved.</p>
+      <p class="theme-muted text-[10px]">© 2026 Rexterco. All rights reserved.</p>
+    </div>
+  </div>
+
+  <!-- MODAL TAMBAH PEMAIN BARU SAAT IN-GAME -->
+  <div id="modal-add-ingame-player" onclick="if(event.target === this) closeAddInGamePlayerModal()" style="display: none; z-index: 62;" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 overflow-y-auto">
+    <div class="theme-modal border-2 border-emerald-400 rounded-3xl p-4 max-w-xs w-full flex flex-col gap-3 my-auto">
+      <div class="flex items-center justify-between">
+        <h3 class="font-game text-base font-bold theme-heading">➕ Tambah Pemain Baru</h3>
+        <button type="button" onclick="closeAddInGamePlayerModal()" class="theme-btn-neutral w-8 h-8 rounded-full border font-bold text-xs cursor-pointer">✕</button>
+      </div>
+
+      <div>
+        <label class="text-[11px] font-extrabold theme-heading block mb-1">Nama Pemain</label>
+        <input id="add-player-name-input" type="text" maxLength="16" placeholder="Nama pemain..." class="theme-input w-full min-h-[40px] px-3 py-1.5 rounded-xl border text-xs font-bold focus:outline-none focus:border-emerald-500" />
+      </div>
+
+      <div>
+        <label class="text-[11px] font-extrabold theme-heading block mb-1">Tipe Pemain</label>
+        <div class="grid grid-cols-2 gap-1.5">
+          <button type="button" id="add-player-type-human" onclick="setNewInGamePlayerType(false)" class="min-h-[38px] rounded-xl border text-xs font-extrabold cursor-pointer">👤 Manusia</button>
+          <button type="button" id="add-player-type-bot" onclick="setNewInGamePlayerType(true)" class="min-h-[38px] rounded-xl border text-xs font-extrabold cursor-pointer">🤖 Bot</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="flex items-center justify-between mb-1">
+          <label class="text-[11px] font-extrabold theme-heading">Pilih Avatar</label>
+          <button type="button" onclick="randomizeNewInGamePlayerAvatar()" class="theme-pill-amber px-2 py-0.5 rounded-lg border text-[10px] font-extrabold cursor-pointer">
+            🎲 Acak
+          </button>
+        </div>
+        <div id="add-player-avatar-grid" class="grid grid-cols-6 gap-1 max-h-[124px] overflow-y-auto clean-scroll p-1 theme-subcard border rounded-xl"></div>
+      </div>
+
+      <div class="flex gap-2 mt-0.5">
+        <button type="button" onclick="confirmAddInGamePlayer()" class="flex-1 min-h-[42px] py-2 rounded-xl bg-gradient-to-b from-emerald-400 to-emerald-600 border-2 border-emerald-200 text-white font-game text-xs font-bold shadow cursor-pointer">
+          ✅ Masuk Arena
+        </button>
+        <button type="button" onclick="closeAddInGamePlayerModal()" class="theme-btn-neutral min-h-[42px] px-3 py-2 rounded-xl border font-game text-xs font-bold cursor-pointer">
+          Batal
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PILIH AVATAR DI LOBBY (SETUP ARENA) -->
+  <div id="modal-setup-avatar" onclick="if(event.target === this) closeSetupAvatarModal()" style="display: none; z-index: 62;" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm items-center justify-center p-4 overflow-y-auto">
+    <div class="theme-modal border-2 border-amber-400 rounded-3xl p-4 max-w-xs w-full flex flex-col gap-3 my-auto">
+      <div class="flex items-center justify-between">
+        <h3 id="setup-avatar-modal-title" class="font-game text-base font-bold theme-heading">Pilih Avatar</h3>
+        <button type="button" onclick="closeSetupAvatarModal()" class="theme-btn-neutral w-8 h-8 rounded-full border font-bold text-xs cursor-pointer">✕</button>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <span class="text-[11px] font-extrabold theme-heading">Daftar Avatar</span>
+        <button type="button" onclick="randomizeSetupModalAvatar()" class="theme-pill-amber px-2.5 py-0.5 rounded-lg border text-[10px] font-extrabold cursor-pointer">
+          🎲 Acak
+        </button>
+      </div>
+
+      <div id="setup-avatar-grid" class="grid grid-cols-6 gap-1.5 max-h-[160px] overflow-y-auto clean-scroll p-1.5 theme-subcard border rounded-xl"></div>
+
+      <button type="button" onclick="closeSetupAvatarModal()" class="btn-roll-adventure w-full min-h-[40px] py-2 rounded-xl text-amber-950 font-game text-xs font-bold cursor-pointer">
+        Selesai
+      </button>
     </div>
   </div>
 
@@ -696,7 +776,12 @@
       <div>
         <div class="flex items-center justify-between mb-1.5">
           <label class="text-xs font-extrabold theme-heading">Jumlah Pemain (2–16):</label>
-          <span id="setup-count-badge" class="theme-pill-emerald text-[11px] font-extrabold border px-2 py-0.5 rounded-full">4 Pemain</span>
+          <div class="flex items-center gap-1">
+            <button type="button" onclick="randomizeAllSetupAvatars()" class="theme-pill-amber text-[10px] font-extrabold border px-2 py-0.5 rounded-full cursor-pointer">
+              🎲 Acak Avatar
+            </button>
+            <span id="setup-count-badge" class="theme-pill-emerald text-[11px] font-extrabold border px-2 py-0.5 rounded-full">4 Pemain</span>
+          </div>
         </div>
         <div class="flex items-center gap-1.5">
           <button type="button" onclick="adjustPlayerCount(-1)" class="theme-btn-neutral w-11 h-11 min-h-[44px] rounded-xl border font-game text-base font-bold cursor-pointer">−</button>
@@ -711,7 +796,7 @@
         </div>
       </div>
 
-      <div class="clean-scroll flex flex-col gap-1.5 max-h-[165px] overflow-y-auto pr-1" id="setup-slots-list"></div>
+      <div class="clean-scroll flex flex-col gap-1.5 max-h-[175px] overflow-y-auto pr-1" id="setup-slots-list"></div>
 
       <div class="flex flex-col gap-2">
         <button type="button" onclick="confirmSetupAndStart()" class="btn-roll-adventure w-full min-h-[48px] py-3 rounded-xl text-amber-950 font-game text-base font-bold transition active:scale-95 cursor-pointer">
@@ -874,8 +959,16 @@
     const DICE_READ_PAUSE_MS = 380;
     const ENTITY_TRIGGER_PAUSE_MS = 560;
 
-    const STORAGE_KEY = 'rexterco_ulartangga_chaos_v25';
+    const STORAGE_KEY = 'rexterco_ulartangga_chaos_v26';
     const MAX_PLAYERS = 16;
+    const MIN_PLAYERS = 2;
+
+    const AVATAR_OPTIONS = [
+      '🦊', '🐸', '🐼', '🐙', '🦄', '🐲',
+      '🐧', '🐨', '🐷', '🐹', '🐯', '🦁',
+      '🧙‍♂️', '🥷', '🤖', '👽', '👻', '🦸‍♂️',
+      '🤴', '🤡', '😈', '🧸', '🦖', '🦋'
+    ];
 
     window.CUSTOM_AUDIO_CONFIG = {
       tierSfx: {
@@ -1026,7 +1119,8 @@
             count: setupConfig.count,
             names: setupConfig.names,
             customNameEdited: setupConfig.customNameEdited,
-            isBot: setupConfig.isBot
+            isBot: setupConfig.isBot,
+            avatars: setupConfig.avatars
           }
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
@@ -1832,6 +1926,14 @@
       { code: 'P16', tokenBg: 'from-indigo-400 to-cyan-600 text-white', borderActive: 'border-indigo-400 bg-indigo-500/20', textAccent: 'text-indigo-400', dot: 'bg-indigo-500' }
     ];
 
+    function getDefaultAvatar(index) {
+      return AVATAR_OPTIONS[index % AVATAR_OPTIONS.length] || '🦊';
+    }
+
+    function pickRandomAvatar() {
+      return AVATAR_OPTIONS[Math.floor(Math.random() * AVATAR_OPTIONS.length)] || '🦊';
+    }
+
     const TIER_META = {
       COMMON: { label: 'Common', weight: 35, badgeClass: 'bg-slate-900/80 text-slate-100 border-slate-300/50' },
       RARE:   { label: 'Rare',   weight: 30, badgeClass: 'bg-sky-950/85 text-sky-200 border-sky-300/60' },
@@ -2202,7 +2304,8 @@
       count: 4,
       names: Array.from({ length: MAX_PLAYERS }, (_, i) => `Pemain ${i + 1}`),
       customNameEdited: Array.from({ length: MAX_PLAYERS }, () => false),
-      isBot: Array.from({ length: MAX_PLAYERS }, (_, i) => i !== 0)
+      isBot: Array.from({ length: MAX_PLAYERS }, (_, i) => i !== 0),
+      avatars: Array.from({ length: MAX_PLAYERS }, (_, i) => getDefaultAvatar(i))
     };
 
     let gameState = {
@@ -2219,8 +2322,66 @@
       wingFlightActive: false,
       pendingSkill: null,
       tilePickerMode: null,
+      nextPlayerSeq: 1,
       players: []
     };
+
+    let newInGamePlayerDraft = {
+      name: '',
+      isBot: false,
+      avatar: '🦊'
+    };
+
+    let setupAvatarModalSlotIndex = null;
+
+    function openSetupAvatarModal(slotIdx) {
+      setupAvatarModalSlotIndex = slotIdx;
+      const theme = PLAYER_THEMES[slotIdx] || PLAYER_THEMES[0];
+      const titleEl = document.getElementById('setup-avatar-modal-title');
+      if (titleEl) titleEl.textContent = `Pilih Avatar ${theme.code}`;
+      renderSetupAvatarModal();
+      document.getElementById('modal-setup-avatar').style.display = 'flex';
+    }
+
+    function closeSetupAvatarModal() {
+      const el = document.getElementById('modal-setup-avatar');
+      if (el) el.style.display = 'none';
+      setupAvatarModalSlotIndex = null;
+    }
+
+    function randomizeSetupModalAvatar() {
+      if (setupAvatarModalSlotIndex === null) return;
+      setupConfig.avatars[setupAvatarModalSlotIndex] = pickRandomAvatar();
+      savePersistedPrefs();
+      renderSetupAvatarModal();
+      renderSetupModal();
+    }
+
+    function renderSetupAvatarModal() {
+      const gridEl = document.getElementById('setup-avatar-grid');
+      if (!gridEl || setupAvatarModalSlotIndex === null) return;
+      const currentAvatar = setupConfig.avatars[setupAvatarModalSlotIndex] || getDefaultAvatar(setupAvatarModalSlotIndex);
+      gridEl.innerHTML = '';
+
+      AVATAR_OPTIONS.forEach((emo) => {
+        const isSelected = currentAvatar === emo;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `h-9 rounded-lg border text-base flex items-center justify-center transition cursor-pointer ${
+          isSelected
+            ? 'bg-amber-400 border-amber-200 scale-105 shadow-sm'
+            : 'theme-btn-neutral opacity-85 hover:opacity-100'
+        }`;
+        btn.textContent = emo;
+        btn.onclick = () => {
+          setupConfig.avatars[setupAvatarModalSlotIndex] = emo;
+          savePersistedPrefs();
+          renderSetupModal();
+          closeSetupAvatarModal();
+        };
+        gridEl.appendChild(btn);
+      });
+    }
 
     function openExitAppModal() {
       document.getElementById('modal-exit-app').style.display = 'flex';
@@ -2287,6 +2448,8 @@
       capApp.addListener('backButton', () => {
         const guideModal = document.getElementById('skill-guide-overlay');
         const exitModal = document.getElementById('modal-exit-app');
+        const addPlayerModal = document.getElementById('modal-add-ingame-player');
+        const setupAvatarModal = document.getElementById('modal-setup-avatar');
         const gameMenu = document.getElementById('modal-game-menu');
         const setupModal = document.getElementById('modal-setup');
         const stealModal = document.getElementById('modal-steal');
@@ -2298,6 +2461,10 @@
           window.closeSkillGuide();
         } else if (exitModal && exitModal.style.display === 'flex') {
           closeExitAppModal();
+        } else if (addPlayerModal && addPlayerModal.style.display === 'flex') {
+          closeAddInGamePlayerModal();
+        } else if (setupAvatarModal && setupAvatarModal.style.display === 'flex') {
+          closeSetupAvatarModal();
         } else if (
           (stealModal && stealModal.style.display === 'flex') ||
           (targetModal && targetModal.style.display === 'flex') ||
@@ -2318,29 +2485,231 @@
     function openGameMenuModal() {
       if (gameState.gameOver) return;
       pauseActiveGame();
+      renderInGamePlayerManager();
       document.getElementById('modal-game-menu').style.display = 'flex';
     }
 
     function resumeGameFromMenu() {
+      closeAddInGamePlayerModal();
       document.getElementById('modal-game-menu').style.display = 'none';
       resumeActiveGame();
     }
 
     function restartFromGameMenu() {
+      closeAddInGamePlayerModal();
       document.getElementById('modal-game-menu').style.display = 'none';
       startNewGameWithCurrentSettings();
     }
 
     function backToSetupFromMenu() {
+      closeAddInGamePlayerModal();
       clearAllMatchTimers();
       closeAllSkillModals();
       document.getElementById('modal-game-menu').style.display = 'none';
       openSetupModal();
     }
 
+    function reassignPlayerSlotThemesAndCodes() {
+      gameState.players.forEach((p, idx) => {
+        const theme = PLAYER_THEMES[idx % PLAYER_THEMES.length];
+        p.index = idx;
+        p.code = theme.code;
+        p.theme = theme;
+      });
+      if (gameState.players.length > 0) {
+        gameState.turnIndex = ((gameState.turnIndex % gameState.players.length) + gameState.players.length) % gameState.players.length;
+      } else {
+        gameState.turnIndex = 0;
+      }
+    }
+
+    function renderInGamePlayerManager() {
+      const countBadge = document.getElementById('ingame-player-count-badge');
+      const addBtn = document.getElementById('btn-open-add-player');
+      const listEl = document.getElementById('ingame-players-manage-list');
+      if (!listEl) return;
+
+      const total = gameState.players.length;
+      if (countBadge) countBadge.textContent = `${total} / ${MAX_PLAYERS}`;
+      if (addBtn) addBtn.disabled = total >= MAX_PLAYERS;
+
+      listEl.innerHTML = '';
+
+      gameState.players.forEach((p, idx) => {
+        const isCurrent = idx === gameState.turnIndex;
+        const canRemove = total > MIN_PLAYERS;
+
+        const row = document.createElement('div');
+        row.className = `flex items-center justify-between gap-1.5 px-2 py-1 rounded-xl border text-xs ${
+          isCurrent ? p.theme.borderActive : 'theme-btn-neutral'
+        }`;
+
+        const left = document.createElement('div');
+        left.className = 'flex items-center gap-1.5 min-w-0';
+        left.innerHTML = `
+          <span class="w-6 h-6 rounded-full bg-gradient-to-br ${p.theme.tokenBg} border-2 border-white flex items-center justify-center text-xs shadow-xs shrink-0">${p.avatar || '🦊'}</span>
+          <div class="min-w-0">
+            <div class="text-[11px] font-extrabold truncate">${p.name} ${p.isBot ? '🤖' : ''} ${isCurrent ? '<span class="theme-warn text-[9px]">(Giliran)</span>' : ''}</div>
+            <div class="theme-muted text-[9px] font-bold">${p.code} • Petak #${p.pos}</div>
+          </div>
+        `;
+
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.disabled = !canRemove;
+        delBtn.title = canRemove ? `Hapus ${p.name}` : `Minimal ${MIN_PLAYERS} pemain`;
+        delBtn.className = 'theme-pill-rose px-2 py-1 rounded-lg border text-[10px] font-extrabold shrink-0 cursor-pointer disabled:opacity-35 disabled:pointer-events-none';
+        delBtn.textContent = '🗑️ Hapus';
+        delBtn.onclick = () => removeInGamePlayer(idx);
+
+        row.appendChild(left);
+        row.appendChild(delBtn);
+        listEl.appendChild(row);
+      });
+    }
+
+    function openAddInGamePlayerModal() {
+      if (gameState.players.length >= MAX_PLAYERS) return;
+      const seq = gameState.nextPlayerSeq;
+      newInGamePlayerDraft = {
+        name: `Pemain ${seq}`,
+        isBot: false,
+        avatar: getDefaultAvatar(gameState.players.length)
+      };
+
+      const nameInput = document.getElementById('add-player-name-input');
+      if (nameInput) nameInput.value = newInGamePlayerDraft.name;
+
+      renderAddInGamePlayerModal();
+      document.getElementById('modal-add-ingame-player').style.display = 'flex';
+    }
+
+    function closeAddInGamePlayerModal() {
+      const el = document.getElementById('modal-add-ingame-player');
+      if (el) el.style.display = 'none';
+    }
+
+    function setNewInGamePlayerType(isBotFlag) {
+      const nameInput = document.getElementById('add-player-name-input');
+      const currentVal = (nameInput?.value || '').trim();
+      const wasAutoDefault = /^Pemain \d+$/.test(currentVal) || /^Bot \d+$/.test(currentVal) || currentVal === '';
+      newInGamePlayerDraft.isBot = Boolean(isBotFlag);
+      if (wasAutoDefault && nameInput) {
+        nameInput.value = newInGamePlayerDraft.isBot ? `Bot ${gameState.nextPlayerSeq}` : `Pemain ${gameState.nextPlayerSeq}`;
+      }
+      renderAddInGamePlayerModal();
+    }
+
+    function randomizeNewInGamePlayerAvatar() {
+      newInGamePlayerDraft.avatar = pickRandomAvatar();
+      renderAddInGamePlayerModal();
+    }
+
+    function renderAddInGamePlayerModal() {
+      const humanBtn = document.getElementById('add-player-type-human');
+      const botBtn = document.getElementById('add-player-type-bot');
+      const gridEl = document.getElementById('add-player-avatar-grid');
+
+      if (humanBtn && botBtn) {
+        if (!newInGamePlayerDraft.isBot) {
+          humanBtn.className = 'min-h-[38px] rounded-xl border-2 border-emerald-300 bg-emerald-500 text-white text-xs font-extrabold cursor-pointer';
+          botBtn.className = 'theme-btn-neutral min-h-[38px] rounded-xl border text-xs font-extrabold cursor-pointer';
+        } else {
+          botBtn.className = 'min-h-[38px] rounded-xl border-2 border-sky-300 bg-sky-500 text-white text-xs font-extrabold cursor-pointer';
+          humanBtn.className = 'theme-btn-neutral min-h-[38px] rounded-xl border text-xs font-extrabold cursor-pointer';
+        }
+      }
+
+      if (gridEl) {
+        gridEl.innerHTML = '';
+        AVATAR_OPTIONS.forEach((emo) => {
+          const isSelected = newInGamePlayerDraft.avatar === emo;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `h-9 rounded-lg border text-base flex items-center justify-center transition cursor-pointer ${
+            isSelected
+              ? 'bg-amber-400 border-amber-200 scale-105 shadow-sm'
+              : 'theme-btn-neutral opacity-85 hover:opacity-100'
+          }`;
+          btn.textContent = emo;
+          btn.onclick = () => {
+            newInGamePlayerDraft.avatar = emo;
+            renderAddInGamePlayerModal();
+          };
+          gridEl.appendChild(btn);
+        });
+      }
+    }
+
+    function confirmAddInGamePlayer() {
+      if (gameState.players.length >= MAX_PLAYERS) {
+        closeAddInGamePlayerModal();
+        return;
+      }
+
+      const nameInput = document.getElementById('add-player-name-input');
+      const rawName = (nameInput?.value || '').trim();
+      const seq = gameState.nextPlayerSeq++;
+      const isBot = newInGamePlayerDraft.isBot;
+      const finalName = rawName || (isBot ? `Bot ${seq}` : `Pemain ${seq}`);
+      const avatar = newInGamePlayerDraft.avatar || getDefaultAvatar(gameState.players.length);
+
+      const newIdx = gameState.players.length;
+      const theme = PLAYER_THEMES[newIdx % PLAYER_THEMES.length];
+
+      gameState.players.push({
+        index: newIdx,
+        code: theme.code,
+        name: finalName,
+        isBot: isBot,
+        avatar: avatar,
+        theme: theme,
+        pos: 1,
+        shield: false,
+        charmActive: false,
+        charmRoundsLeft: 0,
+        vanishActive: false,
+        vanishRoundsLeft: 0,
+        vanishTicksLeft: 0,
+        frozen: false,
+        paralyzed: false,
+        skills: []
+      });
+
+      reassignPlayerSlotThemesAndCodes();
+      buildPlayerTokens();
+      updateUI();
+      renderInGamePlayerManager();
+      closeAddInGamePlayerModal();
+      setLog(`➕ ${avatar} ${finalName} bergabung di petak #1!`);
+    }
+
+    function removeInGamePlayer(targetIdx) {
+      if (gameState.players.length <= MIN_PLAYERS) return;
+      if (targetIdx < 0 || targetIdx >= gameState.players.length) return;
+
+      const removed = gameState.players[targetIdx];
+      gameState.players.splice(targetIdx, 1);
+
+      if (targetIdx < gameState.turnIndex) {
+        gameState.turnIndex = Math.max(0, gameState.turnIndex - 1);
+      } else if (targetIdx === gameState.turnIndex) {
+        gameState.turnIndex = gameState.turnIndex % gameState.players.length;
+      }
+
+      reassignPlayerSlotThemesAndCodes();
+      buildPlayerTokens();
+      updateUI();
+      renderInGamePlayerManager();
+      setLog(`🗑️ ${removed.avatar || '👤'} ${removed.name} dikeluarkan dari pertandingan.`);
+    }
+
     function openSetupModal() {
       clearAllMatchTimers();
       closeAllSkillModals();
+      closeAddInGamePlayerModal();
+      closeSetupAvatarModal();
+      document.getElementById('modal-game-menu').style.display = 'none';
       document.getElementById('modal-winner').style.display = 'none';
       startBgmLoop('lobby');
       renderSetupModal();
@@ -2350,7 +2719,7 @@
     function setCustomPlayerCount(val) {
       let num = parseInt(val, 10);
       if (isNaN(num)) num = 4;
-      num = Math.max(2, Math.min(MAX_PLAYERS, num));
+      num = Math.max(MIN_PLAYERS, Math.min(MAX_PLAYERS, num));
       setupConfig.count = num;
       savePersistedPrefs();
       renderSetupModal();
@@ -2358,6 +2727,14 @@
 
     function adjustPlayerCount(delta) {
       setCustomPlayerCount(setupConfig.count + delta);
+    }
+
+    function randomizeAllSetupAvatars() {
+      for (let i = 0; i < MAX_PLAYERS; i++) {
+        setupConfig.avatars[i] = pickRandomAvatar();
+      }
+      savePersistedPrefs();
+      renderSetupModal();
     }
 
     function renderSetupModal() {
@@ -2397,16 +2774,20 @@
       for (let i = 0; i < setupConfig.count; i++) {
         const theme = PLAYER_THEMES[i];
         const isBot = setupConfig.isBot[i];
+        const avatarEmoji = setupConfig.avatars[i] || getDefaultAvatar(i);
 
         const row = document.createElement('div');
-        row.className = 'theme-subcard flex items-center justify-between gap-2 border rounded-xl px-2.5 py-1.5';
+        row.className = 'theme-subcard flex items-center justify-between gap-1.5 border rounded-xl px-2 py-1.5';
 
         const leftPart = document.createElement('div');
-        leftPart.className = 'flex items-center gap-2 flex-1 min-w-0';
+        leftPart.className = 'flex items-center gap-1.5 flex-1 min-w-0';
 
-        const badge = document.createElement('span');
-        badge.className = `w-6 h-6 rounded-full bg-gradient-to-br ${theme.tokenBg} border-2 border-white flex items-center justify-center text-[9.5px] font-black shadow shrink-0`;
-        badge.textContent = theme.code;
+        const avatarBtn = document.createElement('button');
+        avatarBtn.type = 'button';
+        avatarBtn.title = `Pilih avatar ${theme.code}`;
+        avatarBtn.className = `w-8 h-8 rounded-full bg-gradient-to-br ${theme.tokenBg} border-2 border-white flex items-center justify-center text-base shadow shrink-0 cursor-pointer active:scale-95`;
+        avatarBtn.textContent = avatarEmoji;
+        avatarBtn.onclick = () => openSetupAvatarModal(i);
 
         const nameInput = document.createElement('input');
         nameInput.type = 'text';
@@ -2420,25 +2801,18 @@
           savePersistedPrefs();
         };
 
-        leftPart.appendChild(badge);
+        leftPart.appendChild(avatarBtn);
         leftPart.appendChild(nameInput);
 
         const roleBtn = document.createElement('button');
         roleBtn.type = 'button';
         roleBtn.onclick = () => toggleSlotBot(i);
-        roleBtn.className = `min-h-[40px] px-2.5 py-1 rounded-lg text-[10.5px] font-extrabold border transition shrink-0 cursor-pointer ${
+        roleBtn.className = `min-h-[38px] px-2 py-1 rounded-lg text-[10.5px] font-extrabold border transition shrink-0 cursor-pointer ${
           isBot
-            ? 'bg-sky-500/20 border-sky-400 text-sky-300'
-            : 'bg-emerald-500/20 border-emerald-400 text-emerald-300'
+            ? (uiTheme === 'light' ? 'bg-sky-100 border-sky-400 text-sky-800' : 'bg-sky-500/20 border-sky-400 text-sky-300')
+            : (uiTheme === 'light' ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'bg-emerald-500/20 border-emerald-400 text-emerald-300')
         }`;
-        if (uiTheme === 'light') {
-          roleBtn.className = `min-h-[40px] px-2.5 py-1 rounded-lg text-[10.5px] font-extrabold border transition shrink-0 cursor-pointer ${
-            isBot
-              ? 'bg-sky-100 border-sky-400 text-sky-800'
-              : 'bg-emerald-100 border-emerald-400 text-emerald-800'
-          }`;
-        }
-        roleBtn.textContent = isBot ? '🤖 Bot' : '👤 Human';
+        roleBtn.textContent = isBot ? '🤖 Bot' : '👤 Manusia';
 
         row.appendChild(leftPart);
         row.appendChild(roleBtn);
@@ -2467,6 +2841,8 @@
     function startNewGameWithCurrentSettings() {
       clearAllMatchTimers();
       closeAllSkillModals();
+      closeAddInGamePlayerModal();
+      closeSetupAvatarModal();
       document.getElementById('modal-game-menu').style.display = 'none';
       document.getElementById('modal-winner').style.display = 'none';
 
@@ -2489,6 +2865,7 @@
       gameState.wingFlightActive = false;
       gameState.pendingSkill = null;
       gameState.tilePickerMode = null;
+      gameState.nextPlayerSeq = setupConfig.count + 1;
       gameState.players = [];
 
       for (let i = 0; i < setupConfig.count; i++) {
@@ -2496,12 +2873,14 @@
         const isBot = setupConfig.isBot[i];
         const rawName = (setupConfig.names[i] || '').trim();
         const finalName = rawName || (isBot ? `Bot ${i + 1}` : `Pemain ${i + 1}`);
+        const avatarEmoji = setupConfig.avatars[i] || getDefaultAvatar(i);
 
         gameState.players.push({
           index: i,
           code: theme.code,
           name: finalName,
           isBot: isBot,
+          avatar: avatarEmoji,
           theme: theme,
           pos: 1,
           shield: false,
@@ -2747,17 +3126,17 @@
       layer.innerHTML = '';
 
       const sizePct = gameState.boardSize === 15
-        ? (gameState.players.length > 8 ? 4.0 : 4.8)
-        : (gameState.boardSize === 12 ? 5.2 : 6.2);
-      const fontClass = gameState.boardSize === 15 ? 'text-[6.5px]' : (gameState.boardSize === 12 ? 'text-[7.5px]' : 'text-[8.5px]');
+        ? (gameState.players.length > 8 ? 4.4 : 5.2)
+        : (gameState.boardSize === 12 ? 5.6 : 6.6);
+      const fontClass = gameState.boardSize === 15 ? 'text-[10px]' : (gameState.boardSize === 12 ? 'text-xs' : 'text-sm');
 
       gameState.players.forEach((p) => {
         const token = document.createElement('div');
         token.id = `token-${p.index}`;
         token.style.width = `${sizePct}%`;
         token.style.height = `${sizePct}%`;
-        token.className = `player-token absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br ${p.theme.tokenBg} border-2 border-white shadow-lg flex items-center justify-center ${fontClass} font-black tracking-tighter`;
-        token.textContent = p.code;
+        token.className = `player-token absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br ${p.theme.tokenBg} border-2 border-white shadow-lg flex items-center justify-center ${fontClass} leading-none`;
+        token.textContent = p.avatar || '🦊';
         layer.appendChild(token);
       });
     }
@@ -2793,6 +3172,7 @@
           <div class="flex items-center justify-between gap-1">
             <div class="flex items-center gap-1 min-w-0">
               <span class="w-2 h-2 rounded-full ${p.theme.dot} shrink-0 border border-white"></span>
+              <span class="text-xs leading-none shrink-0">${p.avatar || '🦊'}</span>
               <span class="text-[9.5px] font-extrabold truncate">${p.name}${p.isBot ? '🤖' : ''}</span>
             </div>
             <div class="text-[9px] leading-none flex items-center gap-0.5 shrink-0">${statusBadges}</div>
@@ -2811,6 +3191,7 @@
           const indexInGroup = group.indexOf(p);
           const offset = getClusterOffset(indexInGroup, group.length);
 
+          token.textContent = p.avatar || '🦊';
           token.style.left = `${baseCoord.x + offset.dx}%`;
           token.style.top = `${baseCoord.y + offset.dy}%`;
           token.style.zIndex = isCurrent ? '25' : '20';
@@ -2861,7 +3242,7 @@
       const label = document.getElementById('skill-owner-label');
       const counterEl = document.getElementById('skill-hand-counter');
 
-      label.textContent = `(${activePlayer.name})`;
+      label.textContent = `(${activePlayer.avatar || '🦊'} ${activePlayer.name})`;
       label.className = `text-[10px] font-extrabold ${activePlayer.theme.textAccent} truncate`;
       if (counterEl) counterEl.textContent = `${activePlayer.skills.length}/3`;
 
@@ -3115,7 +3496,7 @@
           headerRow.innerHTML = `
             <div class="flex items-center gap-1.5">
               <span class="w-2.5 h-2.5 rounded-full ${victim.theme.dot}"></span>
-              <span class="text-xs font-extrabold">${victim.name}</span>
+              <span class="text-xs font-extrabold">${victim.avatar || '🦊'} ${victim.name}</span>
             </div>
             <span class="theme-muted text-[10px] font-bold">#${victim.pos}</span>
           `;
@@ -3301,7 +3682,6 @@
       else if (skillKey === 'stealth_vanish') {
         user.vanishActive = true;
         user.vanishRoundsLeft = 1;
-        // +1 karena giliran user saat ini akan segera berakhir di advanceToNextTurn()
         user.vanishTicksLeft = gameState.players.length + 1;
         triggerExplosionVisual(user.pos, '👻');
         setLog(`👻 MENGHILANG AKTIF! ${user.name} tak terlihat selama 1 ronde penuh & muncul lagi ronde depan.`);
@@ -3539,12 +3919,12 @@
 
         btn.innerHTML = `
           <div class="flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-gradient-to-br ${candidate.theme.tokenBg} border-2 border-white flex items-center justify-center text-[10px] font-black shadow-xs">
-              ${candidate.code}
+            <span class="w-7 h-7 rounded-full bg-gradient-to-br ${candidate.theme.tokenBg} border-2 border-white flex items-center justify-center text-sm shadow-xs">
+              ${candidate.avatar || '🦊'}
             </span>
             <div class="text-left">
               <div class="text-xs font-bold flex items-center">${candidate.name} ${statusTag}</div>
-              <div class="theme-warn text-[10px] font-bold">#${candidate.pos}</div>
+              <div class="theme-warn text-[10px] font-bold">${candidate.code} • #${candidate.pos}</div>
             </div>
           </div>
           <span class="text-xs font-extrabold theme-warn">Pilih →</span>
@@ -3846,7 +4226,7 @@
       if (!overlay || !slotCard) return true;
 
       const allSkills = Object.values(SKILL_CATALOG);
-      playerLabel.textContent = `🎰 ${player.name}`;
+      playerLabel.textContent = `🎰 ${player.avatar || '🦊'} ${player.name}`;
       statusBadge.textContent = 'GACHA ROLL';
       statusBadge.className = 'theme-pill-amber px-2 py-0.5 rounded-full border animate-pulse';
       overlay.style.display = 'flex';
@@ -4061,7 +4441,6 @@
     }
 
     async function advanceToNextTurn() {
-      // Kurangi hitung mundur efek menghilang (1 ronde penuh = melewati giliran setiap pemain)
       gameState.players.forEach((p) => {
         if (p.vanishActive && typeof p.vanishTicksLeft === 'number' && p.vanishTicksLeft > 0) {
           p.vanishTicksLeft -= 1;
@@ -4091,7 +4470,6 @@
         }
       }
 
-      // Pastikan pemain yang mulai gilirannya otomatis muncul kembali bila durasi 1 ronde selesai
       if (currentPlayer.vanishActive && (!currentPlayer.vanishTicksLeft || currentPlayer.vanishTicksLeft <= 0)) {
         currentPlayer.vanishActive = false;
         currentPlayer.vanishRoundsLeft = 0;
@@ -4124,7 +4502,7 @@
 
       gameState.isBusy = false;
       document.getElementById('dice-status').textContent = 'Siap';
-      setLog(`Giliran ${currentPlayer.name}! Pakai skill atau kocok dadu.`);
+      setLog(`Giliran ${currentPlayer.avatar || '🦊'} ${currentPlayer.name}! Pakai skill atau kocok dadu.`);
       updateUI();
 
       if (currentPlayer.isBot && !gameState.gameOver) {
@@ -4248,6 +4626,7 @@
           <div class="flex items-center gap-2 min-w-0">
             <span class="text-sm shrink-0">${medal}</span>
             <span class="w-2.5 h-2.5 rounded-full ${p.theme.dot} shrink-0 border border-white"></span>
+            <span class="text-sm leading-none shrink-0">${p.avatar || '🦊'}</span>
             <span class="truncate">${p.name}${p.isBot ? ' 🤖' : ''}</span>
           </div>
           <span class="font-game text-[11px] shrink-0">#${p.pos}</span>
@@ -4264,7 +4643,7 @@
       playSfx('win');
       updateUI();
 
-      document.getElementById('winner-title').textContent = `${winner.name.toUpperCase()} MENANG!`;
+      document.getElementById('winner-title').textContent = `${winner.avatar || '🏆'} ${winner.name.toUpperCase()} MENANG!`;
       document.getElementById('winner-subtitle').textContent =
         `${winner.name} menaklukkan arena mengalahkan ${gameState.players.length - 1} lawan!`;
 
@@ -4277,7 +4656,7 @@
       if (saved && saved.setupConfig) {
         if ([10, 12, 15].includes(saved.setupConfig.boardSize)) setupConfig.boardSize = saved.setupConfig.boardSize;
         if (typeof saved.setupConfig.count === 'number') {
-          setupConfig.count = Math.max(2, Math.min(MAX_PLAYERS, saved.setupConfig.count));
+          setupConfig.count = Math.max(MIN_PLAYERS, Math.min(MAX_PLAYERS, saved.setupConfig.count));
         }
         if (Array.isArray(saved.setupConfig.names)) {
           saved.setupConfig.names.slice(0, MAX_PLAYERS).forEach((n, idx) => {
@@ -4292,6 +4671,11 @@
         if (Array.isArray(saved.setupConfig.isBot)) {
           saved.setupConfig.isBot.slice(0, MAX_PLAYERS).forEach((b, idx) => {
             setupConfig.isBot[idx] = Boolean(b);
+          });
+        }
+        if (Array.isArray(saved.setupConfig.avatars)) {
+          saved.setupConfig.avatars.slice(0, MAX_PLAYERS).forEach((av, idx) => {
+            if (typeof av === 'string' && av.trim()) setupConfig.avatars[idx] = av;
           });
         }
       }
